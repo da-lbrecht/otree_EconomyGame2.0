@@ -42,7 +42,7 @@ SECRET_KEY = '4387860144726'
 INSTALLED_APPS = ['otree']
 
 PARTICIPANT_FIELDS = [
-    # 'example',
+    'offers',
 ]
 
 SESSION_FIELDS = [

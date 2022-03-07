@@ -48,8 +48,12 @@ Trade
         <th id="num_items"></th>
     </tr>
     <tr>
-        <td>Your current offer</td>
+        <td>{{ if player.is_buyer }}Your highest bid{{ else }}Your lowest asks{{ endif }}</td>
         <th id="current_offer"></th>
+    </tr>
+    <tr>
+        <td>{{ if player.is_buyer }}Your bids (from high to low){{ else }}Your asks (from low to high){{ endif }}</td>
+        <th id="offers"></th>
     </tr>
     <tr>
         <td>Profits</td>
@@ -102,7 +106,7 @@ Trade
     function liveRecv(data) {
         console.log(data)
         // javascript destructuring assignment
-        let {bids, asks, highcharts_series, num_items, current_offer, payoff, news} = data;
+        let {bids, asks, highcharts_series, num_items, current_offer, payoff, news, offers} = data;
         if (news) {
             let {buyer, seller, price} = news;
             if (buyer === my_id) {
@@ -113,6 +117,7 @@ Trade
         }
         document.getElementById('num_items').innerText = num_items;
         document.getElementById('current_offer').innerText = cu(current_offer);
+        document.getElementById('offers').innerText = cu(offers);
         document.getElementById('payoff').innerText = cu(payoff);
         if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
