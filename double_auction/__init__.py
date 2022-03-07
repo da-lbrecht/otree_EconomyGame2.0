@@ -128,8 +128,6 @@ class Trading(Page):
 
     live_method = live_method
 
-    timer_text = 'Time left until the market closes'
-
     @staticmethod
     def js_vars(player: Player):
         return dict(id_in_group=player.id_in_group, is_buyer=player.is_buyer)

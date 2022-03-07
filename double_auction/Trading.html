@@ -3,23 +3,21 @@ Trade
 {{ endblock }}
 {{ block content }}
 
-    <p>The market closes in <span id="time-left"></span> </p>
-
-    <script>
-        let customTimerEle = document.getElementById('time-left');
-
-        document.addEventListener("DOMContentLoaded", function (event) {
-            $('.otree-timer__time-left').on('update.countdown', function (event) {
-                customTimerEle.innerText = event.strftime('%-H h %M min %S sec');;
-            });
-        });
-
-    </script>
-
-
 <p id="news" style="color: green"></p>
 
-<p id="time-left"> </p>
+<!-- Display of countdown till market closing -->
+<p>The market closes in <span id="time-left"></span> </p>
+
+<script>
+    let customTimerEle = document.getElementById('time-left');
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        $('.otree-timer__time-left').on('update.countdown', function (event) {
+            customTimerEle.innerText = event.strftime('%-H h %M min %S sec');;
+        });
+    });
+
+</script>
 
 <p id="market_closing_time"> Market opening time {{ C.MARKET_OPENING }} </p>
 
