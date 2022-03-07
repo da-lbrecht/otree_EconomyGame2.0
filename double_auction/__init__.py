@@ -15,8 +15,6 @@ class C(BaseConstants):
     VALUATION_MAX = cu(110)
     PRODUCTION_COSTS_MIN = cu(10)
     PRODUCTION_COSTS_MAX = cu(80)
-    MARKET_CLOSING = '07 Mar 2022 18:00:00'
-    MARKET_OPENING = '07 Mar 2022 07:00:00'
 
 
 class Subsession(BaseSubsession):
@@ -137,11 +135,20 @@ class Trading(Page):
         import time
 
         group = player.group
-        market_opening_timestamp = time.mktime(time.strptime(C.MARKET_OPENING, "%d %b %Y %X"))
+        market_opening_timestamp = time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))
         group.start_timestamp = int(market_opening_timestamp)
-        market_closing_timestamp = time.mktime(time.strptime(C.MARKET_CLOSING, "%d %b %Y %X"))
+        market_closing_timestamp = time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X"))
         # return (group.start_timestamp + 5 * 60) - time.time()
         return market_closing_timestamp - time.time()
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        market_opening = player.session.config['market_opening']
+        market_closing = player.session.config['market_closing']
+        return dict(
+            market_opening=market_opening,
+            market_closing=market_closing,
+        )
 
 
 

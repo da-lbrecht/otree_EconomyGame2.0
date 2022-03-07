@@ -14,7 +14,12 @@ SESSION_CONFIGS = [
 # the session config can be accessed from methods in your apps as self.session.config,
 # e.g. self.session.config['participation_fee']
 
-SESSION_CONFIG_DEFAULTS = dict(real_world_currency_per_point=1.00, participation_fee=0.00, doc="")
+SESSION_CONFIG_DEFAULTS = dict(
+    real_world_currency_per_point=1.00,
+    participation_fee=0.00,
+    market_opening='07 Mar 2022 07:00:00',
+    market_closing='07 Mar 2022 18:00:00',
+    doc="")
 
 # ISO-639 code
 # for example: de, fr, ja, ko, zh-hans
@@ -37,11 +42,9 @@ SECRET_KEY = '4387860144726'
 INSTALLED_APPS = ['otree']
 
 PARTICIPANT_FIELDS = [
-    #'example1',
-    #'example2',
+    # 'example',
 ]
 
 SESSION_FIELDS = [
-    #'example1',
-    #'example2',
+    # 'example',
 ]
