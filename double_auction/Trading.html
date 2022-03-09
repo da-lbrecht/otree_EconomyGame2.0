@@ -13,7 +13,7 @@ Trade
 
     document.addEventListener("DOMContentLoaded", function (event) {
         $('.otree-timer__time-left').on('update.countdown', function (event) {
-            customTimerEle.innerText = event.strftime('%-H h %M min %S sec');;
+            customTimerEle.innerText = event.strftime('%W weeks %-d days %-H h %M min %S sec');;
         });
     });
 
@@ -58,6 +58,10 @@ Trade
     <tr>
         <td>Profits</td>
         <th id="payoff"></th>
+    </tr>
+    <tr>
+        <td>Your Balance</td>
+        <th id="balance"></th>
     </tr>
 </table>
 
@@ -116,9 +120,17 @@ Trade
             }
         }
         document.getElementById('num_items').innerText = num_items;
-        document.getElementById('current_offer').innerText = cu(current_offer);
-        document.getElementById('offers').innerText = cu(offers);
+
+        if (data["offers"] == "") {
+            document.getElementById('current_offer').innerText = "";
+            document.getElementById('offers').innerText = "";
+        }
+        else {
+            document.getElementById('current_offer').innerText = cu(current_offer);
+            document.getElementById('offers').innerText = cu(offers);
+        }
         document.getElementById('payoff').innerText = cu(payoff);
+        document.getElementById('balance').innerText = cu(payoff);
         if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }

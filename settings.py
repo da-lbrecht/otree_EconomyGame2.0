@@ -18,7 +18,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=1.00,
     participation_fee=0.00,
     market_opening='07 Mar 2022 07:00:00',
-    market_closing='07 Mar 2022 18:00:00',
+    market_closing='31 Mar 2022 18:00:00',
     doc="")
 
 # ISO-639 code
