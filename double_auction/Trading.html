@@ -77,11 +77,11 @@ Trade
 <div class="container">
     <div class="row">
         <div class="col-sm">
-            <h4>Bids</h4>
+            <h4>Bids (in points)</h4>
             <table id="bids_table"></table>
         </div>
         <div class="col-sm">
-            <h4>Asks</h4>
+            <h4>Asks (in points)</h4>
             <table id="asks_table"></table>
         </div>
     </div>
@@ -140,8 +140,8 @@ Trade
         if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }
-        bids_table.innerHTML = bids.map(e => `<tr><td>${cu(e)}</td></tr>`).join('');
-        asks_table.innerHTML = asks.map(e => `<tr><td>${cu(e)}</td></tr>`).join('');
+        bids_table.innerHTML = bids;
+        asks_table.innerHTML = asks;
         redrawChart(highcharts_series);
     }
 

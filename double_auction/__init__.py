@@ -1,7 +1,16 @@
 from otree.api import *
 import time
 import random
-import numpy as np
+
+# Python Functions
+
+
+def flatten(list_of_lists):
+    if len(list_of_lists) == 0:
+        return list_of_lists
+    if isinstance(list_of_lists[0], list):
+        return flatten(list_of_lists[0]) + flatten(list_of_lists[1:])
+    return list_of_lists[:1] + flatten(list_of_lists[1:])
 
 
 doc = "Double auction market"
@@ -39,7 +48,7 @@ def creating_session(subsession: Subsession):
             p.break_even_point = random.randint(
                 C.PRODUCTION_COSTS_MIN, C.PRODUCTION_COSTS_MAX
             )
-            p.current_offer = C.VALUATION_MAX+1
+            p.current_offer = C.VALUATION_MAX + 1
 
 
 class Group(BaseGroup):
@@ -52,6 +61,7 @@ class Player(BasePlayer):
     current_offer = models.CurrencyField()
     break_even_point = models.CurrencyField()
     num_items = models.IntegerField()
+
 
 class Transaction(ExtraModel):
     group = models.Link(Group)
@@ -97,7 +107,8 @@ def live_method(player: Player, data):
                     buyer=buyer,
                     seller=seller,
                     price=price,
-                    seconds=int(time.time() - time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
+                    seconds=int(time.time() - time.mktime(
+                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
                 )
                 buyer.num_items += 1
                 seller.num_items -= 1
@@ -106,8 +117,14 @@ def live_method(player: Player, data):
                 news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
                 buyer.participant.offers = buyer.participant.offers[1:]
                 seller.participant.offers = seller.participant.offers[1:]
-                buyer.current_offer = buyer.participant.offers[0]
-                seller.current_offer = seller.participant.offers[0]
+                if len(buyer.participant.offers) > 1:
+                    buyer.current_offer = buyer.participant.offers[0]
+                else:
+                    buyer.current_offer = None
+                if len(seller.participant.offers) > 1:
+                    seller.current_offer = seller.participant.offers[0]
+                else:
+                    seller.current_offer = None
         elif data['type'] == 'withdrawal':
             if int(data['withdrawal']) in offers:
                 offers.remove(int(data['withdrawal']))
@@ -117,28 +134,29 @@ def live_method(player: Player, data):
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
                 else:
-                    if player.is_buyer:
-                        player.current_offer = 0
-                    elif player.is_seller:
-                        player.current_offer = C.VALUATION_MAX+1
+                    player.current_offer = 0
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
                 else:
-                    if player.is_buyer:
-                        player.current_offer = 0
-                    elif player.is_seller:
-                        player.current_offer = C.VALUATION_MAX+1
+                    player.current_offer = C.VALUATION_MAX + 1
 
-    bids = sorted([p.current_offer for p in buyers if p.current_offer > 0], reverse=True)
-    asks = sorted([p.current_offer for p in sellers if p.current_offer <= C.VALUATION_MAX])
+    # Create lists of all asks/bids by all sellers/buyers
+    raw_bids = [p.participant.offers for p in buyers]  # Collect bids from all buyers
+    bids = flatten(raw_bids)  # Unnest list
+    bids.sort(reverse=True)
+    # Collect asks from all sellers
+    raw_asks = [p.participant.offers for p in sellers]  # Collect asks from all sellers
+    asks = flatten(raw_asks)  # Unnest list
+    asks.sort(reverse=False)
+
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
 
     return {
         p.id_in_group: dict(
             num_items=p.num_items,
-            current_offer=p.current_offer,
+            current_offer=p.field_maybe_none('current_offer'),
             payoff=p.payoff,
             bids=bids,
             asks=asks,
@@ -158,7 +176,6 @@ class WaitToStart(WaitPage):
 
 
 class Trading(Page):
-
     live_method = live_method
 
     @staticmethod
@@ -184,8 +201,6 @@ class Trading(Page):
             market_opening=market_opening,
             market_closing=market_closing,
         )
-
-
 
 
 class ResultsWaitPage(WaitPage):
