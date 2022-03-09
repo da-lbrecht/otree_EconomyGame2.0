@@ -75,40 +75,61 @@ def live_method(player: Player, data):
     buyers = [p for p in players if p.is_buyer]
     sellers = [p for p in players if not p.is_buyer]
     news = None
-    # offer = player.offer
     participant = player.participant
     offers = participant.offers
     if data:
-        offers.append(int(data['offer']))
-        participant.offers = offers
-        # player.current_offer = offers[0]
-        if player.is_buyer:
-            offers.sort(reverse=True)  # Sort such that highest bid is first list element
-            player.current_offer = offers[0]
-            match = find_match(buyers=[player], sellers=sellers)
-        else:
-            offers.sort(reverse=False)  # Sort such that lowest ask is first list element
-            player.current_offer = offers[0]
-            match = find_match(buyers=buyers, sellers=[player])
-        if match:
-            [buyer, seller] = match
-            price = buyer.current_offer
-            Transaction.create(
-                group=group,
-                buyer=buyer,
-                seller=seller,
-                price=price,
-                seconds=int(time.time() - time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
-            )
-            buyer.num_items += 1
-            seller.num_items -= 1
-            buyer.payoff += buyer.break_even_point - price
-            seller.payoff += price - seller.break_even_point
-            news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
-            buyer.participant.offers = buyer.participant.offers[1:]
-            seller.participant.offers = seller.participant.offers[1:]
-            buyer.current_offer = buyer.participant.offers[0]
-            seller.current_offer = seller.participant.offers[0]
+        if data['type'] == 'offer':
+            offers.append(int(data['offer']))
+            participant.offers = offers
+            if player.is_buyer:
+                offers.sort(reverse=True)  # Sort such that highest bid is first list element
+                player.current_offer = offers[0]
+                match = find_match(buyers=[player], sellers=sellers)
+            else:
+                offers.sort(reverse=False)  # Sort such that lowest ask is first list element
+                player.current_offer = offers[0]
+                match = find_match(buyers=buyers, sellers=[player])
+            if match:
+                [buyer, seller] = match
+                price = buyer.current_offer
+                Transaction.create(
+                    group=group,
+                    buyer=buyer,
+                    seller=seller,
+                    price=price,
+                    seconds=int(time.time() - time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
+                )
+                buyer.num_items += 1
+                seller.num_items -= 1
+                buyer.payoff += buyer.break_even_point - price
+                seller.payoff += price - seller.break_even_point
+                news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
+                buyer.participant.offers = buyer.participant.offers[1:]
+                seller.participant.offers = seller.participant.offers[1:]
+                buyer.current_offer = buyer.participant.offers[0]
+                seller.current_offer = seller.participant.offers[0]
+        elif data['type'] == 'withdrawal':
+            if int(data['withdrawal']) in offers:
+                offers.remove(int(data['withdrawal']))
+            participant.offers = offers
+            if player.is_buyer:
+                offers.sort(reverse=True)  # Sort such that highest bid is first list element
+                if len(offers) >= 1:
+                    player.current_offer = offers[0]
+                else:
+                    if player.is_buyer:
+                        player.current_offer = 0
+                    elif player.is_seller:
+                        player.current_offer = C.VALUATION_MAX+1
+            else:
+                offers.sort(reverse=False)  # Sort such that lowest ask is first list element
+                if len(offers) >= 1:
+                    player.current_offer = offers[0]
+                else:
+                    if player.is_buyer:
+                        player.current_offer = 0
+                    elif player.is_seller:
+                        player.current_offer = C.VALUATION_MAX+1
 
     bids = sorted([p.current_offer for p in buyers if p.current_offer > 0], reverse=True)
     asks = sorted([p.current_offer for p in sellers if p.current_offer <= C.VALUATION_MAX])

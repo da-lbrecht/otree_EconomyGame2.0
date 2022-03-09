@@ -69,6 +69,11 @@ Trade
 <input type="number" id="my_offer">
 <button type="button" onclick="sendOffer()" id="btn-offer">Make offer</button>
 <br><br>
+
+<input type="number" id="my_withdrawal">
+<button type="button" onclick="withdrawOffer()" id="btn-withdrawal">Withdraw offer</button>
+<br><br>
+
 <div class="container">
     <div class="row">
         <div class="col-sm">
@@ -95,6 +100,7 @@ Trade
     let is_buyer = js_vars.is_buyer;
     let btnOffer = document.getElementById('btn-offer');
     let my_offer = document.getElementById('my_offer');
+    let my_withdrawal = document.getElementById('my_withdrawal');
 
     function showNews(msg) {
         news_div.innerText = msg;
@@ -140,12 +146,22 @@ Trade
     }
 
     function sendOffer() {
-        liveSend({'offer': my_offer.value})
+        liveSend({"type": "offer", "offer": my_offer.value})
+    }
+
+    function withdrawOffer() {
+        liveSend({"type": "withdrawal", "withdrawal": my_withdrawal.value})
     }
 
     my_offer.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
             sendOffer();
+        }
+    });
+
+    my_withdrawal.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            withdrawOffer();
         }
     });
 
