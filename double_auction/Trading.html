@@ -13,7 +13,8 @@ Trade
 
     document.addEventListener("DOMContentLoaded", function (event) {
         $('.otree-timer__time-left').on('update.countdown', function (event) {
-            customTimerEle.innerText = event.strftime('%W weeks %-d days %-H h %M min %S sec');;
+            customTimerEle.innerText = event.strftime('%W weeks %-d days %-H h %M min %S sec');
+            liveSend({"type": "time_update"})
         });
     });
 
@@ -39,7 +40,19 @@ Trade
             {{ endif }}
         </td>
         <th>
-            <th id="marginal"></th>
+            <th id="marginal_evaluation"></th>
+        </th>
+    </tr>
+    <tr>
+        <td>
+            {{ if player.is_buyer }}
+                Your current remaining consumption time (to enjoy your purchases)
+            {{ else }}
+                Your current remaining production time (to fulfill your order book)
+            {{ endif }}
+        </td>
+        <th>
+            <th id="time_needed"></th>
         </th>
     </tr>
     <tr>
@@ -64,7 +77,7 @@ Trade
         <th id="current_offer"></th>
     </tr>
     <tr>
-        <td>{{ if player.is_buyer }}Your bids (from high to low){{ else }}Your asks (from low to high){{ endif }}</td>
+        <td>{{ if player.is_buyer }}All your bids (from high to low){{ else }}All your asks (from low to high){{ endif }}</td>
         <th id="offers"></th>
     </tr>
     <tr>
@@ -105,6 +118,8 @@ Trade
 
 <script>
 
+    let my_time_needed = document.getElementById('time_needed');
+    let my_marginal_evaluation = document.getElementById('marginal_evaluation');
     let bids_table = document.getElementById('bids_table');
     let asks_table = document.getElementById('asks_table');
     let my_id = js_vars.id_in_group;
@@ -128,7 +143,7 @@ Trade
     function liveRecv(data) {
         console.log(data)
         // javascript destructuring assignment
-        let {bids, asks, highcharts_series, num_items, current_offer, payoff, news, offers} = data;
+        let {bids, asks, highcharts_series, num_items, current_offer, payoff, news, offers, time_needed, marginal_evaluation} = data;
         if (news) {
             let {buyer, seller, price} = news;
             if (buyer === my_id) {
@@ -152,9 +167,12 @@ Trade
         if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }
+        my_time_needed.innerHTML = time_needed;
+        my_marginal_evaluation.innerHTML = marginal_evaluation;
         bids_table.innerHTML = bids;
         asks_table.innerHTML = asks;
         redrawChart(highcharts_series);
+
     }
 
     function sendOffer() {
@@ -178,7 +196,7 @@ Trade
     });
 
     document.addEventListener('DOMContentLoaded', (event) => {
-        liveSend({});
+        liveSend({})
     });
 </script>
 

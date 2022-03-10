@@ -43,6 +43,10 @@ INSTALLED_APPS = ['otree']
 
 PARTICIPANT_FIELDS = [
     'offers',
+    'time_needed',
+    'marginal_evaluation',
+    'previous_timestamp',
+    'current_timestamp',
 ]
 
 SESSION_FIELDS = [

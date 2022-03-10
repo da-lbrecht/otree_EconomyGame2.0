@@ -1,17 +1,30 @@
 from otree.api import *
 import time
 import random
+import math
 
 
-# Python Functions
+# Functions
 
 
-def flatten(list_of_lists):
+def marginal_production_costs(t):
+    c = (max((600-t), 0)*50 + (600-max(600-t, 0))*100) / 600
+    return c
+
+
+def marginal_consumption_utility(t):
+    u = (max((600-t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600
+    return u
+
+
+def flatten(list_of_lists): # Python function to unlist lists
     if len(list_of_lists) == 0:
         return list_of_lists
     if isinstance(list_of_lists[0], list):
         return flatten(list_of_lists[0]) + flatten(list_of_lists[1:])
     return list_of_lists[:1] + flatten(list_of_lists[1:])
+
+
 
 
 doc = "Double auction market"
@@ -26,6 +39,9 @@ class C(BaseConstants):
     VALUATION_MAX = cu(110)
     PRODUCTION_COSTS_MIN = cu(10)
     PRODUCTION_COSTS_MAX = cu(80)
+    BID_MIN = -1000
+    ASK_MAX = 1000
+    TIME_PER_UNIT = 600 # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
 
 
 class Subsession(BaseSubsession):
@@ -40,16 +56,20 @@ def creating_session(subsession: Subsession):
         p.is_buyer = p.id_in_group % 2 > 0
         participant = p.participant
         participant.offers = []
+        participant.time_needed = 0
+        participant.marginal_evaluation = 999
+        participant.previous_timestamp = time.time()
+        participant.current_timestamp = time.time()
         if p.is_buyer:
             p.num_items = 0
             p.break_even_point = random.randint(C.VALUATION_MIN, C.VALUATION_MAX)
-            p.current_offer = -1000
+            p.current_offer = C.BID_MIN
         else:
             p.num_items = C.ITEMS_PER_SELLER
             p.break_even_point = random.randint(
                 C.PRODUCTION_COSTS_MIN, C.PRODUCTION_COSTS_MAX
             )
-            p.current_offer = 1000
+            p.current_offer = C.ASK_MAX
 
 
 class Group(BaseGroup):
@@ -121,11 +141,13 @@ def live_method(player: Player, data):
                 if len(buyer.participant.offers) >= 1:
                     buyer.current_offer = buyer.participant.offers[0]
                 else:
-                    buyer.current_offer = -1000
+                    buyer.current_offer = C.BID_MIN
                 if len(seller.participant.offers) >= 1:
                     seller.current_offer = seller.participant.offers[0]
                 else:
-                    seller.current_offer = 1000
+                    seller.current_offer = C.ASK_MAX
+                buyer.participant.time_needed += C.TIME_PER_UNIT
+                seller.participant.time_needed += C.TIME_PER_UNIT
         elif data['type'] == 'withdrawal':
             if int(data['withdrawal']) in offers:
                 offers.remove(int(data['withdrawal']))
@@ -135,14 +157,25 @@ def live_method(player: Player, data):
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
                 else:
-                    player.current_offer = -1000
+                    player.current_offer = C.BID_MIN
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
                 else:
-                    player.current_offer = 1000
-
+                    player.current_offer = C.ASK_MAX
+        elif data['type'] == 'time_update':
+            # Update remaining time needed for production/consumption
+            player.participant.current_timestamp = time.time()
+            player.participant.time_needed = max(0, player.participant.time_needed -
+                                                 (
+                                                             player.participant.current_timestamp - player.participant.previous_timestamp))
+            player.participant.previous_timestamp = player.participant.current_timestamp
+            # Update marginal utility/costs
+            if player.is_buyer:
+                player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
+            else:
+                player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [p.participant.offers for p in buyers]  # Collect bids from all buyers
     bids = flatten(raw_bids)  # Unnest list
@@ -151,9 +184,7 @@ def live_method(player: Player, data):
     raw_asks = [p.participant.offers for p in sellers]  # Collect asks from all sellers
     asks = flatten(raw_asks)  # Unnest list
     asks.sort(reverse=False)
-
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
-
     return {
         p.id_in_group: dict(
             num_items=p.num_items,
@@ -164,6 +195,8 @@ def live_method(player: Player, data):
             highcharts_series=highcharts_series,
             news=news,
             offers=p.participant.offers,
+            time_needed=p.participant.time_needed,
+            marginal_evaluation=p.participant.marginal_evaluation
         )
         for p in players
     }
