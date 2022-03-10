@@ -32,6 +32,18 @@ Trade
     </tr>
     <tr>
         <td>
+            {{ if player.is_buyer }}
+                Your current MU (you should buy for less)
+            {{ else }}
+                Your current MC (you should sell for more)
+            {{ endif }}
+        </td>
+        <th>
+            <th id="marginal"></th>
+        </th>
+    </tr>
+    <tr>
+        <td>
             Your break-even point
             {{ if player.is_buyer }}
                 (you should buy for less than)

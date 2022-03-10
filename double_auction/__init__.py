@@ -42,13 +42,13 @@ def creating_session(subsession: Subsession):
         if p.is_buyer:
             p.num_items = 0
             p.break_even_point = random.randint(C.VALUATION_MIN, C.VALUATION_MAX)
-            p.current_offer = 0
+            p.current_offer = -1000
         else:
             p.num_items = C.ITEMS_PER_SELLER
             p.break_even_point = random.randint(
                 C.PRODUCTION_COSTS_MIN, C.PRODUCTION_COSTS_MAX
             )
-            p.current_offer = C.VALUATION_MAX + 1
+            p.current_offer = 1000
 
 
 class Group(BaseGroup):
@@ -117,14 +117,14 @@ def live_method(player: Player, data):
                 news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
                 buyer.participant.offers = buyer.participant.offers[1:]
                 seller.participant.offers = seller.participant.offers[1:]
-                if len(buyer.participant.offers) > 1:
+                if len(buyer.participant.offers) >= 1:
                     buyer.current_offer = buyer.participant.offers[0]
                 else:
-                    buyer.current_offer = None
-                if len(seller.participant.offers) > 1:
+                    buyer.current_offer = -1000
+                if len(seller.participant.offers) >= 1:
                     seller.current_offer = seller.participant.offers[0]
                 else:
-                    seller.current_offer = None
+                    seller.current_offer = 1000
         elif data['type'] == 'withdrawal':
             if int(data['withdrawal']) in offers:
                 offers.remove(int(data['withdrawal']))
@@ -134,13 +134,13 @@ def live_method(player: Player, data):
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
                 else:
-                    player.current_offer = 0
+                    player.current_offer = -1000
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
                 else:
-                    player.current_offer = C.VALUATION_MAX + 1
+                    player.current_offer = 1000
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [p.participant.offers for p in buyers]  # Collect bids from all buyers
@@ -156,7 +156,7 @@ def live_method(player: Player, data):
     return {
         p.id_in_group: dict(
             num_items=p.num_items,
-            current_offer=p.field_maybe_none('current_offer'),
+            current_offer=p.current_offer,
             payoff=p.payoff,
             bids=bids,
             asks=asks,
