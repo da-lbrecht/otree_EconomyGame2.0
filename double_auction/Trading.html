@@ -55,7 +55,7 @@ Trade
             <th id="time_needed"></th>
         </th>
     </tr>
-    <tr>
+    {#<tr>
         <td>
             Your break-even point
             {{ if player.is_buyer }}
@@ -67,8 +67,8 @@ Trade
         <th>
             {{ player.break_even_point }}
         </th>
-    </tr>
-    <tr>
+    </tr>#}
+  <tr>
         <td>Items in your possession</td>
         <th id="num_items"></th>
     </tr>
@@ -120,6 +120,7 @@ Trade
 
     let my_time_needed = document.getElementById('time_needed');
     let my_marginal_evaluation = document.getElementById('marginal_evaluation');
+    let my_balance = document.getElementById('balance');
     let bids_table = document.getElementById('bids_table');
     let asks_table = document.getElementById('asks_table');
     let my_id = js_vars.id_in_group;
@@ -143,7 +144,7 @@ Trade
     function liveRecv(data) {
         console.log(data)
         // javascript destructuring assignment
-        let {bids, asks, highcharts_series, num_items, current_offer, payoff, news, offers, time_needed, marginal_evaluation} = data;
+        let {bids, asks, highcharts_series, num_items, current_offer, payoff, balance, news, offers, time_needed, marginal_evaluation} = data;
         if (news) {
             let {buyer, seller, price} = news;
             if (buyer === my_id) {
@@ -163,12 +164,12 @@ Trade
             document.getElementById('offers').innerText = cu(offers);
         }
         document.getElementById('payoff').innerText = cu(payoff);
-        document.getElementById('balance').innerText = cu(payoff);
+        document.getElementById('balance').innerText = cu(balance);
         if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }
         my_time_needed.innerHTML = time_needed;
-        my_marginal_evaluation.innerHTML = marginal_evaluation;
+        my_marginal_evaluation.innerHTML = cu(marginal_evaluation);
         bids_table.innerHTML = bids;
         asks_table.innerHTML = asks;
         redrawChart(highcharts_series);

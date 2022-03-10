@@ -60,6 +60,7 @@ def creating_session(subsession: Subsession):
         participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
+        p.balance = 0
         if p.is_buyer:
             p.num_items = 0
             p.break_even_point = random.randint(C.VALUATION_MIN, C.VALUATION_MAX)
@@ -82,6 +83,7 @@ class Player(BasePlayer):
     current_offer = models.CurrencyField()
     break_even_point = models.CurrencyField()
     num_items = models.IntegerField()
+    balance = models.CurrencyField()
 
 
 class Transaction(ExtraModel):
@@ -135,6 +137,8 @@ def live_method(player: Player, data):
                 seller.num_items -= 1
                 buyer.payoff += buyer.break_even_point - price
                 seller.payoff += price - seller.break_even_point
+                buyer.balance += buyer.participant.marginal_evaluation - price
+                seller.balance += price - seller.participant.marginal_evaluation
                 news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
                 buyer.participant.offers = buyer.participant.offers[1:]
                 seller.participant.offers = seller.participant.offers[1:]
@@ -190,6 +194,7 @@ def live_method(player: Player, data):
             num_items=p.num_items,
             current_offer=p.current_offer,
             payoff=p.payoff,
+            balance=p.balance,
             bids=bids,
             asks=asks,
             highcharts_series=highcharts_series,
