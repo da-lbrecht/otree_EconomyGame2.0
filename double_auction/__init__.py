@@ -8,12 +8,12 @@ import math
 
 
 def marginal_production_costs(t):
-    c = (max((600-t), 0)*50 + (600-max(600-t, 0))*100) / 600
+    c = round((max((600-t), 0)*50 + (600-max(600-t, 0))*100) / 600, 2)
     return c
 
 
 def marginal_consumption_utility(t):
-    u = (max((600-t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600
+    u = round((max((600-t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
     return u
 
 
@@ -34,14 +34,9 @@ class C(BaseConstants):
     NAME_IN_URL = 'double_auction'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 1
-    ITEMS_PER_SELLER = 3
-    VALUATION_MIN = cu(50)
-    VALUATION_MAX = cu(110)
-    PRODUCTION_COSTS_MIN = cu(10)
-    PRODUCTION_COSTS_MAX = cu(80)
     BID_MIN = -1000
     ASK_MAX = 1000
-    TIME_PER_UNIT = 600 # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
+    TIME_PER_UNIT = 600  # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
 
 
 class Subsession(BaseSubsession):
@@ -62,14 +57,8 @@ def creating_session(subsession: Subsession):
         participant.current_timestamp = time.time()
         p.balance = 0
         if p.is_buyer:
-            p.num_items = 0
-            p.break_even_point = random.randint(C.VALUATION_MIN, C.VALUATION_MAX)
             p.current_offer = C.BID_MIN
         else:
-            p.num_items = C.ITEMS_PER_SELLER
-            p.break_even_point = random.randint(
-                C.PRODUCTION_COSTS_MIN, C.PRODUCTION_COSTS_MAX
-            )
             p.current_offer = C.ASK_MAX
 
 
@@ -81,8 +70,6 @@ class Player(BasePlayer):
     is_buyer = models.BooleanField()
     offer = models.StringField()
     current_offer = models.CurrencyField()
-    break_even_point = models.CurrencyField()
-    num_items = models.IntegerField()
     balance = models.CurrencyField()
 
 
@@ -97,7 +84,7 @@ class Transaction(ExtraModel):
 def find_match(buyers, sellers):
     for buyer in buyers:
         for seller in sellers:
-            if seller.num_items > 0 and seller.current_offer <= buyer.current_offer:
+            if seller.current_offer <= buyer.current_offer:
                 # return as soon as we find a match (the rest of the loop will be skipped)
                 return [buyer, seller]
 
@@ -133,10 +120,6 @@ def live_method(player: Player, data):
                     seconds=int(time.time() - time.mktime(
                         time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
                 )
-                buyer.num_items += 1
-                seller.num_items -= 1
-                buyer.payoff += buyer.break_even_point - price
-                seller.payoff += price - seller.break_even_point
                 buyer.balance += buyer.participant.marginal_evaluation - price
                 seller.balance += price - seller.participant.marginal_evaluation
                 news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
@@ -171,9 +154,9 @@ def live_method(player: Player, data):
         elif data['type'] == 'time_update':
             # Update remaining time needed for production/consumption
             player.participant.current_timestamp = time.time()
-            player.participant.time_needed = max(0, player.participant.time_needed -
-                                                 (
-                                                             player.participant.current_timestamp - player.participant.previous_timestamp))
+            player.participant.time_needed = round(max(0, player.participant.time_needed -
+                                                 (player.participant.current_timestamp -
+                                                  player.participant.previous_timestamp)), 0)
             player.participant.previous_timestamp = player.participant.current_timestamp
             # Update marginal utility/costs
             if player.is_buyer:
@@ -191,9 +174,7 @@ def live_method(player: Player, data):
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
-            num_items=p.num_items,
             current_offer=p.current_offer,
-            payoff=p.payoff,
             balance=p.balance,
             bids=bids,
             asks=asks,

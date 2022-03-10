@@ -39,9 +39,7 @@ Trade
                 Your current MC (you should sell for more)
             {{ endif }}
         </td>
-        <th>
             <th id="marginal_evaluation"></th>
-        </th>
     </tr>
     <tr>
         <td>
@@ -51,39 +49,18 @@ Trade
                 Your current remaining production time (to fulfill your order book)
             {{ endif }}
         </td>
-        <th>
             <th id="time_needed"></th>
-        </th>
     </tr>
-    {#<tr>
-        <td>
-            Your break-even point
-            {{ if player.is_buyer }}
-                (you should buy for less than)
-            {{ else }}
-                (you should sell for more than)
-            {{ endif }}
-        </td>
-        <th>
-            {{ player.break_even_point }}
-        </th>
-    </tr>#}
-  <tr>
-        <td>Items in your possession</td>
-        <th id="num_items"></th>
-    </tr>
+
     <tr>
-        <td>{{ if player.is_buyer }}Your highest bid{{ else }}Your lowest asks{{ endif }}</td>
+        <td>{{ if player.is_buyer }}Your highest bid{{ else }}Your lowest ask{{ endif }}</td>
         <th id="current_offer"></th>
     </tr>
     <tr>
         <td>{{ if player.is_buyer }}All your bids (from high to low){{ else }}All your asks (from low to high){{ endif }}</td>
         <th id="offers"></th>
     </tr>
-    <tr>
-        <td>Profits</td>
-        <th id="payoff"></th>
-    </tr>
+
     <tr>
         <td>Your Balance</td>
         <th id="balance"></th>
@@ -141,10 +118,14 @@ Trade
         return `${amount} points`;
     }
 
+    function sec(amount) {
+        return `${amount} seconds`;
+    }
+
     function liveRecv(data) {
         console.log(data)
         // javascript destructuring assignment
-        let {bids, asks, highcharts_series, num_items, current_offer, payoff, balance, news, offers, time_needed, marginal_evaluation} = data;
+        let {bids, asks, highcharts_series, current_offer, balance, news, offers, time_needed, marginal_evaluation} = data;
         if (news) {
             let {buyer, seller, price} = news;
             if (buyer === my_id) {
@@ -153,7 +134,6 @@ Trade
                 showNews(`You sold to player ${buyer} for ${cu(price)}`);
             }
         }
-        document.getElementById('num_items').innerText = num_items;
 
         if (data["offers"] == "") {
             document.getElementById('current_offer').innerText = "";
@@ -163,12 +143,11 @@ Trade
             document.getElementById('current_offer').innerText = cu(current_offer);
             document.getElementById('offers').innerText = cu(offers);
         }
-        document.getElementById('payoff').innerText = cu(payoff);
         document.getElementById('balance').innerText = cu(balance);
-        if (!is_buyer && num_items === 0) {
+{#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
-        }
-        my_time_needed.innerHTML = time_needed;
+        }#}
+        my_time_needed.innerHTML = sec(time_needed);
         my_marginal_evaluation.innerHTML = cu(marginal_evaluation);
         bids_table.innerHTML = bids;
         asks_table.innerHTML = asks;
