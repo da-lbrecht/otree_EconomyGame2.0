@@ -54,6 +54,7 @@ def creating_session(subsession: Subsession):
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         p.balance = 0
+        p.session_description = p.session.config['description']
         if p.is_buyer:
             p.current_offer = C.BID_MIN
         else:
@@ -65,6 +66,7 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    session_description = models.StringField()
     is_buyer = models.BooleanField()
     current_offer = models.FloatField()
     balance = models.FloatField()
@@ -76,6 +78,7 @@ class Transaction(ExtraModel):
     seller = models.Link(Player)
     price = models.FloatField()
     seconds = models.IntegerField(doc="Timestamp (seconds since beginning of trading)")
+    description = models.StringField()
 
 
 def find_match(buyers, sellers):
@@ -110,6 +113,7 @@ def live_method(player: Player, data):
                 [buyer, seller] = match
                 price = buyer.current_offer
                 Transaction.create(
+                    description=player.session.config['description'],
                     group=group,
                     buyer=buyer,
                     seller=seller,
@@ -237,7 +241,14 @@ page_sequence = [
 ]
 
 
+# def custom_export(players):
+#     yield ['balance']
+#     for p in players:
+#         yield [p.balance]
+
+
 def custom_export(players):
-    yield ['balance']
+    yield ['session', 'description', 'buyer', 'seller', 'price', 'seconds']
     for p in players:
-        yield [p.balance]
+        for tx in Transaction.filter(seller=p):
+            yield [p.session.code, tx.description, tx.buyer.id_in_group, tx.seller.id_in_group, tx.price, tx.seconds]

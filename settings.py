@@ -15,6 +15,7 @@ SESSION_CONFIGS = [
 # e.g. self.session.config['participation_fee']
 
 SESSION_CONFIG_DEFAULTS = dict(
+    description='Economy Game 2.0',
     real_world_currency_per_point=1.00,
     participation_fee=0.00,
     market_opening='07 Mar 2022 07:00:00',
@@ -50,5 +51,5 @@ PARTICIPANT_FIELDS = [
 ]
 
 SESSION_FIELDS = [
-    # 'example',
+    'description',
 ]
