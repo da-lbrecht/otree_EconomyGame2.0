@@ -8,23 +8,21 @@ import math
 
 
 def marginal_production_costs(t):
-    c = round((max((600-t), 0)*50 + (600-max(600-t, 0))*100) / 600, 2)
+    c = round((max((600 - t), 0) * 50 + (600 - max(600 - t, 0)) * 100) / 600, 2)
     return c
 
 
 def marginal_consumption_utility(t):
-    u = round((max((600-t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
+    u = round((max((600 - t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
     return u
 
 
-def flatten(list_of_lists): # Python function to unlist lists
+def flatten(list_of_lists):  # Python function to unlist lists
     if len(list_of_lists) == 0:
         return list_of_lists
     if isinstance(list_of_lists[0], list):
         return flatten(list_of_lists[0]) + flatten(list_of_lists[1:])
     return list_of_lists[:1] + flatten(list_of_lists[1:])
-
-
 
 
 doc = "Double auction market"
@@ -68,16 +66,15 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     is_buyer = models.BooleanField()
-    offer = models.StringField()
-    current_offer = models.CurrencyField()
-    balance = models.CurrencyField()
+    current_offer = models.FloatField()
+    balance = models.FloatField()
 
 
 class Transaction(ExtraModel):
     group = models.Link(Group)
     buyer = models.Link(Player)
     seller = models.Link(Player)
-    price = models.CurrencyField()
+    price = models.FloatField()
     seconds = models.IntegerField(doc="Timestamp (seconds since beginning of trading)")
 
 
@@ -155,8 +152,8 @@ def live_method(player: Player, data):
             # Update remaining time needed for production/consumption
             player.participant.current_timestamp = time.time()
             player.participant.time_needed = round(max(0, player.participant.time_needed -
-                                                 (player.participant.current_timestamp -
-                                                  player.participant.previous_timestamp)), 0)
+                                                       (player.participant.current_timestamp -
+                                                        player.participant.previous_timestamp)), 0)
             player.participant.previous_timestamp = player.participant.current_timestamp
             # Update marginal utility/costs
             if player.is_buyer:
@@ -171,6 +168,7 @@ def live_method(player: Player, data):
     raw_asks = [p.participant.offers for p in sellers]  # Collect asks from all sellers
     asks = flatten(raw_asks)  # Unnest list
     asks.sort(reverse=False)
+    # Create chart
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
@@ -237,3 +235,9 @@ page_sequence = [
     ResultsWaitPage,
     Results
 ]
+
+
+def custom_export(players):
+    yield ['balance']
+    for p in players:
+        yield [p.balance]
