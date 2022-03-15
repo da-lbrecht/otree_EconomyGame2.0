@@ -47,20 +47,25 @@ def creating_session(subsession: Subsession):
         # this means if the player's ID is not a multiple of 2, they are a buyer.
         # for more buyers, change the 2 to 3
         p.is_buyer = p.id_in_group % 2 > 0
+        p.balance = 0
+        p.session_description = p.session.config['description']
+        p.current_offer_time = int(
+            time.mktime(time.strptime(p.session.config['market_closing'], "%d %b %Y %X"))) - int(
+            time.mktime(time.strptime(p.session.config['market_opening'], "%d %b %Y %X")))
+        if p.is_buyer:
+            p.current_offer = C.BID_MIN
+        else:
+            p.current_offer = C.ASK_MAX
+        # Initialize participant variables
         participant = p.participant
         participant.offers = []
+        participant.offer_times = []
         participant.trading_prices = []
         participant.trading_times = []
         participant.time_needed = 0
         participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
-        p.balance = 0
-        p.session_description = p.session.config['description']
-        if p.is_buyer:
-            p.current_offer = C.BID_MIN
-        else:
-            p.current_offer = C.ASK_MAX
 
 
 class Group(BaseGroup):
@@ -71,6 +76,7 @@ class Player(BasePlayer):
     session_description = models.StringField()
     is_buyer = models.BooleanField()
     current_offer = models.FloatField()
+    current_offer_time = models.FloatField()
     balance = models.FloatField()
 
 
@@ -105,21 +111,33 @@ def live_method(player: Player, data):
     news = None
     participant = player.participant
     offers = participant.offers
+    offer_times = participant.offer_times  # List of tuples of offers and respective timestamp
     if data:
         if data['type'] == 'offer':
             offers.append(int(data['offer']))
             participant.offers = offers
+            offer_times.append((int(data['offer']), int(time.time() - time.mktime(
+                time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))))
             if player.is_buyer:
                 offers.sort(reverse=True)  # Sort such that highest bid is first list element
                 player.current_offer = offers[0]
+                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
+                participant.offer_times = sorted_offer_times
+                player.current_offer_time = sorted_offer_times[0][1]
                 match = find_match(buyers=[player], sellers=sellers)
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 player.current_offer = offers[0]
+                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
+                participant.offer_times = sorted_offer_times
+                player.current_offer_time = sorted_offer_times[0][1]
                 match = find_match(buyers=buyers, sellers=[player])
             if match:
                 [buyer, seller] = match
-                price = buyer.current_offer
+                if buyer.current_offer_time < seller.current_offer_time:
+                    price = buyer.current_offer
+                else:
+                    price = seller.current_offer
                 buyer_trading_times = buyer.participant.trading_times
                 seller_trading_times = seller.participant.trading_times
                 buyer_trading_prices = buyer.participant.trading_prices
@@ -134,8 +152,8 @@ def live_method(player: Player, data):
                         time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
                     buyer_valuation=buyer.participant.marginal_evaluation,
                     seller_costs=seller.participant.marginal_evaluation,
-                    buyer_profits=buyer.participant.marginal_evaluation-price,
-                    seller_profits=price-seller.participant.marginal_evaluation,
+                    buyer_profits=buyer.participant.marginal_evaluation - price,
+                    seller_profits=price - seller.participant.marginal_evaluation,
                     buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price,
                     seller_balance=seller.balance + price - seller.participant.marginal_evaluation
                 )
@@ -147,23 +165,33 @@ def live_method(player: Player, data):
                 # Delete bids/asks of effected trade from bid/ask cure
                 buyer.participant.offers = buyer.participant.offers[1:]
                 seller.participant.offers = seller.participant.offers[1:]
+                buyer.participant.offer_times = buyer.participant.offer_times[1:]
+                seller.participant.offer_times = seller.participant.offer_times[1:]
                 if len(buyer.participant.offers) >= 1:
                     buyer.current_offer = buyer.participant.offers[0]
+                    buyer.current_offer_time = buyer.participant.offer_times[0][1]
                 else:
                     buyer.current_offer = C.BID_MIN
+                    buyer.current_offer_time = int(
+                        time.mktime(time.strptime(buyer.session.config['market_closing'], "%d %b %Y %X"))) - int(
+                        time.mktime(time.strptime(buyer.session.config['market_opening'], "%d %b %Y %X")))
                 if len(seller.participant.offers) >= 1:
                     seller.current_offer = seller.participant.offers[0]
+                    seller.current_offer_time = seller.participant.offer_times[0][1]
                 else:
                     seller.current_offer = C.ASK_MAX
+                    seller.current_offer_time = int(
+                        time.mktime(time.strptime(seller.session.config['market_closing'], "%d %b %Y %X"))) - int(
+                        time.mktime(time.strptime(seller.session.config['market_opening'], "%d %b %Y %X")))
                 # Update history of effected trades
                 buyer_trading_prices.append(int(price))
                 seller_trading_prices.append(int(price))
                 buyer.participant.trading_prices = buyer_trading_prices
                 seller.participant.trading_prices = seller_trading_prices
                 buyer_trading_times.append(int(time.time() - time.mktime(
-                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
+                    time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
                 seller_trading_times.append(int(time.time() - time.mktime(
-                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
+                    time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
                 buyer.participant.trading_times = buyer_trading_times
                 seller.participant.trading_times = seller_trading_times
                 # Update remaining time needed for production/consumption
@@ -172,19 +200,30 @@ def live_method(player: Player, data):
         elif data['type'] == 'withdrawal':
             if int(data['withdrawal']) in offers:
                 offers.remove(int(data['withdrawal']))
+                # foo = [x for x in foo if x != ("Alba", "Texas")]
+                offer_times = [x for x in offer_times if x[0] in offers]
             participant.offers = offers
+            participant.offer_times = offer_times
             if player.is_buyer:
                 offers.sort(reverse=True)  # Sort such that highest bid is first list element
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
+                    player.current_offer_time = offer_times[0][1]
                 else:
                     player.current_offer = C.BID_MIN
+                    player.current_offer_time = int(
+                        time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X"))) - int(
+                        time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 if len(offers) >= 1:
                     player.current_offer = offers[0]
+                    player.current_offer_time = offer_times[0][1]
                 else:
                     player.current_offer = C.ASK_MAX
+                    player.current_offer_time = int(
+                        time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X"))) - int(
+                        time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))
         elif data['type'] == 'time_update':
             # Update remaining time needed for production/consumption
             player.participant.current_timestamp = time.time()
