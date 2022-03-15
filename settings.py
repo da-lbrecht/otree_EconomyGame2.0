@@ -46,6 +46,8 @@ PARTICIPANT_FIELDS = [
     'offers',
     'time_needed',
     'marginal_evaluation',
+    'trading_prices',
+    'trading_times',
     'previous_timestamp',
     'current_timestamp',
 ]

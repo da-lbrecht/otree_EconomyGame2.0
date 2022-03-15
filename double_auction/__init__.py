@@ -49,6 +49,8 @@ def creating_session(subsession: Subsession):
         p.is_buyer = p.id_in_group % 2 > 0
         participant = p.participant
         participant.offers = []
+        participant.trading_prices = []
+        participant.trading_times = []
         participant.time_needed = 0
         participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
@@ -118,6 +120,10 @@ def live_method(player: Player, data):
             if match:
                 [buyer, seller] = match
                 price = buyer.current_offer
+                buyer_trading_times = buyer.participant.trading_times
+                seller_trading_times = seller.participant.trading_times
+                buyer_trading_prices = buyer.participant.trading_prices
+                seller_trading_prices = seller.participant.trading_prices
                 Transaction.create(
                     description=player.session.config['description'],
                     group=group,
@@ -133,9 +139,12 @@ def live_method(player: Player, data):
                     buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price,
                     seller_balance=seller.balance + price - seller.participant.marginal_evaluation
                 )
+                # Calculate new balances
                 buyer.balance += buyer.participant.marginal_evaluation - price
                 seller.balance += price - seller.participant.marginal_evaluation
+                # Create message about effected trade
                 news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
+                # Delete bids/asks of effected trade from bid/ask cure
                 buyer.participant.offers = buyer.participant.offers[1:]
                 seller.participant.offers = seller.participant.offers[1:]
                 if len(buyer.participant.offers) >= 1:
@@ -146,6 +155,18 @@ def live_method(player: Player, data):
                     seller.current_offer = seller.participant.offers[0]
                 else:
                     seller.current_offer = C.ASK_MAX
+                # Update history of effected trades
+                buyer_trading_prices.append(int(price))
+                seller_trading_prices.append(int(price))
+                buyer.participant.trading_prices = buyer_trading_prices
+                seller.participant.trading_prices = seller_trading_prices
+                buyer_trading_times.append(int(time.time() - time.mktime(
+                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
+                seller_trading_times.append(int(time.time() - time.mktime(
+                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
+                buyer.participant.trading_times = buyer_trading_times
+                seller.participant.trading_times = seller_trading_times
+                # Update remaining time needed for production/consumption
                 buyer.participant.time_needed += C.TIME_PER_UNIT
                 seller.participant.time_needed += C.TIME_PER_UNIT
         elif data['type'] == 'withdrawal':
@@ -189,14 +210,16 @@ def live_method(player: Player, data):
     return {
         p.id_in_group: dict(
             current_offer=p.current_offer,
-            balance=p.balance,
+            balance=round(p.balance, 2),
             bids=bids,
             asks=asks,
             highcharts_series=highcharts_series,
             news=news,
             offers=p.participant.offers,
             time_needed=p.participant.time_needed,
-            marginal_evaluation=p.participant.marginal_evaluation
+            marginal_evaluation=p.participant.marginal_evaluation,
+            trading_prices=p.participant.trading_prices,
+            trading_times=p.participant.trading_times,
         )
         for p in players
     }
