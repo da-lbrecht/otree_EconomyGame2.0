@@ -34,9 +34,9 @@ Trade
     <tr>
         <td>
             {{ if player.is_buyer }}
-                Your current MU (you should buy for less)
+                Your current marginal utility (you should buy for less)
             {{ else }}
-                Your current MC (you should sell for more)
+                Your current marginal costs (you should sell for more)
             {{ endif }}
         </td>
             <th id="marginal_evaluation"></th>
@@ -69,11 +69,15 @@ Trade
 
 
 <input type="number" id="my_offer">
-<button type="button" onclick="sendOffer()" id="btn-offer">Make offer</button>
+<button type="button" onclick="sendOffer()" id="btn-offer">
+    {{ if player.is_buyer }}Place bid{{ else }}Place ask{{ endif }}
+</button>
 <br><br>
 
 <input type="number" id="my_withdrawal">
-<button type="button" onclick="withdrawOffer()" id="btn-withdrawal">Withdraw offer</button>
+<button type="button" onclick="withdrawOffer()" id="btn-withdrawal">
+    {{ if player.is_buyer }}Withdraw bid{{ else }}Withdraw ask{{ endif }}
+</button>
 <br><br>
 
 <div class="container">
