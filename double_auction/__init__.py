@@ -76,9 +76,15 @@ class Transaction(ExtraModel):
     group = models.Link(Group)
     buyer = models.Link(Player)
     seller = models.Link(Player)
-    price = models.FloatField()
+    price = models.FloatField(doc="Price of this trade")
+    buyer_valuation = models.FloatField(doc="Buyer's valuation of the item purchased (i.e. marginal utility)")
+    seller_costs = models.FloatField(doc="Seller's production cost of the item purchased (i.e. marginal costs)")
+    buyer_profits = models.FloatField(doc="Buyer's profit from this trade (if <0 then loss)")
+    seller_profits = models.FloatField(doc="Seller's profit from this trade (if <0 then loss)")
+    buyer_balance = models.FloatField(doc="Buyer's new balance after this trade")
+    seller_balance = models.FloatField(doc="Seller's new balance after this trade")
     seconds = models.IntegerField(doc="Timestamp (seconds since beginning of trading)")
-    description = models.StringField()
+    description = models.StringField(doc="Description/Name of the Market given by experimenter")
 
 
 def find_match(buyers, sellers):
@@ -120,6 +126,12 @@ def live_method(player: Player, data):
                     price=price,
                     seconds=int(time.time() - time.mktime(
                         time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
+                    buyer_valuation=buyer.participant.marginal_evaluation,
+                    seller_costs=seller.participant.marginal_evaluation,
+                    buyer_profits=buyer.participant.marginal_evaluation-price,
+                    seller_profits=price-seller.participant.marginal_evaluation,
+                    buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price,
+                    seller_balance=seller.balance + price - seller.participant.marginal_evaluation
                 )
                 buyer.balance += buyer.participant.marginal_evaluation - price
                 seller.balance += price - seller.participant.marginal_evaluation
@@ -248,7 +260,10 @@ page_sequence = [
 
 
 def custom_export(players):
-    yield ['session', 'description', 'buyer', 'seller', 'price', 'seconds']
+    yield ['session', 'description', 'buyer', 'seller', 'price', 'seconds',
+           'buyer_valuation', 'seller_costs', 'buyer_profits', 'seller_profits', 'buyer_balance', 'seller_balance']
     for p in players:
         for tx in Transaction.filter(seller=p):
-            yield [p.session.code, tx.description, tx.buyer.id_in_group, tx.seller.id_in_group, tx.price, tx.seconds]
+            yield [p.session.code, tx.description, tx.buyer.id_in_group, tx.seller.id_in_group, tx.price, tx.seconds,
+                   tx.buyer_valuation, tx.seller_costs, tx.buyer_profits, tx.seller_profits, tx.buyer_balance,
+                   tx.seller_balance]
