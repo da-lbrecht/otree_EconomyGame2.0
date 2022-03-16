@@ -34,9 +34,9 @@ Trade
     <tr>
         <td>
             {{ if player.is_buyer }}
-                Your current MU (you should buy for less)
+                Your current marginal utility (you should buy for less)
             {{ else }}
-                Your current MC (you should sell for more)
+                Your current marginal costs (you should sell for more)
             {{ endif }}
         </td>
             <th id="marginal_evaluation"></th>
@@ -65,15 +65,25 @@ Trade
         <td>Your Balance</td>
         <th id="balance"></th>
     </tr>
+
+    <tr>
+        <td>My past trades</td>
+        <th id="trading_prices"></th>
+        <th id="trading_times"></th>
+    </tr>
 </table>
 
 
 <input type="number" id="my_offer">
-<button type="button" onclick="sendOffer()" id="btn-offer">Make offer</button>
+<button type="button" onclick="sendOffer()" id="btn-offer">
+    {{ if player.is_buyer }}Place bid{{ else }}Place ask{{ endif }}
+</button>
 <br><br>
 
 <input type="number" id="my_withdrawal">
-<button type="button" onclick="withdrawOffer()" id="btn-withdrawal">Withdraw offer</button>
+<button type="button" onclick="withdrawOffer()" id="btn-withdrawal">
+    {{ if player.is_buyer }}Withdraw bid{{ else }}Withdraw ask{{ endif }}
+</button>
 <br><br>
 
 <div class="container">
@@ -98,6 +108,8 @@ Trade
     let my_time_needed = document.getElementById('time_needed');
     let my_marginal_evaluation = document.getElementById('marginal_evaluation');
     let my_balance = document.getElementById('balance');
+    let my_trading_prices = document.getElementById('trading_prices');
+    let my_trading_times = document.getElementById('trading_times');
     let bids_table = document.getElementById('bids_table');
     let asks_table = document.getElementById('asks_table');
     let my_id = js_vars.id_in_group;
@@ -125,7 +137,8 @@ Trade
     function liveRecv(data) {
         console.log(data)
         // javascript destructuring assignment
-        let {bids, asks, highcharts_series, current_offer, balance, news, offers, time_needed, marginal_evaluation} = data;
+        let {bids, asks, highcharts_series, current_offer, balance, news, offers, time_needed, marginal_evaluation,
+        trading_prices, trading_times} = data;
         if (news) {
             let {buyer, seller, price} = news;
             if (buyer === my_id) {
@@ -144,6 +157,8 @@ Trade
             document.getElementById('offers').innerText = cu(offers);
         }
         document.getElementById('balance').innerText = cu(balance);
+        document.getElementById('trading_prices').innerText = cu(trading_prices);
+        document.getElementById('trading_times').innerText = trading_times;
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }#}
