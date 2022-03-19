@@ -1,5 +1,6 @@
 from otree.api import *
 import time
+from datetime import datetime
 import random
 import math
 
@@ -35,6 +36,8 @@ class C(BaseConstants):
     BID_MIN = -1000
     ASK_MAX = 1000
     TIME_PER_UNIT = 600  # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
+    MIN_TIMESTAMP = datetime(2000, 1, 1, 0, 0, 0, 0).timestamp()
+    MAX_TIMESTAMP = datetime(3001, 1, 1, 0, 0, 0, 0).timestamp()
 
 
 class Subsession(BaseSubsession):
@@ -49,9 +52,7 @@ def creating_session(subsession: Subsession):
         p.is_buyer = p.id_in_group % 2 > 0
         p.balance = 0
         p.session_description = p.session.config['description']
-        p.current_offer_time = int(
-            time.mktime(time.strptime(p.session.config['market_closing'], "%d %b %Y %X"))) - int(
-            time.mktime(time.strptime(p.session.config['market_opening'], "%d %b %Y %X")))
+        p.current_offer_time = C.MAX_TIMESTAMP
         if p.is_buyer:
             p.current_offer = C.BID_MIN
         else:
@@ -116,8 +117,7 @@ def live_method(player: Player, data):
         if data['type'] == 'offer':
             offers.append(int(data['offer']))
             participant.offers = offers
-            offer_times.append((int(data['offer']), int(time.time() - time.mktime(
-                time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))))
+            offer_times.append((int(data['offer']), datetime.today().timestamp()))
             if player.is_buyer:
                 offers.sort(reverse=True)  # Sort such that highest bid is first list element
                 player.current_offer = offers[0]
@@ -172,26 +172,20 @@ def live_method(player: Player, data):
                     buyer.current_offer_time = buyer.participant.offer_times[0][1]
                 else:
                     buyer.current_offer = C.BID_MIN
-                    buyer.current_offer_time = int(
-                        time.mktime(time.strptime(buyer.session.config['market_closing'], "%d %b %Y %X"))) - int(
-                        time.mktime(time.strptime(buyer.session.config['market_opening'], "%d %b %Y %X")))
+                    buyer.current_offer_time = C.MAX_TIMESTAMP
                 if len(seller.participant.offers) >= 1:
                     seller.current_offer = seller.participant.offers[0]
                     seller.current_offer_time = seller.participant.offer_times[0][1]
                 else:
                     seller.current_offer = C.ASK_MAX
-                    seller.current_offer_time = int(
-                        time.mktime(time.strptime(seller.session.config['market_closing'], "%d %b %Y %X"))) - int(
-                        time.mktime(time.strptime(seller.session.config['market_opening'], "%d %b %Y %X")))
+                    seller.current_offer_time = C.MAX_TIMESTAMP
                 # Update history of effected trades
                 buyer_trading_prices.append(int(price))
                 seller_trading_prices.append(int(price))
                 buyer.participant.trading_prices = buyer_trading_prices
                 seller.participant.trading_prices = seller_trading_prices
-                buyer_trading_times.append(int(time.time() - time.mktime(
-                    time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
-                seller_trading_times.append(int(time.time() - time.mktime(
-                    time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))),
+                buyer_trading_times.append(datetime.today().timestamp()),
+                seller_trading_times.append(datetime.today().timestamp()),
                 buyer.participant.trading_times = buyer_trading_times
                 seller.participant.trading_times = seller_trading_times
                 # Update remaining time needed for production/consumption
@@ -211,9 +205,7 @@ def live_method(player: Player, data):
                     player.current_offer_time = offer_times[0][1]
                 else:
                     player.current_offer = C.BID_MIN
-                    player.current_offer_time = int(
-                        time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X"))) - int(
-                        time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))
+                    player.current_offer_time = C.MAX_TIMESTAMP
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 if len(offers) >= 1:
@@ -221,9 +213,7 @@ def live_method(player: Player, data):
                     player.current_offer_time = offer_times[0][1]
                 else:
                     player.current_offer = C.ASK_MAX
-                    player.current_offer_time = int(
-                        time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X"))) - int(
-                        time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")))
+                    player.current_offer_time = C.MAX_TIMESTAMP
         elif data['type'] == 'time_update':
             # Update remaining time needed for production/consumption
             player.participant.current_timestamp = time.time()
