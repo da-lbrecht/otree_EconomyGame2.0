@@ -136,6 +136,10 @@ Trade
         return `${amount} seconds`;
     }
 
+    function linebreak(input) {
+        return `${input}.replace(',','<br>')`;
+    }
+
     function liveRecv(data) {
         console.log(data)
         // javascript destructuring assignment
@@ -160,12 +164,17 @@ Trade
         else {
             document.getElementById('current_offer').innerText = cu(current_offer);
             document.getElementById('current_offer_time').innerText = current_offer_time;
-            document.getElementById('offers').innerText = cu(offers);
-            document.getElementById('offer_times').innerText = offer_times;
+            document.getElementById('offers').innerHTML = offers.map(e => `<tr><th> ${e} points </tr></th>`).join(
+                '<br>');
+            {#document.getElementById('offer_times').innerText = offer_times;#}
+            document.getElementById('offer_times').innerHTML = offer_times.map(e => `<tr><th> ${e} </tr></th>`).join(
+                '<br>');
         }
         document.getElementById('balance').innerText = cu(balance);
-        document.getElementById('trading_prices').innerText = cu(trading_prices);
-        document.getElementById('trading_times').innerText = trading_times;
+        document.getElementById('trading_prices').innerHTML = trading_prices.map(
+            e => `<tr><th> ${e} points </tr></th>`).join('<br>');
+        document.getElementById('trading_times').innerHTML = trading_times.map(e => `<tr><th> ${e} </tr></th>`).join(
+                '<br>');
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }#}
