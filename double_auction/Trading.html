@@ -180,8 +180,10 @@ Trade
         }#}
         my_time_needed.innerHTML = sec(time_needed);
         my_marginal_evaluation.innerHTML = cu(marginal_evaluation);
-        bids_table.innerHTML = bids;
-        asks_table.innerHTML = asks;
+        bids_table.innerHTML = bids.map(e => `<tr><th> ${e} </tr></th>`).join(
+                '<br>');
+        asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
+                '<br>');
         redrawChart(highcharts_series);
 
     }
