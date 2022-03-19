@@ -239,12 +239,14 @@ def live_method(player: Player, data):
     return {
         p.id_in_group: dict(
             current_offer=p.current_offer,
+            current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
             balance=round(p.balance, 2),
             bids=bids,
             asks=asks,
             highcharts_series=highcharts_series,
             news=news,
             offers=p.participant.offers,
+            offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             time_needed=p.participant.time_needed,
             marginal_evaluation=p.participant.marginal_evaluation,
             trading_prices=p.participant.trading_prices,
