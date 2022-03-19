@@ -180,12 +180,12 @@ def live_method(player: Player, data):
                     seller.current_offer = C.ASK_MAX
                     seller.current_offer_time = C.MAX_TIMESTAMP
                 # Update history of effected trades
-                buyer_trading_prices.append(int(price))
-                seller_trading_prices.append(int(price))
+                buyer_trading_prices.insert(0, int(price))
+                seller_trading_prices.insert(0, int(price))
                 buyer.participant.trading_prices = buyer_trading_prices
                 seller.participant.trading_prices = seller_trading_prices
-                buyer_trading_times.append(datetime.today().timestamp()),
-                seller_trading_times.append(datetime.today().timestamp()),
+                buyer_trading_times.insert(0, str(datetime.today().ctime())),
+                seller_trading_times.insert(0, str(datetime.today().ctime())),
                 buyer.participant.trading_times = buyer_trading_times
                 seller.participant.trading_times = seller_trading_times
                 # Update remaining time needed for production/consumption
