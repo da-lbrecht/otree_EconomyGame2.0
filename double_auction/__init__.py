@@ -234,8 +234,8 @@ def live_method(player: Player, data):
     raw_asks = [p.participant.offers for p in sellers]  # Collect asks from all sellers
     asks = flatten(raw_asks)  # Unnest list
     asks.sort(reverse=False)
-    # Create chart
-    highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
+    # # Create chart
+    # highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
             current_offer=p.current_offer,
@@ -243,7 +243,7 @@ def live_method(player: Player, data):
             balance=round(p.balance, 2),
             bids=bids,
             asks=asks,
-            highcharts_series=highcharts_series,
+            #  highcharts_series=highcharts_series,
             news=news,
             offers=p.participant.offers,
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
