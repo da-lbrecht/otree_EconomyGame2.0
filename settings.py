@@ -51,6 +51,7 @@ PARTICIPANT_FIELDS = [
     'trading_times',
     'previous_timestamp',
     'current_timestamp',
+    'refresh_counter',
 ]
 
 SESSION_FIELDS = [

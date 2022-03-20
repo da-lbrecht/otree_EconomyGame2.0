@@ -6,7 +6,7 @@
 </div>
 
 <script>
-    function redrawUtility(series) {
+    function redrawUtility(series_1, series_2) {
         Highcharts.chart('highchart', {
 
             title: {
@@ -34,8 +34,13 @@
             },
 
             series: [{
-                data: series,
+                data: series_1,
                 type: 'line'
+
+            },
+            {
+                data: series_2,
+                type: 'scatter'
 
             }],
 

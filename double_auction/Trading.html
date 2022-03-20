@@ -105,7 +105,7 @@ Trade
     {{ if player.is_buyer }}
         {{ include 'double_auction/mu_chart.html' }}
     {{ else }}
-        {{ include 'double_auction/mc_chart.html' }}
+        {{ include 'double_auction/mC_chart.html' }}
     {{ endif }}
 </div>
 
@@ -152,7 +152,7 @@ Trade
         console.log(data)
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
-            time_needed, marginal_evaluation, cost_chart_series, utility_chart_series,
+            time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point,
         trading_prices, trading_times} = data;
         if (news) {
             let {buyer, seller, price} = news;
@@ -193,8 +193,12 @@ Trade
         asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
         {#redrawChart(highcharts_series);#}
-        redrawCost(cost_chart_series);
-        redrawUtility(utility_chart_series);
+        if (data["refresh_counter"] == 0 && !is_buyer) {
+            redrawCost(cost_chart_series, chart_point);
+        }
+        else if (data["refresh_counter"] == 0 && is_buyer) {
+            redrawUtility(utility_chart_series, chart_point);
+        }
     }
 
     function sendOffer() {

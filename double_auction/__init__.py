@@ -105,6 +105,7 @@ def creating_session(subsession: Subsession):
         participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
+        participant.refresh_counter = 0
 
 
 class Group(BaseGroup):
@@ -151,6 +152,7 @@ def live_method(player: Player, data):
     participant = player.participant
     offers = participant.offers
     offer_times = participant.offer_times  # List of tuples of offers and respective timestamp
+    refresh_counter = participant.refresh_counter
     if data:
         if data['type'] == 'offer':
             offers.append(int(data['offer']))
@@ -264,6 +266,11 @@ def live_method(player: Player, data):
                 player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
             else:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
+            # Update refresh counter
+            if player.participant.refresh_counter == 5:
+                player.participant.refresh_counter = 0
+            else:
+                player.participant.refresh_counter += 1
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [p.participant.offers for p in buyers]  # Collect bids from all buyers
     bids = flatten(raw_bids)  # Unnest list
@@ -283,6 +290,7 @@ def live_method(player: Player, data):
             asks=asks,
             highcharts_series=highcharts_series,
             cost_chart_series=cost_chart_series,
+            chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
             news=news,
             offers=p.participant.offers,
@@ -291,6 +299,7 @@ def live_method(player: Player, data):
             marginal_evaluation=p.participant.marginal_evaluation,
             trading_prices=p.participant.trading_prices,
             trading_times=p.participant.trading_times,
+            refresh_counter=p.participant.refresh_counter,
         )
         for p in players
     }
