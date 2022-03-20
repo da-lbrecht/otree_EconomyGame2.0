@@ -1,11 +1,27 @@
 from otree.api import *
 import time
 from datetime import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+
 import random
 import math
 
 
-# Functions
+##### START: Definition of production costs and consumption utilities #####
+
+# Production Costs with production facilities of different efficiency p_eff_1, ..., p_eff_5, and corresponding
+# capacities p_cap_1, ..., p_cap_2
+p_eff_1 = 25
+p_eff_2 = 50
+p_eff_3 = 100
+p_eff_4 = 200
+p_eff_5 = 400
+p_cap_1 = 600 # Any capacity needs to ne at least C.TIME_PER_UNIT
+p_cap_2 = 600
+p_cap_3 = 600
+p_cap_4 = 600
+p_cap_5 = 600
 
 
 def marginal_production_costs(t):
@@ -17,6 +33,28 @@ def marginal_consumption_utility(t):
     u = round((max((600 - t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
     return u
 
+
+# Graphs
+
+
+cost_x = np.arange(0, 1810, 10)
+cost_y = np.empty(shape=len(cost_x))
+for x in range(0, len(cost_x)-1):
+    cost_y[x] = marginal_production_costs(cost_x[x])
+print(cost_y)
+cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
+print(cost_chart_series)
+
+plt.plot(cost_x, cost_y)
+plt.xlabel('Remaining production time')
+plt.ylabel('Marginal costs')
+
+plt.savefig('costs.png')
+
+##### END: Definition of production costs and consumption utilities #####
+
+
+# Further Functions
 
 def flatten(list_of_lists):  # Python function to unlist lists
     if len(list_of_lists) == 0:
@@ -234,8 +272,8 @@ def live_method(player: Player, data):
     raw_asks = [p.participant.offers for p in sellers]  # Collect asks from all sellers
     asks = flatten(raw_asks)  # Unnest list
     asks.sort(reverse=False)
-    # # Create chart
-    # highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
+    # Create charts
+    highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
             current_offer=p.current_offer,
@@ -243,7 +281,8 @@ def live_method(player: Player, data):
             balance=round(p.balance, 2),
             bids=bids,
             asks=asks,
-            #  highcharts_series=highcharts_series,
+            highcharts_series=highcharts_series,
+            cost_chart_series=cost_chart_series,
             news=news,
             offers=p.participant.offers,
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],

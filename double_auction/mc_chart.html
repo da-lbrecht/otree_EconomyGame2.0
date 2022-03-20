@@ -1,0 +1,48 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+
+<div id="mc_chart">
+
+</div>
+
+<script>
+    function redrawChart(series) {
+        Highcharts.chart('highchart', {
+
+            title: {
+                text: 'Marginal Cost Schedule'
+            },
+            yAxis: {
+                title: {
+                    text: 'Costs'
+                }
+            },
+
+            xAxis: {
+                title: {
+                    text: 'Remaining production time'
+                },
+                min: 0
+            },
+
+            plotOptions: {
+                series: {
+                    label: {
+                        enabled: false
+                    },
+                }
+            },
+
+            series: [{
+                data: series,
+                type: 'line'
+
+            }],
+
+            credits: {
+                enabled: false
+            }
+
+        });
+    }
+</script>
