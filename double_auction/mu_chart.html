@@ -1,26 +1,26 @@
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/series-label.js"></script>
 
-<div id="mc_chart">
+<div id="mu_chart">
 
 </div>
 
 <script>
-    function redrawCost(series) {
+    function redrawUtility(series) {
         Highcharts.chart('highchart', {
 
             title: {
-                text: 'Marginal Cost Schedule'
+                text: 'Marginal Utility Schedule'
             },
             yAxis: {
                 title: {
-                    text: 'Costs (points)'
+                    text: 'Utility (points)'
                 }
             },
 
             xAxis: {
                 title: {
-                    text: 'Remaining production time (seconds)'
+                    text: 'Remaining consumption time (seconds)'
                 },
                 min: 0
             },

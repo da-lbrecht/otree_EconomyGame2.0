@@ -41,15 +41,15 @@ cost_x = np.arange(0, 1810, 10)
 cost_y = np.empty(shape=len(cost_x))
 for x in range(0, len(cost_x)-1):
     cost_y[x] = marginal_production_costs(cost_x[x])
-print(cost_y)
 cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
-print(cost_chart_series)
 
-plt.plot(cost_x, cost_y)
-plt.xlabel('Remaining production time')
-plt.ylabel('Marginal costs')
 
-plt.savefig('costs.png')
+utility_x = np.arange(0, 1810, 10)
+utility_y = np.empty(shape=len(utility_x))
+for x in range(0, len(utility_x)-1):
+    utility_y[x] = marginal_consumption_utility(utility_x[x])
+utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
+
 
 ##### END: Definition of production costs and consumption utilities #####
 
@@ -283,6 +283,7 @@ def live_method(player: Player, data):
             asks=asks,
             highcharts_series=highcharts_series,
             cost_chart_series=cost_chart_series,
+            utility_chart_series=utility_chart_series,
             news=news,
             offers=p.participant.offers,
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
