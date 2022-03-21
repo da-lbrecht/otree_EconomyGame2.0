@@ -9,6 +9,11 @@ p {
     margin-bottom: 0;
 }
 
+.otree-body {
+    max-height: 100vh;
+    overflow-y: hidden;
+}
+
 .otree-title, .otree-timer {
     display: none;
 }
