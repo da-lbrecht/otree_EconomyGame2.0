@@ -1,6 +1,6 @@
-{{ block title }} Double Auction Market {{ endblock }} {{ block head }}
-<link rel="stylesheet" href="{{ static 'global/style.css' }}" />
-{{ endblock }} {{ block content }}
+{% extends "global/Page.html" %}
+{% load otree %}
+{{ block title }} Double Auction Market {{ endblock }} {{ block content }}
 
 <header class="bg-um-blue mb-1">
   <div class="row">
@@ -51,28 +51,80 @@
 </header>
 
 <div class="row mt-2 mb-1">
-	<div class="col text-end">
-		<p class="fw-bold">Asks (in points)</p>
-		<ul class="list-unstyled">
-			<li>140</li>
-			<li>120</li>
-			<li>90</li>
-		</ul>
-	</div>
-	<div class="col text-end">
-		<p class="fw-bold">Bids (in points)</p>
-		<ul class="list-unstyled">
-			<li>80</li>
-			<li>60</li>
-			<li>40</li>
-		</ul>
-	</div>
+  <div class="col text-end">
+    <p class="fw-bold">Asks (in points)</p>
+    <ul class="list-unstyled">
+      <li>140</li>
+      <li>120</li>
+      <li>90</li>
+    </ul>
+  </div>
+  <div class="col text-end">
+    <p class="fw-bold">Bids (in points)</p>
+    <ul class="list-unstyled">
+      <li>80</li>
+      <li>60</li>
+      <li>40</li>
+    </ul>
+  </div>
 </div>
 
 <ul class="nav mt-2">
-	<li class="nav-item me-2 active">Open orders</li>
-	<li class="nav-item">History</li>
+  <li class="nav-item me-2 active">Open orders</li>
+  <li class="nav-item">History</li>
 </ul>
+
+<footer class="bg-um-blue">
+  <div class="row">
+    <div class="col-auto d-flex">
+      <p class="fw-bolder me-1">
+        Marginal {{ if player.is_buyer }}Unit (MC){{ else }}Cost (MC){{ endif }}
+      </p>
+      <div
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Tooltip on top"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-info-circle-fill"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+          />
+        </svg>
+      </div>
+    </div>
+    <div class="col text-end">100 points</div>
+  </div>
+  <div class="row">
+    <div class="col-auto">
+      <p class="fw-bolder">
+        {{ if player.is_buyer }}Consumption{{ else }}Production{{ endif }} time
+      </p>
+    </div>
+    <div class="col text-end">
+      <p>0 seconds</p>
+    </div>
+  </div>
+
+  <div class="input-group mt-2">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Recipient's username"
+      aria-label="Recipient's username"
+      aria-describedby="button-addon2"
+    />
+    <button class="btn btn-um-orange fw-bold" type="button" id="button-addon2">
+      {{ if player.is_buyer }}BID{{ else }}ASK{{ endif }}
+    </button>
+  </div>
+</footer>
 
 <table class="table">
   <tr>
@@ -159,116 +211,115 @@
 {{ include 'double_auction/chart.html' }}
 
 <script>
+		let my_time_needed = document.getElementById('time_needed');
+		let my_marginal_evaluation = document.getElementById('marginal_evaluation');
+		let my_balance = document.getElementById('balance');
+		let my_trading_prices = document.getElementById('trading_prices');
+		let my_trading_times = document.getElementById('trading_times');
+		let bids_table = document.getElementById('bids_table');
+		let asks_table = document.getElementById('asks_table');
+		let my_id = js_vars.id_in_group;
+		let news_div = document.getElementById('news');
+		let is_buyer = js_vars.is_buyer;
+		let btnOffer = document.getElementById('btn-offer');
+		let my_offer = document.getElementById('my_offer');
+		let my_withdrawal = document.getElementById('my_withdrawal');
 
-      let my_time_needed = document.getElementById('time_needed');
-      let my_marginal_evaluation = document.getElementById('marginal_evaluation');
-      let my_balance = document.getElementById('balance');
-      let my_trading_prices = document.getElementById('trading_prices');
-      let my_trading_times = document.getElementById('trading_times');
-      let bids_table = document.getElementById('bids_table');
-      let asks_table = document.getElementById('asks_table');
-      let my_id = js_vars.id_in_group;
-      let news_div = document.getElementById('news');
-      let is_buyer = js_vars.is_buyer;
-      let btnOffer = document.getElementById('btn-offer');
-      let my_offer = document.getElementById('my_offer');
-      let my_withdrawal = document.getElementById('my_withdrawal');
+  	function showNews(msg) {
+  			news_div.innerText = msg;
+  			setTimeout(function () {
+  					news_div.innerText = ''
+  			}, 10000)
+  	}
 
-      function showNews(msg) {
-          news_div.innerText = msg;
-          setTimeout(function () {
-              news_div.innerText = ''
-          }, 10000)
-      }
+  	function cu(amount) {
+  			return `${amount} points`;
+  	}
 
-      function cu(amount) {
-          return `${amount} points`;
-      }
+  	function sec(amount) {
+  			return `${amount} seconds`;
+  	}
 
-      function sec(amount) {
-          return `${amount} seconds`;
-      }
+  	function linebreak(input) {
+  			return `${input}.replace(',','<br>')`;
+  	}
 
-      function linebreak(input) {
-          return `${input}.replace(',','<br>')`;
-      }
+  	function liveRecv(data) {
+  			console.log(data)
+  			// javascript destructuring assignment
+  			let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
+  					time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point,
+  			trading_prices, trading_times} = data;
+  			if (news) {
+  					let {buyer, seller, price} = news;
+  					if (buyer === my_id) {
+  							showNews(`You bought from player ${seller} for ${cu(price)}`);
+  					} else if (seller === my_id) {
+  							showNews(`You sold to player ${buyer} for ${cu(price)}`);
+  					}
+  			}
 
-      function liveRecv(data) {
-          console.log(data)
-          // javascript destructuring assignment
-          let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
-              time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point,
-          trading_prices, trading_times} = data;
-          if (news) {
-              let {buyer, seller, price} = news;
-              if (buyer === my_id) {
-                  showNews(`You bought from player ${seller} for ${cu(price)}`);
-              } else if (seller === my_id) {
-                  showNews(`You sold to player ${buyer} for ${cu(price)}`);
-              }
-          }
-
-          if (data["offers"] == "") {
-              document.getElementById('current_offer').innerText = "";
-              document.getElementById('current_offer_time').innerText = "";
-              document.getElementById('offers').innerText = "";
-              document.getElementById('offer_times').innerText = "";
-          }
-          else {
-              document.getElementById('current_offer').innerText = cu(current_offer);
-              document.getElementById('current_offer_time').innerText = current_offer_time;
-              document.getElementById('offers').innerHTML = offers.map(e => `<tr><th> ${e} points </tr></th>`).join(
-                  '<br>');
-              {#document.getElementById('offer_times').innerText = offer_times;#}
-              document.getElementById('offer_times').innerHTML = offer_times.map(e => `<tr><th> ${e} </tr></th>`).join(
-                  '<br>');
-          }
-          document.getElementById('balance').innerText = cu(balance);
-          document.getElementById('trading_prices').innerHTML = trading_prices.map(
-              e => `<tr><th> ${e} points </tr></th>`).join('<br>');
-          document.getElementById('trading_times').innerHTML = trading_times.map(e => `<tr><th> ${e} </tr></th>`).join(
-                  '<br>');
+  			if (data["offers"] == "") {
+  					document.getElementById('current_offer').innerText = "";
+  					document.getElementById('current_offer_time').innerText = "";
+  					document.getElementById('offers').innerText = "";
+  					document.getElementById('offer_times').innerText = "";
+  			}
+  			else {
+  					document.getElementById('current_offer').innerText = cu(current_offer);
+  					document.getElementById('current_offer_time').innerText = current_offer_time;
+  					document.getElementById('offers').innerHTML = offers.map(e => `<tr><th> ${e} points </tr></th>`).join(
+  							'<br>');
+  					{#document.getElementById('offer_times').innerText = offer_times;#}
+  					document.getElementById('offer_times').innerHTML = offer_times.map(e => `<tr><th> ${e} </tr></th>`).join(
+  							'<br>');
+  			}
+  			document.getElementById('balance').innerText = cu(balance);
+  			document.getElementById('trading_prices').innerHTML = trading_prices.map(
+  					e => `<tr><th> ${e} points </tr></th>`).join('<br>');
+  			document.getElementById('trading_times').innerHTML = trading_times.map(e => `<tr><th> ${e} </tr></th>`).join(
+  							'<br>');
   {#        if (!is_buyer && num_items === 0) {
-              btnOffer.disabled = true;
-          }#}
-          my_time_needed.innerHTML = sec(time_needed);
-          my_marginal_evaluation.innerHTML = cu(marginal_evaluation);
-          bids_table.innerHTML = bids.map(e => `<tr><th> ${e} </tr></th>`).join(
-                  '<br>');
-          asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
-                  '<br>');
-          {#redrawChart(highcharts_series);#}
-          if (data["refresh_counter"] == 0 && !is_buyer) {
-              redrawCost(cost_chart_series, chart_point);
-          }
-          else if (data["refresh_counter"] == 0 && is_buyer) {
-              redrawUtility(utility_chart_series, chart_point);
-          }
-      }
+  					btnOffer.disabled = true;
+  			}#}
+  			my_time_needed.innerHTML = sec(time_needed);
+  			my_marginal_evaluation.innerHTML = cu(marginal_evaluation);
+  			bids_table.innerHTML = bids.map(e => `<tr><th> ${e} </tr></th>`).join(
+  							'<br>');
+  			asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
+  							'<br>');
+  			{#redrawChart(highcharts_series);#}
+  			if (data["refresh_counter"] == 0 && !is_buyer) {
+  					redrawCost(cost_chart_series, chart_point);
+  			}
+  			else if (data["refresh_counter"] == 0 && is_buyer) {
+  					redrawUtility(utility_chart_series, chart_point);
+  			}
+  	}
 
-      function sendOffer() {
-          liveSend({"type": "offer", "offer": my_offer.value})
-      }
+  	function sendOffer() {
+  			liveSend({"type": "offer", "offer": my_offer.value})
+  	}
 
-      function withdrawOffer() {
-          liveSend({"type": "withdrawal", "withdrawal": my_withdrawal.value})
-      }
+  	function withdrawOffer() {
+  			liveSend({"type": "withdrawal", "withdrawal": my_withdrawal.value})
+  	}
 
-      my_offer.addEventListener("keydown", function (event) {
-          if (event.key === "Enter") {
-              sendOffer();
-          }
-      });
+  	my_offer.addEventListener("keydown", function (event) {
+  			if (event.key === "Enter") {
+  					sendOffer();
+  			}
+  	});
 
-      my_withdrawal.addEventListener("keydown", function (event) {
-          if (event.key === "Enter") {
-              withdrawOffer();
-          }
-      });
+  	my_withdrawal.addEventListener("keydown", function (event) {
+  			if (event.key === "Enter") {
+  					withdrawOffer();
+  			}
+  	});
 
-      document.addEventListener('DOMContentLoaded', (event) => {
-          liveSend({})
-      });
+  	document.addEventListener('DOMContentLoaded', (event) => {
+  			liveSend({})
+  	});
 </script>
 
 {{ endblock }}
