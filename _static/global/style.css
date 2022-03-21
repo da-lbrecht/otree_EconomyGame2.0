@@ -13,10 +13,13 @@ p {
     display: none;
 }
 
+.bg-um-blue {
+    background-color: #001C3D;
+}
+
 .nav-item {
     opacity: 50%;
 }
-
 .nav-item.active {
     opacity: 100%;
     border-bottom: 3px solid;
