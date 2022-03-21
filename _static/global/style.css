@@ -13,6 +13,10 @@ p {
     display: none;
 }
 
+.debug-info {
+    display: none;
+}
+
 .bg-um-blue {
     background-color: #001C3D;
 }
