@@ -1,6 +1,5 @@
-{% extends "global/Page.html" %}
-{% load otree %}
-{{ block title }} Double Auction Market {{ endblock }} {{ block content }}
+{% extends "global/Page.html" %} {% load otree %} {{ block title }} Double
+Auction Market {{ endblock }} {{ block content }}
 
 <header class="bg-um-blue mb-1">
   <div class="row">
@@ -81,9 +80,11 @@
         Marginal {{ if player.is_buyer }}Unit (MC){{ else }}Cost (MC){{ endif }}
       </p>
       <div
+        class="d-flex"
         data-bs-toggle="tooltip"
         data-bs-placement="top"
-        title="Tooltip on top"
+        title="You want to {{ if player.is_buyer }}buy lower{{ else }}sell higher{{ endif }} than
+				this number"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -211,19 +212,19 @@
 {{ include 'double_auction/chart.html' }}
 
 <script>
-		let my_time_needed = document.getElementById('time_needed');
-		let my_marginal_evaluation = document.getElementById('marginal_evaluation');
-		let my_balance = document.getElementById('balance');
-		let my_trading_prices = document.getElementById('trading_prices');
-		let my_trading_times = document.getElementById('trading_times');
-		let bids_table = document.getElementById('bids_table');
-		let asks_table = document.getElementById('asks_table');
-		let my_id = js_vars.id_in_group;
-		let news_div = document.getElementById('news');
-		let is_buyer = js_vars.is_buyer;
-		let btnOffer = document.getElementById('btn-offer');
-		let my_offer = document.getElementById('my_offer');
-		let my_withdrawal = document.getElementById('my_withdrawal');
+    let my_time_needed = document.getElementById('time_needed');
+    let my_marginal_evaluation = document.getElementById('marginal_evaluation');
+    let my_balance = document.getElementById('balance');
+    let my_trading_prices = document.getElementById('trading_prices');
+    let my_trading_times = document.getElementById('trading_times');
+    let bids_table = document.getElementById('bids_table');
+    let asks_table = document.getElementById('asks_table');
+    let my_id = js_vars.id_in_group;
+    let news_div = document.getElementById('news');
+    let is_buyer = js_vars.is_buyer;
+    let btnOffer = document.getElementById('btn-offer');
+    let my_offer = document.getElementById('my_offer');
+    let my_withdrawal = document.getElementById('my_withdrawal');
 
   	function showNews(msg) {
   			news_div.innerText = msg;
