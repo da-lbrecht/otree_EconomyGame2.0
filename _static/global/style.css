@@ -25,3 +25,7 @@ p {
     background-color: #E84E10;
     color: #fff;
 }
+.btn-um-orange:hover {
+    color: #fff;
+    background-color: #cf4b17;
+}
