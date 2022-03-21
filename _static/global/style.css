@@ -11,3 +11,12 @@ p {
 .otree-title, .otree-timer {
     display: none;
 }
+
+.nav-item {
+    opacity: 50%;
+}
+
+.nav-item.active {
+    opacity: 100%;
+    border-bottom: 3px solid;
+}
