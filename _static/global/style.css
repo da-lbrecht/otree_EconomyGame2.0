@@ -17,6 +17,10 @@ p {
     background-color: #001C3D;
 }
 
+.opacity-50 {
+    opacity: 50%;
+}
+
 .nav-item {
     opacity: 50%;
 }
