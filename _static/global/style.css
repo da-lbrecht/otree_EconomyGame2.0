@@ -22,6 +22,14 @@ p {
     display: none;
 }
 
+.grid {
+    display: grid;
+}
+
+.h-100vh {
+    height: 100vh;
+}
+
 .bg-um-blue {
     background-color: #001C3D;
 }
