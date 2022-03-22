@@ -1,7 +1,13 @@
-{% extends "global/Page.html" %} {% load otree %} {{ block title }} Double
-Auction Market {{ endblock }} {{ block content }}
+{% extends "global/Page.html" %}
+{% load otree %}
+{{ block title }} Double Auction Market {{ endblock }}
 
-<div class="row grid h-100vh" style="grid-template-rows: min-content 1fr min-content;">
+{{ block content }}
+
+<div
+  class="row grid h-100vh"
+  style="grid-template-rows: min-content 1fr min-content"
+>
   <header class="bg-um-blue text-white pb-1">
     <div class="row">
       <div class="col">
@@ -15,7 +21,7 @@ Auction Market {{ endblock }} {{ block content }}
         </p>
       </div>
     </div>
-  
+
     <div class="row">
       <div class="col">
         <p class="fw-bolder">Profit</p>
@@ -49,7 +55,7 @@ Auction Market {{ endblock }} {{ block content }}
       </div>
     </div>
   </header>
-  
+
   <main class="bg-white">
     <div class="row pt-2 pb-1">
       <div class="col text-end">
@@ -69,7 +75,7 @@ Auction Market {{ endblock }} {{ block content }}
         </ul>
       </div>
     </div>
-    
+
     <nav class="row">
       <div class="col">
         <ul class="nav pt-2">
@@ -79,12 +85,13 @@ Auction Market {{ endblock }} {{ block content }}
       </div>
     </nav>
   </main>
-  
+
   <footer class="bg-um-blue text-white pt-1 pb-2">
     <div class="row">
       <div class="col-auto d-flex">
         <p class="fw-bolder me-1">
-          Marginal {{ if player.is_buyer }}Unit (MC){{ else }}Cost (MC){{ endif }}
+          Marginal {{ if player.is_buyer }}Unit (MC){{ else }}Cost (MC){{ endif
+          }}
         </p>
         <div
           class="d-flex"
@@ -112,14 +119,15 @@ Auction Market {{ endblock }} {{ block content }}
     <div class="row">
       <div class="col-auto">
         <p class="fw-bolder">
-          {{ if player.is_buyer }}Consumption{{ else }}Production{{ endif }} time
+          {{ if player.is_buyer }}Consumption{{ else }}Production{{ endif }}
+          time
         </p>
       </div>
       <div class="col text-end">
         <p>0 seconds</p>
       </div>
     </div>
-  
+
     <div class="row">
       <div class="col d-flex justify-content-end">
         <div class="input-group mt-2">
@@ -130,7 +138,11 @@ Auction Market {{ endblock }} {{ block content }}
             aria-label="Offer in points"
             aria-describedby="button-offer"
           />
-          <button class="btn btn-um-orange fw-bold" type="button" id="button-offer">
+          <button
+            class="btn btn-um-orange fw-bold"
+            type="button"
+            id="button-offer"
+          >
             {{ if player.is_buyer }}BID{{ else }}ASK{{ endif }}
           </button>
         </div>
@@ -146,6 +158,9 @@ Auction Market {{ endblock }} {{ block content }}
 
 <br /><br />
 {{ include 'double_auction/chart.html' }}
+
+{{ endblock }}
+{{ block scripts }}
 
 <script>
     let my_time_needed = document.getElementById('time_needed');
@@ -259,4 +274,4 @@ Auction Market {{ endblock }} {{ block content }}
   	});
 </script>
 
-{{ endblock }}
+{{ endblock scripts }}
