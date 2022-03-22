@@ -78,6 +78,14 @@ Auction Market {{ endblock }} {{ block content }}
         </ul>
       </div>
     </nav>
+    <ul class="list-unstyled">
+      <li v-for="(order, index) in openOrders" :key="index">
+        <div class="row">
+          <div class="col">[[ order.offer ]]</div>
+          <div class="col">[[ order.time ]]</div>
+        </div>
+      </li>
+    </ul>
   </main>
 
   <footer class="bg-um-blue text-white pt-1 pb-2">
@@ -182,6 +190,19 @@ Auction Market {{ endblock }} {{ block content }}
       highestBids() {
         return this.data.bids?.sort((a, b) => b - a).slice(0, 3);
       },
+      openOrders() {
+        const openOrders = [];
+
+        for (let index = 0; index < this.data.offers?.length; index++) {
+          openOrders.push({ offer: this.data.offers[index], time: this.data.offer_times[index] })
+        }
+
+        openOrders.sort(function(a, b) {
+          return Date.parse(b.time) - Date.parse(a.time)
+        })
+
+        return openOrders;
+      }
     },
 
     methods: {
