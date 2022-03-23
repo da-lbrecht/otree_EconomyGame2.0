@@ -161,16 +161,15 @@ def live_method(player: Player, data):
             if player.is_buyer:
                 offers.sort(reverse=True)  # Sort such that highest bid is first list element
                 player.current_offer = offers[0]
-                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
-                participant.offer_times = sorted_offer_times
-                player.current_offer_time = sorted_offer_times[0][1]
-                match = find_match(buyers=[player], sellers=sellers)
             else:
                 offers.sort(reverse=False)  # Sort such that lowest ask is first list element
                 player.current_offer = offers[0]
-                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
-                participant.offer_times = sorted_offer_times
-                player.current_offer_time = sorted_offer_times[0][1]
+            sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
+            participant.offer_times = sorted_offer_times
+            player.current_offer_time = sorted_offer_times[0][1]
+            if player.is_buyer:
+                match = find_match(buyers=[player], sellers=sellers)
+            else:
                 match = find_match(buyers=buyers, sellers=[player])
             if match:
                 [buyer, seller] = match
@@ -234,7 +233,6 @@ def live_method(player: Player, data):
         elif data['type'] == 'withdrawal':
             if int(data['withdrawal']) in offers:
                 offers.remove(int(data['withdrawal']))
-                # foo = [x for x in foo if x != ("Alba", "Texas")]
                 offer_times = [x for x in offer_times if x[0] in offers]
             participant.offers = offers
             participant.offer_times = offer_times
