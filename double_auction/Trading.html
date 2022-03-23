@@ -20,10 +20,60 @@ Trade
 
 </script>
 
-<p id="market_opening_time"> Market opening time {{ market_opening }} </p>
 
-<p id="market_closing_time"> Market closing time {{ market_closing }} </p>
+<b> General information </b>
+<table class="table">
 
+    <tr>
+        <td>Market opening time</td>
+        <th>
+            {{ market_opening }}
+        </th>
+    </tr>
+
+    <tr>
+        <td>Market closing time</td>
+        <th>
+            {{ market_closing }}
+        </th>
+    </tr>
+
+    <tr>
+        <td>Price floor &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Sellers are not allowed to ask lower than
+            the price floor. </small> </td>
+        <th>
+            -
+        </th>
+    </tr>
+
+    <tr>
+        <td>Price ceiling &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Buyers are not allowed to bid higher than
+            the price ceiling. </small> </td>
+        <th>
+            -
+        </th>
+    </tr>
+
+        <tr>
+        <td>Taxes on sellers &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Per trade sellers will pay this share of the
+            trading price in taxes. </small> </td>
+        <th>
+            -
+        </th>
+    </tr>
+
+        <tr>
+        <td>Taxes on buyers &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Per trade buyers will pay this share of the trading price in taxes.
+        </td>
+        <th>
+            -
+        </th>
+    </tr>
+</table>
+<br>
+<br>
+
+<b> Individual information </b>
 <table class="table">
     <tr>
         <td>Your role</td>
