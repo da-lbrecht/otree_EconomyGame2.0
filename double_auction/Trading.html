@@ -58,7 +58,11 @@ Trade
         <td>Taxes on sellers &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Per trade sellers will pay this share of the
             trading price in taxes. </small> </td>
         <th>
-            {{ seller_tax }} %
+            {{ if taxation }}
+                {{ seller_tax }} %
+            {{ else }}
+                -
+            {{ endif }}
         </th>
     </tr>
 
@@ -66,7 +70,11 @@ Trade
         <td>Taxes on buyers &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Per trade buyers will pay this share of the trading price in taxes.
         </td>
         <th>
-            {{ buyer_tax }} %
+            {{ if taxation }}
+                {{ buyer_tax }} %
+            {{ else }}
+                -
+            {{ endif }}
         </th>
     </tr>
 </table>
