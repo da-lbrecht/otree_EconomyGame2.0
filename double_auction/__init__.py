@@ -332,9 +332,25 @@ class Trading(Page):
     def vars_for_template(player: Player):
         market_opening = player.session.config['market_opening']
         market_closing = player.session.config['market_closing']
+        if player.session.config['price_restrictions']:
+            price_floor = player.session.config['price_floor']
+            price_ceiling = player.session.config['price_ceiling']
+        else:
+            price_floor = "none"
+            price_ceiling = "none"
+        if player.session.config['taxation']:
+            seller_tax = player.session.config['seller_tax']*100
+            buyer_tax = player.session.config['buyer_tax']*100
+        else:
+            seller_tax = player.session.config['none']
+            buyer_tax = player.session.config['none']
         return dict(
             market_opening=market_opening,
             market_closing=market_closing,
+            price_floor=price_floor,
+            price_ceiling=price_ceiling,
+            seller_tax=seller_tax,
+            buyer_tax=buyer_tax,
         )
 
 

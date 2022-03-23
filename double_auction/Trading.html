@@ -42,7 +42,7 @@ Trade
         <td>Price floor &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Sellers are not allowed to ask lower than
             the price floor. </small> </td>
         <th>
-            -
+            {{ price_floor }}
         </th>
     </tr>
 
@@ -50,7 +50,7 @@ Trade
         <td>Price ceiling &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Buyers are not allowed to bid higher than
             the price ceiling. </small> </td>
         <th>
-            -
+            {{ price_ceiling }}
         </th>
     </tr>
 
@@ -58,7 +58,7 @@ Trade
         <td>Taxes on sellers &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Per trade sellers will pay this share of the
             trading price in taxes. </small> </td>
         <th>
-            -
+            {{ seller_tax }} %
         </th>
     </tr>
 
@@ -66,7 +66,7 @@ Trade
         <td>Taxes on buyers &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Per trade buyers will pay this share of the trading price in taxes.
         </td>
         <th>
-            -
+            {{ buyer_tax }} %
         </th>
     </tr>
 </table>
