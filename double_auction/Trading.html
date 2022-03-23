@@ -39,7 +39,7 @@ Trade
     </tr>
 
     <tr>
-        <td>Price floor &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Sellers are not allowed to ask lower than
+        <td>Price floor &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Buyers are not allowed to bid lower than
             the price floor. </small> </td>
         <th>
             {{ price_floor }}
@@ -47,7 +47,7 @@ Trade
     </tr>
 
     <tr>
-        <td>Price ceiling &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Buyers are not allowed to bid higher than
+        <td>Price ceiling &nbsp; &nbsp; &nbsp; <small><b>Tooltip:</b> Sellers are not allowed to ask higher than
             the price ceiling. </small> </td>
         <th>
             {{ price_ceiling }}
@@ -125,7 +125,7 @@ Trade
     </tr>
 </table>
 
-
+<p id="error" style="color: red"></p>
 <input type="number" id="my_offer">
 <button type="button" onclick="sendOffer()" id="btn-offer">
     {{ if player.is_buyer }}Place bid{{ else }}Place ask{{ endif }}
@@ -178,12 +178,17 @@ Trade
     let btnOffer = document.getElementById('btn-offer');
     let my_offer = document.getElementById('my_offer');
     let my_withdrawal = document.getElementById('my_withdrawal');
+    let error_div = document.getElementById('error');
 
     function showNews(msg) {
         news_div.innerText = msg;
         setTimeout(function () {
             news_div.innerText = ''
         }, 10000)
+    }
+
+    function showError(err) {
+        error_div.innerText = err;
     }
 
     function cu(amount) {
@@ -202,7 +207,7 @@ Trade
         console.log(data)
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
-            time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point,
+            time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
         trading_prices, trading_times} = data;
         if (news) {
             let {buyer, seller, price} = news;
@@ -211,6 +216,10 @@ Trade
             } else if (seller === my_id) {
                 showNews(`You sold to player ${buyer} for ${cu(price)}`);
             }
+        }
+
+        if (error) {
+            showError(error);
         }
 
         if (data["offers"] == "") {
@@ -253,6 +262,7 @@ Trade
 
     function sendOffer() {
         liveSend({"type": "offer", "offer": my_offer.value})
+        error_div.innerText = ''
     }
 
     function withdrawOffer() {

@@ -106,6 +106,7 @@ def creating_session(subsession: Subsession):
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.refresh_counter = 0
+        participant.error = ""
 
 
 class Group(BaseGroup):
@@ -153,83 +154,93 @@ def live_method(player: Player, data):
     offers = participant.offers
     offer_times = participant.offer_times  # List of tuples of offers and respective timestamp
     refresh_counter = participant.refresh_counter
+    participant.error = None # Empty all error messages
     if data:
         if data['type'] == 'offer':
-            offers.append(int(data['offer']))
-            participant.offers = offers
-            offer_times.append((int(data['offer']), datetime.today().timestamp()))
-            if player.is_buyer:
-                offers.sort(reverse=True)  # Sort such that highest bid is first list element
-                player.current_offer = offers[0]
+            if player.session.config['price_restrictions'] \
+                    and player.is_buyer \
+                    and int(data['offer']) < int(player.session.config['price_floor']):
+                player.participant.error = "You are not allowed to bid below the price floor."
+            elif player.session.config['price_restrictions'] \
+                    and player.is_buyer == 0 \
+                    and int(data['offer']) > int(player.session.config['price_ceiling']):
+                player.participant.error = "You are not allowed to ask above the price ceiling."
             else:
-                offers.sort(reverse=False)  # Sort such that lowest ask is first list element
-                player.current_offer = offers[0]
-            sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
-            participant.offer_times = sorted_offer_times
-            player.current_offer_time = sorted_offer_times[0][1]
-            if player.is_buyer:
-                match = find_match(buyers=[player], sellers=sellers)
-            else:
-                match = find_match(buyers=buyers, sellers=[player])
-            if match:
-                [buyer, seller] = match
-                if buyer.current_offer_time < seller.current_offer_time:
-                    price = buyer.current_offer
+                offers.append(int(data['offer']))
+                participant.offers = offers
+                offer_times.append((int(data['offer']), datetime.today().timestamp()))
+                if player.is_buyer:
+                    offers.sort(reverse=True)  # Sort such that highest bid is first list element
+                    player.current_offer = offers[0]
                 else:
-                    price = seller.current_offer
-                buyer_trading_times = buyer.participant.trading_times
-                seller_trading_times = seller.participant.trading_times
-                buyer_trading_prices = buyer.participant.trading_prices
-                seller_trading_prices = seller.participant.trading_prices
-                Transaction.create(
-                    description=player.session.config['description'],
-                    group=group,
-                    buyer=buyer,
-                    seller=seller,
-                    price=price,
-                    seconds=int(time.time() - time.mktime(
-                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
-                    buyer_valuation=buyer.participant.marginal_evaluation,
-                    seller_costs=seller.participant.marginal_evaluation,
-                    buyer_profits=buyer.participant.marginal_evaluation - price,
-                    seller_profits=price - seller.participant.marginal_evaluation,
-                    buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price,
-                    seller_balance=seller.balance + price - seller.participant.marginal_evaluation
-                )
-                # Calculate new balances
-                buyer.balance += buyer.participant.marginal_evaluation - price
-                seller.balance += price - seller.participant.marginal_evaluation
-                # Create message about effected trade
-                news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
-                # Delete bids/asks of effected trade from bid/ask cure
-                buyer.participant.offers = buyer.participant.offers[1:]
-                seller.participant.offers = seller.participant.offers[1:]
-                buyer.participant.offer_times = buyer.participant.offer_times[1:]
-                seller.participant.offer_times = seller.participant.offer_times[1:]
-                if len(buyer.participant.offers) >= 1:
-                    buyer.current_offer = buyer.participant.offers[0]
-                    buyer.current_offer_time = buyer.participant.offer_times[0][1]
+                    offers.sort(reverse=False)  # Sort such that lowest ask is first list element
+                    player.current_offer = offers[0]
+                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
+                participant.offer_times = sorted_offer_times
+                player.current_offer_time = sorted_offer_times[0][1]
+                if player.is_buyer:
+                    match = find_match(buyers=[player], sellers=sellers)
                 else:
-                    buyer.current_offer = C.BID_MIN
-                    buyer.current_offer_time = C.MAX_TIMESTAMP
-                if len(seller.participant.offers) >= 1:
-                    seller.current_offer = seller.participant.offers[0]
-                    seller.current_offer_time = seller.participant.offer_times[0][1]
-                else:
-                    seller.current_offer = C.ASK_MAX
-                    seller.current_offer_time = C.MAX_TIMESTAMP
-                # Update history of effected trades
-                buyer_trading_prices.insert(0, int(price))
-                seller_trading_prices.insert(0, int(price))
-                buyer.participant.trading_prices = buyer_trading_prices
-                seller.participant.trading_prices = seller_trading_prices
-                buyer_trading_times.insert(0, str(datetime.today().ctime())),
-                seller_trading_times.insert(0, str(datetime.today().ctime())),
-                buyer.participant.trading_times = buyer_trading_times
-                seller.participant.trading_times = seller_trading_times
-                # Update remaining time needed for production/consumption
-                buyer.participant.time_needed += C.TIME_PER_UNIT
-                seller.participant.time_needed += C.TIME_PER_UNIT
+                    match = find_match(buyers=buyers, sellers=[player])
+                if match:
+                    [buyer, seller] = match
+                    if buyer.current_offer_time < seller.current_offer_time:
+                        price = buyer.current_offer
+                    else:
+                        price = seller.current_offer
+                    buyer_trading_times = buyer.participant.trading_times
+                    seller_trading_times = seller.participant.trading_times
+                    buyer_trading_prices = buyer.participant.trading_prices
+                    seller_trading_prices = seller.participant.trading_prices
+                    Transaction.create(
+                        description=player.session.config['description'],
+                        group=group,
+                        buyer=buyer,
+                        seller=seller,
+                        price=price,
+                        seconds=int(time.time() - time.mktime(
+                            time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
+                        buyer_valuation=buyer.participant.marginal_evaluation,
+                        seller_costs=seller.participant.marginal_evaluation,
+                        buyer_profits=buyer.participant.marginal_evaluation - price,
+                        seller_profits=price - seller.participant.marginal_evaluation,
+                        buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price,
+                        seller_balance=seller.balance + price - seller.participant.marginal_evaluation
+                    )
+                    # Calculate new balances
+                    buyer.balance += buyer.participant.marginal_evaluation - price
+                    seller.balance += price - seller.participant.marginal_evaluation
+                    # Create message about effected trade
+                    news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
+                    # Delete bids/asks of effected trade from bid/ask cure
+                    buyer.participant.offers = buyer.participant.offers[1:]
+                    seller.participant.offers = seller.participant.offers[1:]
+                    buyer.participant.offer_times = buyer.participant.offer_times[1:]
+                    seller.participant.offer_times = seller.participant.offer_times[1:]
+                    if len(buyer.participant.offers) >= 1:
+                        buyer.current_offer = buyer.participant.offers[0]
+                        buyer.current_offer_time = buyer.participant.offer_times[0][1]
+                    else:
+                        buyer.current_offer = C.BID_MIN
+                        buyer.current_offer_time = C.MAX_TIMESTAMP
+                    if len(seller.participant.offers) >= 1:
+                        seller.current_offer = seller.participant.offers[0]
+                        seller.current_offer_time = seller.participant.offer_times[0][1]
+                    else:
+                        seller.current_offer = C.ASK_MAX
+                        seller.current_offer_time = C.MAX_TIMESTAMP
+                    # Update history of effected trades
+                    buyer_trading_prices.insert(0, int(price))
+                    seller_trading_prices.insert(0, int(price))
+                    buyer.participant.trading_prices = buyer_trading_prices
+                    seller.participant.trading_prices = seller_trading_prices
+                    buyer_trading_times.insert(0, str(datetime.today().ctime())),
+                    seller_trading_times.insert(0, str(datetime.today().ctime())),
+                    buyer.participant.trading_times = buyer_trading_times
+                    seller.participant.trading_times = seller_trading_times
+                    # Update remaining time needed for production/consumption
+                    buyer.participant.time_needed += C.TIME_PER_UNIT
+                    seller.participant.time_needed += C.TIME_PER_UNIT
         elif data['type'] == 'withdrawal':
             if int(data['withdrawal']) in offers:
                 offers.remove(int(data['withdrawal']))
@@ -298,6 +309,7 @@ def live_method(player: Player, data):
             trading_prices=p.participant.trading_prices,
             trading_times=p.participant.trading_times,
             refresh_counter=p.participant.refresh_counter,
+            error=p.participant.error,
         )
         for p in players
     }
@@ -336,14 +348,14 @@ class Trading(Page):
             price_floor = player.session.config['price_floor']
             price_ceiling = player.session.config['price_ceiling']
         else:
-            price_floor = "none"
-            price_ceiling = "none"
+            price_floor = "-"
+            price_ceiling = "-"
         if player.session.config['taxation']:
             seller_tax = player.session.config['seller_tax']*100
             buyer_tax = player.session.config['buyer_tax']*100
         else:
-            seller_tax = player.session.config['none']
-            buyer_tax = player.session.config['none']
+            seller_tax = player.session.config['-']
+            buyer_tax = player.session.config['-']
         return dict(
             market_opening=market_opening,
             market_closing=market_closing,
