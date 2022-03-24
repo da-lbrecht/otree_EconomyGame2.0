@@ -111,19 +111,35 @@ Auction Market {{ endblock }} {{ block content }}
     <nav class="row">
       <div class="col">
         <ul class="nav pt-2">
-          <li class="nav-item me-2 active">Open orders</li>
-          <li class="nav-item">History</li>
+          <li
+            class="nav-item me-2"
+            :class="tab === 'open-orders' ? 'active' : ''"
+            @click="setTabTo('open-orders')"
+          >
+            Open orders
+          </li>
+          <li
+            class="nav-item"
+            :class="tab === 'history' ? 'active' : ''"
+            @click="setTabTo('history')"
+          >
+            History
+          </li>
         </ul>
       </div>
     </nav>
-    <ul class="list-unstyled">
+    <ul v-show="tab === 'open-orders'" class="list-unstyled">
       <li v-for="(order, index) in openOrders" :key="index">
         <div class="row">
           <div class="col">[[ order.offer ]]</div>
           <div class="col">[[ order.time ]]</div>
         </div>
       </li>
+      <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
+    <div v-show="tab === 'history'">
+      <p>You have no history yet</p>
+    </div>
     <!-- <div>
       {{ if player.is_buyer }}
           {{ include 'double_auction/mu_chart.html' }}
@@ -210,6 +226,7 @@ Auction Market {{ endblock }} {{ block content }}
       return {
         data: {},
         offer: null,
+        tab: 'open-orders'
       };
     },
 
@@ -247,6 +264,9 @@ Auction Market {{ endblock }} {{ block content }}
         if (!this.offer) return
         liveSend({ type: "offer", offer: this.offer });
         this.offer = null;
+      },
+      setTabTo(value) {
+        this.tab = value
       }
     },
   });
