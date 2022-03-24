@@ -31,6 +31,9 @@ p {
     height: 100vh;
 }
 
+.btn {
+    color: #001C3D;
+}
 .bg-um-blue {
     background-color: #001C3D;
 }
@@ -39,12 +42,20 @@ p {
     opacity: 50%;
 }
 
+#asks-and-bids {
+    min-height: 108px;
+}
+
 .nav-item {
     opacity: 50%;
 }
 .nav-item.active {
     opacity: 100%;
-    border-bottom: 3px solid;
+    border-bottom: 3px solid !important;
+}
+
+.square {
+    border-radius: 0;
 }
 
 .btn-um-orange {

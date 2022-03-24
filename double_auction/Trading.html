@@ -4,7 +4,7 @@ Auction Market {{ endblock }} {{ block content }}
 <div
   id="app"
   class="row grid h-100vh"
-  style="grid-template-rows: min-content 1fr min-content"
+  style="grid-template-rows: min-content minmax(0, 1fr) min-content"
 >
   <header class="bg-um-blue text-white pb-1">
     <div class="row">
@@ -93,16 +93,16 @@ Auction Market {{ endblock }} {{ block content }}
   </header>
 
   <main class="bg-white">
-    <div class="row pt-2 pb-1">
+    <div id="asks-and-bids" class="row pt-2 pb-1">
       <div class="col text-end">
         <p class="fw-bold">Asks (in points)</p>
-        <ul class="list-unstyled">
+        <ul class="list-unstyled mb-0">
           <li v-for="(ask, index) in lowestAsks" :key="index">[[ ask ]]</li>
         </ul>
       </div>
       <div class="col text-end">
         <p class="fw-bold">Bids (in points)</p>
-        <ul class="list-unstyled">
+        <ul class="list-unstyled mb-0">
           <li v-for="(bid, index) in highestBids" :key="index">[[ bid ]]</li>
         </ul>
       </div>
@@ -111,39 +111,45 @@ Auction Market {{ endblock }} {{ block content }}
     <nav class="row">
       <div class="col">
         <ul class="nav pt-2">
-          <li
-            class="nav-item me-2"
-            :class="tab === 'open-orders' ? 'active' : ''"
-            @click="setTabTo('open-orders')"
-          >
-            Open orders
+          <li>
+            <button
+              class="nav-item btn p-0 square border-0 me-2"
+              :class="tab === 'open-orders' ? 'active' : ''"
+              @click.prevent="setTabTo('open-orders')"
+            >
+              Open orders
+            </button>
           </li>
-          <li
-            class="nav-item"
-            :class="tab === 'history' ? 'active' : ''"
-            @click="setTabTo('history')"
-          >
-            History
+          <li>
+            <button
+              class="nav-item btn p-0 square border-0"
+              :class="tab === 'history' ? 'active' : ''"
+              @click.prevent="setTabTo('history')"
+            >
+              History
+            </button>
           </li>
         </ul>
       </div>
     </nav>
-    <ul v-show="tab === 'open-orders'" class="list-unstyled mt-2">
+    <ul v-show="tab === 'open-orders'" class="list-unstyled mt-2 mb-0">
       <li v-for="(order, index) in openOrders" :key="index">
         <div class="row mb-2">
           <div class="col">[[ order.offer ]]</div>
           <div class="col-auto">[[ order.time ]]</div>
           <div class="col-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
-              <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
-            </svg>
+            <button class="btn p-0" @click.prevent="withdrawOffer(order.offer)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
+                <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
+              </svg>
+            </button>
           </div>
         </div>
       </li>
       <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
-    <div v-show="tab === 'history'">
+    <div v-show="tab === 'history'" class="mt-2">
       <p>You have no history yet</p>
     </div>
     <!-- <div>
@@ -266,13 +272,16 @@ Auction Market {{ endblock }} {{ block content }}
     },
 
     methods: {
+      setTabTo(value) {
+        this.tab = value
+      },
       sendOffer() {
         if (!this.offer) return
         liveSend({ type: "offer", offer: this.offer });
         this.offer = null;
       },
-      setTabTo(value) {
-        this.tab = value
+      withdrawOffer(offer) {
+        liveSend({"type": "withdrawal", "withdrawal": offer})
       }
     },
   });
