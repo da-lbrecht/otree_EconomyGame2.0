@@ -86,6 +86,13 @@ Auction Market {{ endblock }} {{ block content }}
         </div>
       </li>
     </ul>
+    <div>
+      {{ if player.is_buyer }}
+          {{ include 'double_auction/mu_chart.html' }}
+      {{ else }}
+          {{ include 'double_auction/mc_chart.html' }}
+      {{ endif }}
+    </div>
   </main>
 
   <footer class="bg-um-blue text-white pt-1 pb-2">
@@ -154,14 +161,6 @@ Auction Market {{ endblock }} {{ block content }}
       </div>
     </div>
   </footer>
-</div>
-
-<div>
-    {{ if player.is_buyer }}
-        {{ include 'double_auction/mu_chart.html' }}
-    {{ else }}
-        {{ include 'double_auction/mc_chart.html' }}
-    {{ endif }}
 </div>
 
 {{ endblock }} {{ block scripts }}
