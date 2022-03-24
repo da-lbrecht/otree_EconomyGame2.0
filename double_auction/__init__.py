@@ -170,7 +170,6 @@ def live_method(player: Player, data):
     participant = player.participant
     offers = participant.offers
     offer_times = participant.offer_times  # List of tuples of offers and respective timestamp
-    refresh_counter = participant.refresh_counter
     participant.error = None  # Empty all error messages
     if data:
         if data['type'] == 'offer':
@@ -300,7 +299,7 @@ def live_method(player: Player, data):
             else:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
             # Update refresh counter
-            if player.participant.refresh_counter == 5:
+            if player.participant.refresh_counter == 10:
                 player.participant.refresh_counter = 0
             else:
                 player.participant.refresh_counter += 1
