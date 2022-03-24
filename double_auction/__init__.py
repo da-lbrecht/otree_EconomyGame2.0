@@ -131,7 +131,7 @@ class Transaction(ExtraModel):
     seller_profits = models.FloatField(doc="Seller's profit from this trade (if <0 then loss)")
     buyer_balance = models.FloatField(doc="Buyer's new balance after this trade")
     seller_balance = models.FloatField(doc="Seller's new balance after this trade")
-    seconds = models.IntegerField(doc="Timestamp (seconds since beginning of trading)")
+    seconds = models.IntegerField(doc="Timestamp (seconds since market opening)")
     description = models.StringField(doc="Description/Name of the Market given by experimenter")
     buyer_tax = models.FloatField(doc="Buyers paid this share of the trading price in taxes")
     seller_tax = models.FloatField(doc="Sellers paid this share of the trading price in taxes.")
@@ -209,6 +209,7 @@ def live_method(player: Player, data):
                     seller_trading_times = seller.participant.trading_times
                     buyer_trading_prices = buyer.participant.trading_prices
                     seller_trading_prices = seller.participant.trading_prices
+                    trade_time = str(datetime.today().ctime())
                     Transaction.create(
                         description=player.session.config['description'],
                         group=group,
@@ -234,7 +235,7 @@ def live_method(player: Player, data):
                     buyer.balance += buyer.participant.marginal_evaluation - price - (buyer_tax * price)
                     seller.balance += price - seller.participant.marginal_evaluation - (seller_tax * price)
                     # Create message about effected trade
-                    news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
+                    news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time)
                     # Delete bids/asks of effected trade from bid/ask cure
                     buyer.participant.offers = buyer.participant.offers[1:]
                     seller.participant.offers = seller.participant.offers[1:]
@@ -257,8 +258,8 @@ def live_method(player: Player, data):
                     seller_trading_prices.insert(0, float(price))
                     buyer.participant.trading_prices = buyer_trading_prices
                     seller.participant.trading_prices = seller_trading_prices
-                    buyer_trading_times.insert(0, str(datetime.today().ctime())),
-                    seller_trading_times.insert(0, str(datetime.today().ctime())),
+                    buyer_trading_times.insert(0, trade_time),
+                    seller_trading_times.insert(0, trade_time),
                     buyer.participant.trading_times = buyer_trading_times
                     seller.participant.trading_times = seller_trading_times
                     # Update remaining time needed for production/consumption

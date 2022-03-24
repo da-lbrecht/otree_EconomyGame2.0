@@ -218,11 +218,11 @@ Trade
             time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
         trading_prices, trading_times} = data;
         if (news) {
-            let {buyer, seller, price} = news;
+            let {buyer, seller, price, time} = news;
             if (buyer === my_id) {
-                showNews(`You bought from player ${seller} for ${cu(price)}`);
+                showNews(`You bought one unit  {#from player ${seller}#} for ${cu(price)} at ${time}.`);
             } else if (seller === my_id) {
-                showNews(`You sold to player ${buyer} for ${cu(price)}`);
+                showNews(`You sold one unit {#to player ${buyer}#} for ${cu(price)} at ${time}.`);
             }
         }
 
