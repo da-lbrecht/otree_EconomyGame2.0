@@ -20,6 +20,13 @@ SESSION_CONFIG_DEFAULTS = dict(
     participation_fee=0.00,
     market_opening='07 Mar 2022 07:00:00',
     market_closing='31 Mar 2022 18:00:00',
+    price_restrictions=True,
+    price_floor=0,
+    price_ceiling=100,
+    taxation=True,
+    seller_tax=0.1,
+    buyer_tax=0.2,
+
     doc="")
 
 # ISO-639 code
@@ -52,6 +59,7 @@ PARTICIPANT_FIELDS = [
     'previous_timestamp',
     'current_timestamp',
     'refresh_counter',
+    'error',
 ]
 
 SESSION_FIELDS = [

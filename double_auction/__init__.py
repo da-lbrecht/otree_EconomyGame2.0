@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import random
 import math
 
-
 ##### START: Definition of production costs and consumption utilities #####
 
 # Production Costs with production facilities of different efficiency p_eff_1, ..., p_eff_5, and corresponding
@@ -17,7 +16,7 @@ p_eff_2 = 50
 p_eff_3 = 100
 p_eff_4 = 200
 p_eff_5 = 400
-p_cap_1 = 600 # Any capacity needs to ne at least C.TIME_PER_UNIT
+p_cap_1 = 600  # Any capacity needs to ne at least C.TIME_PER_UNIT
 p_cap_2 = 600
 p_cap_3 = 600
 p_cap_4 = 600
@@ -39,14 +38,13 @@ def marginal_consumption_utility(t):
 
 cost_x = np.arange(0, 1810, 10)
 cost_y = np.empty(shape=len(cost_x))
-for x in range(0, len(cost_x)-1):
+for x in range(0, len(cost_x) - 1):
     cost_y[x] = marginal_production_costs(cost_x[x])
 cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
 
-
 utility_x = np.arange(0, 1810, 10)
 utility_y = np.empty(shape=len(utility_x))
-for x in range(0, len(utility_x)-1):
+for x in range(0, len(utility_x) - 1):
     utility_y[x] = marginal_consumption_utility(utility_x[x])
 utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
 
@@ -106,6 +104,7 @@ def creating_session(subsession: Subsession):
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.refresh_counter = 0
+        participant.error = ""
 
 
 class Group(BaseGroup):
@@ -124,15 +123,20 @@ class Transaction(ExtraModel):
     group = models.Link(Group)
     buyer = models.Link(Player)
     seller = models.Link(Player)
-    price = models.FloatField(doc="Price of this trade")
+    price = models.FloatField(doc="Price of this trade, excl. any taxes, i.e. amount of money exchanged between buyer"
+                                  " and seller")
     buyer_valuation = models.FloatField(doc="Buyer's valuation of the item purchased (i.e. marginal utility)")
     seller_costs = models.FloatField(doc="Seller's production cost of the item purchased (i.e. marginal costs)")
     buyer_profits = models.FloatField(doc="Buyer's profit from this trade (if <0 then loss)")
     seller_profits = models.FloatField(doc="Seller's profit from this trade (if <0 then loss)")
     buyer_balance = models.FloatField(doc="Buyer's new balance after this trade")
     seller_balance = models.FloatField(doc="Seller's new balance after this trade")
-    seconds = models.IntegerField(doc="Timestamp (seconds since beginning of trading)")
+    seconds = models.IntegerField(doc="Timestamp (seconds since market opening)")
     description = models.StringField(doc="Description/Name of the Market given by experimenter")
+    buyer_tax = models.FloatField(doc="Buyers paid this share of the trading price in taxes")
+    seller_tax = models.FloatField(doc="Sellers paid this share of the trading price in taxes.")
+    price_floor = models.FloatField(doc="Buyers are not allowed to bid lower than the price floor.")
+    price_ceiling = models.FloatField(doc="Sellers are not allowed to ask higher than the price ceiling.")
 
 
 def find_match(buyers, sellers):
@@ -149,92 +153,120 @@ def live_method(player: Player, data):
     buyers = [p for p in players if p.is_buyer]
     sellers = [p for p in players if not p.is_buyer]
     news = None
+    # Details on market structure
+    if player.session.config['taxation']:
+        seller_tax = float(player.session.config['seller_tax'])
+        buyer_tax = float(player.session.config['buyer_tax'])
+    else:
+        seller_tax = 0
+        buyer_tax = 0
+    if player.session.config['price_restrictions']:
+        price_floor = player.session.config['price_floor']
+        price_ceiling = player.session.config['price_ceiling']
+    else:
+        price_floor = None
+        price_ceiling = None
+    # Details on participants
     participant = player.participant
     offers = participant.offers
     offer_times = participant.offer_times  # List of tuples of offers and respective timestamp
-    refresh_counter = participant.refresh_counter
+    participant.error = None  # Empty all error messages
     if data:
         if data['type'] == 'offer':
-            offers.append(int(data['offer']))
-            participant.offers = offers
-            offer_times.append((int(data['offer']), datetime.today().timestamp()))
-            if player.is_buyer:
-                offers.sort(reverse=True)  # Sort such that highest bid is first list element
-                player.current_offer = offers[0]
-                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
-                participant.offer_times = sorted_offer_times
-                player.current_offer_time = sorted_offer_times[0][1]
-                match = find_match(buyers=[player], sellers=sellers)
+            if player.session.config['price_restrictions'] \
+                    and player.is_buyer \
+                    and float(data['offer']) < int(player.session.config['price_floor']):
+                player.participant.error = "You are not allowed to bid below the price floor."
+            elif player.session.config['price_restrictions'] \
+                    and player.is_buyer == 0 \
+                    and float(data['offer']) > int(player.session.config['price_ceiling']):
+                player.participant.error = "You are not allowed to ask above the price ceiling."
             else:
-                offers.sort(reverse=False)  # Sort such that lowest ask is first list element
-                player.current_offer = offers[0]
+                offers.append(float(data['offer']))
+                participant.offers = offers
+                offer_times.append((float(data['offer']), datetime.today().timestamp()))
+                if player.is_buyer:
+                    offers.sort(reverse=True)  # Sort such that highest bid is first list element
+                    player.current_offer = offers[0]
+                else:
+                    offers.sort(reverse=False)  # Sort such that lowest ask is first list element
+                    player.current_offer = offers[0]
                 sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
                 participant.offer_times = sorted_offer_times
                 player.current_offer_time = sorted_offer_times[0][1]
-                match = find_match(buyers=buyers, sellers=[player])
-            if match:
-                [buyer, seller] = match
-                if buyer.current_offer_time < seller.current_offer_time:
-                    price = buyer.current_offer
+                if player.is_buyer:
+                    match = find_match(buyers=[player], sellers=sellers)
                 else:
-                    price = seller.current_offer
-                buyer_trading_times = buyer.participant.trading_times
-                seller_trading_times = seller.participant.trading_times
-                buyer_trading_prices = buyer.participant.trading_prices
-                seller_trading_prices = seller.participant.trading_prices
-                Transaction.create(
-                    description=player.session.config['description'],
-                    group=group,
-                    buyer=buyer,
-                    seller=seller,
-                    price=price,
-                    seconds=int(time.time() - time.mktime(
-                        time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
-                    buyer_valuation=buyer.participant.marginal_evaluation,
-                    seller_costs=seller.participant.marginal_evaluation,
-                    buyer_profits=buyer.participant.marginal_evaluation - price,
-                    seller_profits=price - seller.participant.marginal_evaluation,
-                    buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price,
-                    seller_balance=seller.balance + price - seller.participant.marginal_evaluation
-                )
-                # Calculate new balances
-                buyer.balance += buyer.participant.marginal_evaluation - price
-                seller.balance += price - seller.participant.marginal_evaluation
-                # Create message about effected trade
-                news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price)
-                # Delete bids/asks of effected trade from bid/ask cure
-                buyer.participant.offers = buyer.participant.offers[1:]
-                seller.participant.offers = seller.participant.offers[1:]
-                buyer.participant.offer_times = buyer.participant.offer_times[1:]
-                seller.participant.offer_times = seller.participant.offer_times[1:]
-                if len(buyer.participant.offers) >= 1:
-                    buyer.current_offer = buyer.participant.offers[0]
-                    buyer.current_offer_time = buyer.participant.offer_times[0][1]
-                else:
-                    buyer.current_offer = C.BID_MIN
-                    buyer.current_offer_time = C.MAX_TIMESTAMP
-                if len(seller.participant.offers) >= 1:
-                    seller.current_offer = seller.participant.offers[0]
-                    seller.current_offer_time = seller.participant.offer_times[0][1]
-                else:
-                    seller.current_offer = C.ASK_MAX
-                    seller.current_offer_time = C.MAX_TIMESTAMP
-                # Update history of effected trades
-                buyer_trading_prices.insert(0, int(price))
-                seller_trading_prices.insert(0, int(price))
-                buyer.participant.trading_prices = buyer_trading_prices
-                seller.participant.trading_prices = seller_trading_prices
-                buyer_trading_times.insert(0, str(datetime.today().ctime())),
-                seller_trading_times.insert(0, str(datetime.today().ctime())),
-                buyer.participant.trading_times = buyer_trading_times
-                seller.participant.trading_times = seller_trading_times
-                # Update remaining time needed for production/consumption
-                buyer.participant.time_needed += C.TIME_PER_UNIT
-                seller.participant.time_needed += C.TIME_PER_UNIT
+                    match = find_match(buyers=buyers, sellers=[player])
+                if match:
+                    [buyer, seller] = match
+                    if buyer.current_offer_time < seller.current_offer_time:
+                        price = buyer.current_offer
+                    else:
+                        price = seller.current_offer
+                    buyer_trading_times = buyer.participant.trading_times
+                    seller_trading_times = seller.participant.trading_times
+                    buyer_trading_prices = buyer.participant.trading_prices
+                    seller_trading_prices = seller.participant.trading_prices
+                    trade_time = str(datetime.today().ctime())
+                    Transaction.create(
+                        description=player.session.config['description'],
+                        group=group,
+                        buyer=buyer,
+                        seller=seller,
+                        price=price,
+                        seconds=int(time.time() - time.mktime(
+                            time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))),
+                        buyer_valuation=buyer.participant.marginal_evaluation,
+                        seller_costs=seller.participant.marginal_evaluation,
+                        buyer_profits=buyer.participant.marginal_evaluation - price - (buyer_tax * price),
+                        seller_profits=price - seller.participant.marginal_evaluation - (seller_tax * price),
+                        buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price - (
+                                    buyer_tax * price),
+                        seller_balance=seller.balance + price - seller.participant.marginal_evaluation - (
+                                    seller_tax * price),
+                        buyer_tax=buyer_tax,
+                        seller_tax=seller_tax,
+                        price_floor=price_floor,
+                        price_ceiling=price_ceiling,
+                    )
+                    # Calculate new balances
+                    buyer.balance += buyer.participant.marginal_evaluation - price - (buyer_tax * price)
+                    seller.balance += price - seller.participant.marginal_evaluation - (seller_tax * price)
+                    # Create message about effected trade
+                    news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time)
+                    # Delete bids/asks of effected trade from bid/ask cure
+                    buyer.participant.offers = buyer.participant.offers[1:]
+                    seller.participant.offers = seller.participant.offers[1:]
+                    buyer.participant.offer_times = buyer.participant.offer_times[1:]
+                    seller.participant.offer_times = seller.participant.offer_times[1:]
+                    if len(buyer.participant.offers) >= 1:
+                        buyer.current_offer = buyer.participant.offers[0]
+                        buyer.current_offer_time = buyer.participant.offer_times[0][1]
+                    else:
+                        buyer.current_offer = C.BID_MIN
+                        buyer.current_offer_time = C.MAX_TIMESTAMP
+                    if len(seller.participant.offers) >= 1:
+                        seller.current_offer = seller.participant.offers[0]
+                        seller.current_offer_time = seller.participant.offer_times[0][1]
+                    else:
+                        seller.current_offer = C.ASK_MAX
+                        seller.current_offer_time = C.MAX_TIMESTAMP
+                    # Update history of effected trades
+                    buyer_trading_prices.insert(0, float(price))
+                    seller_trading_prices.insert(0, float(price))
+                    buyer.participant.trading_prices = buyer_trading_prices
+                    seller.participant.trading_prices = seller_trading_prices
+                    buyer_trading_times.insert(0, trade_time),
+                    seller_trading_times.insert(0, trade_time),
+                    buyer.participant.trading_times = buyer_trading_times
+                    seller.participant.trading_times = seller_trading_times
+                    # Update remaining time needed for production/consumption
+                    buyer.participant.time_needed += C.TIME_PER_UNIT
+                    seller.participant.time_needed += C.TIME_PER_UNIT
         elif data['type'] == 'withdrawal':
-            if int(data['withdrawal']) in offers:
-                offers.remove(int(data['withdrawal']))
-                # foo = [x for x in foo if x != ("Alba", "Texas")]
+            if float(data['withdrawal']) in offers:
+                offers.remove(float(data['withdrawal']))
                 offer_times = [x for x in offer_times if x[0] in offers]
             participant.offers = offers
             participant.offer_times = offer_times
@@ -267,7 +299,7 @@ def live_method(player: Player, data):
             else:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
             # Update refresh counter
-            if player.participant.refresh_counter == 5:
+            if player.participant.refresh_counter == 10:
                 player.participant.refresh_counter = 0
             else:
                 player.participant.refresh_counter += 1
@@ -300,6 +332,7 @@ def live_method(player: Player, data):
             trading_prices=p.participant.trading_prices,
             trading_times=p.participant.trading_times,
             refresh_counter=p.participant.refresh_counter,
+            error=p.participant.error,
         )
         for p in players
     }
@@ -334,9 +367,28 @@ class Trading(Page):
     def vars_for_template(player: Player):
         market_opening = player.session.config['market_opening']
         market_closing = player.session.config['market_closing']
+        if player.session.config['price_restrictions']:
+            price_floor_display = player.session.config['price_floor']
+            price_ceiling_display = player.session.config['price_ceiling']
+        else:
+            price_floor_display = "-"
+            price_ceiling_display = "-"
+        if player.session.config['taxation']:
+            taxation = True
+            seller_tax_display = player.session.config['seller_tax'] * 100
+            buyer_tax_display = player.session.config['buyer_tax'] * 100
+        else:
+            taxation = False
+            seller_tax_display = 0
+            buyer_tax_display = 0
         return dict(
             market_opening=market_opening,
             market_closing=market_closing,
+            price_floor=price_floor_display,
+            price_ceiling=price_ceiling_display,
+            taxation=taxation,
+            seller_tax=seller_tax_display,
+            buyer_tax=buyer_tax_display,
         )
 
 
@@ -364,9 +416,10 @@ page_sequence = [
 
 def custom_export(players):
     yield ['session', 'description', 'buyer', 'seller', 'price', 'seconds',
-           'buyer_valuation', 'seller_costs', 'buyer_profits', 'seller_profits', 'buyer_balance', 'seller_balance']
+           'buyer_valuation', 'seller_costs', 'buyer_profits', 'seller_profits', 'buyer_balance', 'seller_balance',
+           'seller_tax', 'buyer_tax', 'price_floor', 'price_ceiling']
     for p in players:
         for tx in Transaction.filter(seller=p):
             yield [p.session.code, tx.description, tx.buyer.id_in_group, tx.seller.id_in_group, tx.price, tx.seconds,
                    tx.buyer_valuation, tx.seller_costs, tx.buyer_profits, tx.seller_profits, tx.buyer_balance,
-                   tx.seller_balance]
+                   tx.seller_balance, tx.seller_tax, tx.buyer_tax, tx.price_floor, tx.price_ceiling]

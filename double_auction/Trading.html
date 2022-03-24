@@ -156,9 +156,12 @@ Auction Market {{ endblock }} {{ block content }}
   </footer>
 </div>
 
-<!-- <div>
-  {{ if player.is_buyer }} {{ include 'double_auction/mu_chart.html' }} {{ else
-  }} {{ include 'double_auction/mC_chart.html' }} {{ endif }}
+<div>
+    {{ if player.is_buyer }}
+        {{ include 'double_auction/mu_chart.html' }}
+    {{ else }}
+        {{ include 'double_auction/mc_chart.html' }}
+    {{ endif }}
 </div>
 
 <br /><br />
