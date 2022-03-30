@@ -131,6 +131,12 @@ Trade
         <th id="trading_prices"></th>
         <th id="trading_times"></th>
     </tr>
+
+    <tr>
+        <td>My trading history <br> <small><b>Legend:</b> Price, timestamp, tax on buyers, tax on sellers, price floor,
+            price ceiling </small></td>
+        <th id="trading_history"></th>
+    </tr>
 </table>
 
 <p id="error" style="color: red"></p>
@@ -178,6 +184,7 @@ Trade
     let my_balance = document.getElementById('balance');
     let my_trading_prices = document.getElementById('trading_prices');
     let my_trading_times = document.getElementById('trading_times');
+    let my_history = document.getElementById('trading_history');
     let bids_table = document.getElementById('bids_table');
     let asks_table = document.getElementById('asks_table');
     let my_id = js_vars.id_in_group;
@@ -216,7 +223,7 @@ Trade
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
             time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
-        trading_prices, trading_times} = data;
+        trading_prices, trading_times, trading_history} = data;
         if (news) {
             let {buyer, seller, price, time} = news;
             if (buyer === my_id) {
@@ -250,6 +257,7 @@ Trade
             e => `<tr><th> ${e} points </tr></th>`).join('<br>');
         document.getElementById('trading_times').innerHTML = trading_times.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
+        document.getElementById('trading_history').innerHTML = trading_history
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }#}
