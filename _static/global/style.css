@@ -32,7 +32,7 @@ p {
 }
 
 .btn {
-    color: #001C3D;
+    color: #001C3D !important;
 }
 .bg-um-blue {
     background-color: #001C3D;
@@ -60,9 +60,28 @@ p {
 
 .btn-um-orange {
     background-color: #E84E10;
-    color: #fff;
+    color: #fff !important;
 }
 .btn-um-orange:hover {
     color: #fff;
     background-color: #cf4b17;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+#orders {
+    margin-right: -8px;
+}
+#orders::-webkit-scrollbar { 
+    width: 4px;
+}
+#orders::-webkit-scrollbar-track {
+    background: lightgrey;
+    border-radius: 20px;
+}
+#orders::-webkit-scrollbar-thumb {
+    background: #001C3D;
+    border-radius: 20px;
 }

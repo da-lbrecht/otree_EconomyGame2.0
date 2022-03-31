@@ -92,7 +92,7 @@ Auction Market {{ endblock }} {{ block content }}
     </div>
   </header>
 
-  <main class="bg-white">
+  <main class="bg-white grid" style="grid-template-rows: min-content min-content minmax(0 ,1fr);">
     <div id="asks-and-bids" class="row pt-2 pb-1">
       <div class="col text-end">
         <p class="fw-bold">Asks (in points)</p>
@@ -132,7 +132,7 @@ Auction Market {{ endblock }} {{ block content }}
         </ul>
       </div>
     </nav>
-    <ul v-show="tab === 'open-orders'" class="list-unstyled mt-2 mb-0">
+    <ul id="orders" v-show="tab === 'open-orders'" class="list-unstyled mt-1 mb-0 pt-1 pe-2 overflow-y-auto">
       <li v-for="(order, index) in openOrders" :key="index">
         <div class="row mb-2">
           <div class="col">[[ order.offer ]]</div>
@@ -244,7 +244,7 @@ Auction Market {{ endblock }} {{ block content }}
 
     mounted() {
       liveSocket.onmessage = function (e) {
-        // console.log(JSON.parse(e.data));
+        console.log(e.data);
         this.data = JSON.parse(e.data);
       }.bind(this);
     },
