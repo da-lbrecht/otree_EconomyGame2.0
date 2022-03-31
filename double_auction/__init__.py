@@ -99,6 +99,7 @@ def creating_session(subsession: Subsession):
         participant.offer_times = []
         participant.trading_prices = []
         participant.trading_times = []
+        participant.trading_history = []
         participant.time_needed = 0
         participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
@@ -208,6 +209,8 @@ def live_method(player: Player, data):
                     seller_trading_times = seller.participant.trading_times
                     buyer_trading_prices = buyer.participant.trading_prices
                     seller_trading_prices = seller.participant.trading_prices
+                    buyer_trading_history = buyer.participant.trading_history
+                    seller_trading_history = seller.participant.trading_history
                     trade_time = str(datetime.today().ctime())
                     Transaction.create(
                         description=player.session.config['description'],
@@ -261,6 +264,12 @@ def live_method(player: Player, data):
                     seller_trading_times.insert(0, trade_time),
                     buyer.participant.trading_times = buyer_trading_times
                     seller.participant.trading_times = seller_trading_times
+                    buyer_trading_history.extend([float(price), trade_time, buyer_tax, seller_tax, price_floor,
+                                                  price_ceiling])
+                    buyer.participant.trading_history = buyer_trading_history
+                    seller_trading_history.extend([float(price), trade_time, buyer_tax, seller_tax, price_floor,
+                                                  price_ceiling])
+                    seller.participant.trading_history = seller_trading_history
                     # Update remaining time needed for production/consumption
                     buyer.participant.time_needed += C.TIME_PER_UNIT
                     seller.participant.time_needed += C.TIME_PER_UNIT
@@ -331,6 +340,7 @@ def live_method(player: Player, data):
             marginal_evaluation=p.participant.marginal_evaluation,
             trading_prices=p.participant.trading_prices,
             trading_times=p.participant.trading_times,
+            trading_history=p.participant.trading_history,
             refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
         )
