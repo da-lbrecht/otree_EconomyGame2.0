@@ -152,6 +152,7 @@ def live_method(player: Player, data):
     sellers = [p for p in players if not p.is_buyer]
     news = None
     # Details on market structure
+    currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
         seller_tax = float(player.session.config['seller_tax'])
         buyer_tax = float(player.session.config['buyer_tax'])
@@ -263,23 +264,25 @@ def live_method(player: Player, data):
                     seller.participant.trading_times = seller_trading_times
                     buyer_trading_history.insert(0, {"price": (round(float(price), 2)),
                                                      "time": trade_time,
-                                                     "tax_on_buyer": buyer_tax,
-                                                     "tax_on_seller": seller_tax,
-                                                     "price_floor": price_floor,
-                                                     "price_ceiling": price_ceiling,
-                                                     "profit_from_trade": round(buyer.participant.marginal_evaluation -
-                                                                                price - (buyer_tax * price), 2)
+                                                     "tax_on_buyer": str(buyer_tax * 100) + " %",
+                                                     "tax_on_seller": str(seller_tax * 100) + " %",
+                                                     "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
+                                                     "price_ceiling": str(round(price_ceiling, 2)) + " " + currency_unit,
+                                                     "profit_from_trade": str(round(
+                                                         buyer.participant.marginal_evaluation - price -
+                                                         (buyer_tax * price), 2)) + " " + currency_unit,
                                                      }),
                     buyer.participant.trading_history = buyer_trading_history
                     seller_trading_history.insert(0, {"price": (round(float(price), 2)),
                                                       "time": trade_time,
-                                                      "tax_on_buyer": buyer_tax,
-                                                      "tax_on_seller": seller_tax,
-                                                      "price_floor": price_floor,
-                                                      "price_ceiling": price_ceiling,
-                                                      "profit_from_trade": round(price -
-                                                                                 seller.participant.marginal_evaluation -
-                                                                                 (seller_tax * price), 2)
+                                                      "tax_on_buyer": str(buyer_tax * 100) + " %",
+                                                      "tax_on_seller": str(seller_tax * 100) + " %",
+                                                      "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
+                                                      "price_ceiling": str(
+                                                          round(price_ceiling, 2)) + " " + currency_unit,
+                                                      "profit_from_trade": str(round(
+                                                          price - seller.participant.marginal_evaluation -
+                                                          (seller_tax * price), 2)) + " " + currency_unit,
                                                       }),
                     seller.participant.trading_history = seller_trading_history
                     # Update remaining time needed for production/consumption
