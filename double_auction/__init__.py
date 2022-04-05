@@ -2,10 +2,7 @@ from otree.api import *
 import time
 from datetime import datetime
 import numpy as np
-import matplotlib.pyplot as plt
-
-import random
-import math
+import json  # Module to convert python dictionaries into JSON objects
 
 ##### START: Definition of production costs and consumption utilities #####
 
@@ -225,9 +222,9 @@ def live_method(player: Player, data):
                         buyer_profits=buyer.participant.marginal_evaluation - price - (buyer_tax * price),
                         seller_profits=price - seller.participant.marginal_evaluation - (seller_tax * price),
                         buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price - (
-                                    buyer_tax * price),
+                                buyer_tax * price),
                         seller_balance=seller.balance + price - seller.participant.marginal_evaluation - (
-                                    seller_tax * price),
+                                seller_tax * price),
                         buyer_tax=buyer_tax,
                         seller_tax=seller_tax,
                         price_floor=price_floor,
@@ -256,19 +253,34 @@ def live_method(player: Player, data):
                         seller.current_offer = C.ASK_MAX
                         seller.current_offer_time = C.MAX_TIMESTAMP
                     # Update history of effected trades
-                    buyer_trading_prices.insert(0, float(price))
-                    seller_trading_prices.insert(0, float(price))
+                    buyer_trading_prices.insert(0, round(float(price), 2))
+                    seller_trading_prices.insert(0, round(float(price), 2))
                     buyer.participant.trading_prices = buyer_trading_prices
                     seller.participant.trading_prices = seller_trading_prices
                     buyer_trading_times.insert(0, trade_time),
                     seller_trading_times.insert(0, trade_time),
                     buyer.participant.trading_times = buyer_trading_times
                     seller.participant.trading_times = seller_trading_times
-                    buyer_trading_history.extend([float(price), trade_time, buyer_tax, seller_tax, price_floor,
-                                                  price_ceiling])
+                    buyer_trading_history.insert(0, {"price": (round(float(price), 2)),
+                                                     "time": trade_time,
+                                                     "tax_on_buyer": buyer_tax,
+                                                     "tax_on_seller": seller_tax,
+                                                     "price_floor": price_floor,
+                                                     "price_ceiling": price_ceiling,
+                                                     "profit_from_trade": round(buyer.participant.marginal_evaluation -
+                                                                                price - (buyer_tax * price), 2)
+                                                     }),
                     buyer.participant.trading_history = buyer_trading_history
-                    seller_trading_history.extend([float(price), trade_time, buyer_tax, seller_tax, price_floor,
-                                                  price_ceiling])
+                    seller_trading_history.insert(0, {"price": (round(float(price), 2)),
+                                                      "time": trade_time,
+                                                      "tax_on_buyer": buyer_tax,
+                                                      "tax_on_seller": seller_tax,
+                                                      "price_floor": price_floor,
+                                                      "price_ceiling": price_ceiling,
+                                                      "profit_from_trade": round(price -
+                                                                                 seller.participant.marginal_evaluation -
+                                                                                 (seller_tax * price), 2)
+                                                      }),
                     seller.participant.trading_history = seller_trading_history
                     # Update remaining time needed for production/consumption
                     buyer.participant.time_needed += C.TIME_PER_UNIT
@@ -340,7 +352,7 @@ def live_method(player: Player, data):
             marginal_evaluation=p.participant.marginal_evaluation,
             trading_prices=p.participant.trading_prices,
             trading_times=p.participant.trading_times,
-            trading_history=p.participant.trading_history,
+            trading_history=json.dumps(dict(trades=p.participant.trading_history)),
             refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
         )
