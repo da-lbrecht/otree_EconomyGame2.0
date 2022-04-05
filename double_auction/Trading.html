@@ -126,14 +126,14 @@ Trade
         <th id="balance"></th>
     </tr>
 
-    <tr>
-        <td>My past trades</td>
-        <th id="trading_prices"></th>
-        <th id="trading_times"></th>
-    </tr>
+{#    <tr>#}
+{#        <td>My past trades</td>#}
+{#        <th id="trading_prices"></th>#}
+{#        <th id="trading_times"></th>#}
+{#    </tr>#}
 
     <tr>
-        <td>My trading history <br> <small> (in reverse chronological order, i.e. going back in time) </small></td>
+        <td>My past trades <br> <small> (in reverse chronological order, i.e. going back in time) </small></td>
         <th id="trading_history"></th>
     </tr>
 </table>
@@ -252,10 +252,10 @@ Trade
                 '<br>');
         }
         document.getElementById('balance').innerText = cu(balance);
-        document.getElementById('trading_prices').innerHTML = trading_prices.map(
+{#        document.getElementById('trading_prices').innerHTML = trading_prices.map(
             e => `<tr><th> ${e} points </tr></th>`).join('<br>');
         document.getElementById('trading_times').innerHTML = trading_times.map(e => `<tr><th> ${e} </tr></th>`).join(
-                '<br>');
+                '<br>');#}
         document.getElementById('trading_history').innerHTML = trading_history
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
