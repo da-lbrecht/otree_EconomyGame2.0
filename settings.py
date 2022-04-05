@@ -53,10 +53,9 @@ INSTALLED_APPS = ['otree']
 PARTICIPANT_FIELDS = [
     'offers',
     'offer_times',
+    'offer_history',
     'time_needed',
     'marginal_evaluation',
-    'trading_prices',
-    'trading_times',
     'trading_history',
     'previous_timestamp',
     'current_timestamp',

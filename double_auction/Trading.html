@@ -115,10 +115,17 @@ Trade
         <th id="current_offer"></th>
         <th id="current_offer_time"></th>
     </tr>
+
     <tr>
         <td>{{ if player.is_buyer }}All your bids (from high to low){{ else }}All your asks (from low to high){{ endif }}</td>
         <th id="offers"></th>
         <th id="offer_times"></th>
+    </tr>
+
+    <tr>
+        <td>{{ if player.is_buyer }}All your bids <small> (from high to low) </small>
+            {{ else }}All your asks <small> (from low to high) </small> {{ endif }} </td>
+        <th id="offer_history"></th>
     </tr>
 
     <tr>
@@ -175,6 +182,7 @@ Trade
     let my_time_needed = document.getElementById('time_needed');
     let my_marginal_evaluation = document.getElementById('marginal_evaluation');
     let my_balance = document.getElementById('balance');
+    let my_standing_offers = document.getElementById('offer_history');
     let my_history = document.getElementById('trading_history');
     let bids_table = document.getElementById('bids_table');
     let asks_table = document.getElementById('asks_table');
@@ -214,7 +222,7 @@ Trade
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
             time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
-            trading_history} = data;
+            trading_history, offer_history} = data;
         if (news) {
             let {buyer, seller, price, time} = news;
             if (buyer === my_id) {
@@ -245,6 +253,7 @@ Trade
         }
         document.getElementById('balance').innerText = cu(balance);
         document.getElementById('trading_history').innerHTML = trading_history
+        document.getElementById('offer_history').innerHTML = offer_history
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }#}

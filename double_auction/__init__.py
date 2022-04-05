@@ -94,6 +94,7 @@ def creating_session(subsession: Subsession):
         participant = p.participant
         participant.offers = []
         participant.offer_times = []
+        participant.offer_history = []
         participant.trading_history = []
         participant.time_needed = 0
         participant.marginal_evaluation = 999
@@ -230,7 +231,7 @@ def live_method(player: Player, data):
                     seller.balance += price - seller.participant.marginal_evaluation - (seller_tax * price)
                     # Create message about effected trade
                     news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time)
-                    # Delete bids/asks of effected trade from bid/ask cure
+                    # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offers = buyer.participant.offers[1:]
                     seller.participant.offers = seller.participant.offers[1:]
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
@@ -247,6 +248,7 @@ def live_method(player: Player, data):
                     else:
                         seller.current_offer = C.ASK_MAX
                         seller.current_offer_time = C.MAX_TIMESTAMP
+                    # Trading history
                     buyer_trading_history.insert(0, {"price": (round(float(price), 2)),
                                                      "time": trade_time,
                                                      "tax_on_buyer": str(buyer_tax * 100) + " %",
@@ -273,6 +275,11 @@ def live_method(player: Player, data):
                     # Update remaining time needed for production/consumption
                     buyer.participant.time_needed += C.TIME_PER_UNIT
                     seller.participant.time_needed += C.TIME_PER_UNIT
+            # Current offer history, i.e. still standing offers
+            player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+            for x in player.participant.offer_times:
+                player.participant.offer_history.append({"offer": x[0],
+                                                         "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'withdrawal':
             if float(data['withdrawal']) in offers:
                 offers.remove(float(data['withdrawal']))
@@ -295,6 +302,11 @@ def live_method(player: Player, data):
                 else:
                     player.current_offer = C.ASK_MAX
                     player.current_offer_time = C.MAX_TIMESTAMP
+            # Current offer history, i.e. still standing offers
+            player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+            for x in player.participant.offer_times:
+                player.participant.offer_history.append({"offer": x[0],
+                                                         "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'time_update':
             # Update remaining time needed for production/consumption
             player.participant.current_timestamp = time.time()
@@ -336,6 +348,7 @@ def live_method(player: Player, data):
             news=news,
             offers=p.participant.offers,
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
+            offer_history=json.dumps(dict(offers=p.participant.offer_history)),
             time_needed=p.participant.time_needed,
             marginal_evaluation=p.participant.marginal_evaluation,
             trading_history=json.dumps(dict(trades=p.participant.trading_history)),
