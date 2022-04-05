@@ -117,14 +117,15 @@ Trade
     </tr>
 
     <tr>
-        <td>{{ if player.is_buyer }}All your bids (from high to low){{ else }}All your asks (from low to high){{ endif }}</td>
+        <td>{{ if player.is_buyer }}All your bids (from high to low){{ else }}All your asks (from low to high)
+            {{ endif }} <b> SUPERSEDED FORMAT!!!</b></td>
         <th id="offers"></th>
         <th id="offer_times"></th>
     </tr>
 
     <tr>
         <td>{{ if player.is_buyer }}All your bids <small> (from high to low) </small>
-            {{ else }}All your asks <small> (from low to high) </small> {{ endif }} </td>
+            {{ else }}All your asks <small> (from low to high) </small> {{ endif }} <b> JSON FORMAT!!!</b> </td>
         <th id="offer_history"></th>
     </tr>
 
@@ -134,7 +135,7 @@ Trade
     </tr>
 
     <tr>
-        <td>My past trades <br> <small> (in reverse chronological order, i.e. going back in time) </small></td>
+        <td>My past trades <br> <small> (in reverse chronological order, i.e. going back in time) </small><b> JSON FORMAT!!!</b></td>
         <th id="trading_history"></th>
     </tr>
 </table>
