@@ -126,12 +126,6 @@ Trade
         <th id="balance"></th>
     </tr>
 
-{#    <tr>#}
-{#        <td>My past trades</td>#}
-{#        <th id="trading_prices"></th>#}
-{#        <th id="trading_times"></th>#}
-{#    </tr>#}
-
     <tr>
         <td>My past trades <br> <small> (in reverse chronological order, i.e. going back in time) </small></td>
         <th id="trading_history"></th>
@@ -181,8 +175,6 @@ Trade
     let my_time_needed = document.getElementById('time_needed');
     let my_marginal_evaluation = document.getElementById('marginal_evaluation');
     let my_balance = document.getElementById('balance');
-    let my_trading_prices = document.getElementById('trading_prices');
-    let my_trading_times = document.getElementById('trading_times');
     let my_history = document.getElementById('trading_history');
     let bids_table = document.getElementById('bids_table');
     let asks_table = document.getElementById('asks_table');
@@ -222,7 +214,7 @@ Trade
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
             time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
-        trading_prices, trading_times, trading_history} = data;
+            trading_history} = data;
         if (news) {
             let {buyer, seller, price, time} = news;
             if (buyer === my_id) {
@@ -252,10 +244,6 @@ Trade
                 '<br>');
         }
         document.getElementById('balance').innerText = cu(balance);
-{#        document.getElementById('trading_prices').innerHTML = trading_prices.map(
-            e => `<tr><th> ${e} points </tr></th>`).join('<br>');
-        document.getElementById('trading_times').innerHTML = trading_times.map(e => `<tr><th> ${e} </tr></th>`).join(
-                '<br>');#}
         document.getElementById('trading_history').innerHTML = trading_history
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;

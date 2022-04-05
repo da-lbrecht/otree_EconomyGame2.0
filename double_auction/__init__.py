@@ -94,8 +94,6 @@ def creating_session(subsession: Subsession):
         participant = p.participant
         participant.offers = []
         participant.offer_times = []
-        participant.trading_prices = []
-        participant.trading_times = []
         participant.trading_history = []
         participant.time_needed = 0
         participant.marginal_evaluation = 999
@@ -203,10 +201,6 @@ def live_method(player: Player, data):
                         price = buyer.current_offer
                     else:
                         price = seller.current_offer
-                    buyer_trading_times = buyer.participant.trading_times
-                    seller_trading_times = seller.participant.trading_times
-                    buyer_trading_prices = buyer.participant.trading_prices
-                    seller_trading_prices = seller.participant.trading_prices
                     buyer_trading_history = buyer.participant.trading_history
                     seller_trading_history = seller.participant.trading_history
                     trade_time = str(datetime.today().ctime())
@@ -253,15 +247,6 @@ def live_method(player: Player, data):
                     else:
                         seller.current_offer = C.ASK_MAX
                         seller.current_offer_time = C.MAX_TIMESTAMP
-                    # Update history of effected trades
-                    buyer_trading_prices.insert(0, round(float(price), 2))
-                    seller_trading_prices.insert(0, round(float(price), 2))
-                    buyer.participant.trading_prices = buyer_trading_prices
-                    seller.participant.trading_prices = seller_trading_prices
-                    buyer_trading_times.insert(0, trade_time),
-                    seller_trading_times.insert(0, trade_time),
-                    buyer.participant.trading_times = buyer_trading_times
-                    seller.participant.trading_times = seller_trading_times
                     buyer_trading_history.insert(0, {"price": (round(float(price), 2)),
                                                      "time": trade_time,
                                                      "tax_on_buyer": str(buyer_tax * 100) + " %",
@@ -353,8 +338,6 @@ def live_method(player: Player, data):
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             time_needed=p.participant.time_needed,
             marginal_evaluation=p.participant.marginal_evaluation,
-            trading_prices=p.participant.trading_prices,
-            trading_times=p.participant.trading_times,
             trading_history=json.dumps(dict(trades=p.participant.trading_history)),
             refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
