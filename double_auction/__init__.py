@@ -351,7 +351,7 @@ def live_method(player: Player, data):
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
             news=news,
-            offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
+            offers=[round(i[0], 2) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=json.dumps(dict(offers=p.participant.offer_history)),
             time_needed=p.participant.time_needed,
