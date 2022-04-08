@@ -184,10 +184,12 @@ def live_method(player: Player, data):
                 # participant.offers = offers
                 offer_times.append((float(data['offer']), datetime.today().timestamp()))
                 if player.is_buyer:
-                    offer_times.sort(key=lambda x: x[0], reverse=True)  # Sort such that highest bid is first list element
+                    offer_times.sort(key=lambda x: x[0],
+                                     reverse=True)  # Sort such that highest bid is first list element
                     player.current_offer = offer_times[0][0]
                 else:
-                    offer_times.sort(key=lambda x: x[0], reverse=False)  # Sort such that lowest ask is first list element
+                    offer_times.sort(key=lambda x: x[0],
+                                     reverse=False)  # Sort such that lowest ask is first list element
                     player.current_offer = offer_times[0][0]
                 participant.offer_times = offer_times
                 player.current_offer_time = offer_times[0][1]
@@ -239,7 +241,7 @@ def live_method(player: Player, data):
                     else:
                         buyer.current_offer = C.BID_MIN
                         buyer.current_offer_time = C.MAX_TIMESTAMP
-                    if len(seller.participant.offers) >= 1:
+                    if len(seller.participant.offer_times) >= 1:
                         seller.current_offer = seller.participant.offer_times[0][0]
                         seller.current_offer_time = seller.participant.offer_times[0][1]
                     else:
@@ -251,7 +253,8 @@ def live_method(player: Player, data):
                                                      "tax_on_buyer": str(buyer_tax * 100) + " %",
                                                      "tax_on_seller": str(seller_tax * 100) + " %",
                                                      "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
-                                                     "price_ceiling": str(round(price_ceiling, 2)) + " " + currency_unit,
+                                                     "price_ceiling": str(
+                                                         round(price_ceiling, 2)) + " " + currency_unit,
                                                      "profit_from_trade": str(round(
                                                          buyer.participant.marginal_evaluation - price -
                                                          (buyer_tax * price), 2)) + " " + currency_unit,
@@ -333,9 +336,9 @@ def live_method(player: Player, data):
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
-            current_offer=p.current_offer,
+            current_offer=str(p.current_offer) + " " + str(player.session.config['currency_unit']),
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
-            balance=round(p.balance, 2),
+            balance=str(round(p.balance, 2)) + " " + str(player.session.config['currency_unit']),
             bids=bids,
             asks=asks,
             highcharts_series=highcharts_series,
@@ -347,7 +350,8 @@ def live_method(player: Player, data):
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,
             time_needed=p.participant.time_needed,
-            marginal_evaluation=p.participant.marginal_evaluation,
+            marginal_evaluation=str(p.participant.marginal_evaluation) + " " + str(
+                player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,
             refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
@@ -402,8 +406,8 @@ class Trading(Page):
         return dict(
             market_opening=market_opening,
             market_closing=market_closing,
-            price_floor=price_floor_display,
-            price_ceiling=price_ceiling_display,
+            price_floor=str(price_floor_display) + " " + str(player.session.config['currency_unit']),
+            price_ceiling=str(price_ceiling_display) + " " + str(player.session.config['currency_unit']),
             taxation=taxation,
             seller_tax=seller_tax_display,
             buyer_tax=buyer_tax_display,
