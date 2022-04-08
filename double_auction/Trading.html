@@ -244,7 +244,7 @@ Trade
             document.getElementById('offer_times').innerText = "";
         }
         else {
-            document.getElementById('current_offer').innerText = cu(current_offer);
+            document.getElementById('current_offer').innerHTML = current_offer;
             document.getElementById('current_offer_time').innerText = current_offer_time;
             document.getElementById('offers').innerHTML = offers.map(e => `<tr><th> ${e} points </tr></th>`).join(
                 '<br>');
@@ -252,14 +252,14 @@ Trade
             document.getElementById('offer_times').innerHTML = offer_times.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
         }
-        document.getElementById('balance').innerText = cu(balance);
+        document.getElementById('balance').innerHTML = balance;
         document.getElementById('trading_history').innerHTML = trading_history
         document.getElementById('offer_history').innerHTML = offer_history
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }#}
         my_time_needed.innerHTML = sec(time_needed);
-        my_marginal_evaluation.innerHTML = cu(marginal_evaluation);
+        my_marginal_evaluation.innerHTML = marginal_evaluation;
         bids_table.innerHTML = bids.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
         asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
