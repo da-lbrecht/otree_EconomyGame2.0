@@ -145,7 +145,7 @@ Auction Market {{ endblock }} {{ block content }}
       <li v-for="(order, index) in openOrders" :key="index">
         <div class="row mb-2">
           <div class="col">[[ order.offer ]]</div>
-          <div class="col-auto">[[ order.time ]]</div>
+          <div class="col-auto">[[ order.offer_time ]]</div>
           <div class="col-auto">
             <button class="btn p-0" style="margin-top: -.5rem" @click.prevent="withdrawOffer(order.offer)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
@@ -158,9 +158,18 @@ Auction Market {{ endblock }} {{ block content }}
       </li>
       <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
-    <div v-show="tab === 'history'" class="mt-2">
-      <p>You have no history yet</p>
-    </div>
+    <ul v-show="tab === 'history'" class="list-unstyled mt-2 mb-0 overflow-auto">
+      <li v-for="(trade, index) in tradingHistory" :key="index">
+        <div class="row mb-2">
+          <div class="col">[[ trade.price ]]</div>
+          <div class="col-auto">[[ trade.profit_from_trade ]]</div>
+          <div class="col-auto">[[ trade.price_floor ]]</div>
+          <div class="col-auto">[[ trade.price_ceiling ]]</div>
+          <div class="col-auto">[[ trade.time ]]</div>
+        </div>
+      </li>
+      <p v-if="!tradingHistory.length">You have no history yet</p>
+    </ul>
     <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
       {{ if player.is_buyer }}
         <div id="mu_chart"></div>
@@ -256,6 +265,7 @@ Auction Market {{ endblock }} {{ block content }}
       liveSocket.onmessage = function (e) {
         // console.log(e.data);
         this.data = JSON.parse(e.data);
+        // console.log(this.data)
         if (this.data.chart_point && !this.chartDrawn) {
           this.drawMarginChart();
           this.chartDrawn = true;
@@ -271,17 +281,22 @@ Auction Market {{ endblock }} {{ block content }}
         return this.data.bids?.sort((a, b) => b - a).slice(0, 3);
       },
       openOrders() {
-        const openOrders = [];
-
-        for (let index = 0; index < this.data.offers?.length; index++) {
-          openOrders.push({ offer: this.data.offers[index], time: this.data.offer_times[index] })
-        }
+        const openOrders = this.data.offer_history ?? [];
 
         openOrders.sort(function(a, b) {
-          return Date.parse(b.time) - Date.parse(a.time)
+          return Date.parse(b.offer_time) - Date.parse(a.offer_time)
         })
 
         return openOrders;
+      },
+      tradingHistory() {
+        const tradingHistory = this.data.trading_history ?? [];
+
+        tradingHistory.sort(function(a, b) {
+          return Date.parse(b.offer_time) - Date.parse(a.offer_time)
+        })
+
+        return tradingHistory;
       }
     },
 
@@ -311,9 +326,9 @@ Auction Market {{ endblock }} {{ block content }}
 
   document.addEventListener("DOMContentLoaded", () => {
     liveSend({});
-    // $('.otree-timer__time-left').on('update.countdown', () => {
-    //   liveSend({"type": "time_update"})
-    // });
+    $('.otree-timer__time-left').on('update.countdown', () => {
+      liveSend({"type": "time_update"})
+    });
   });
 </script>
 
