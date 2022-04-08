@@ -285,7 +285,8 @@ def live_method(player: Player, data):
                 player.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'withdrawal':
-            if float(data['withdrawal']) in [i[0] for i in offer_times]:
+            withdrawal = data['withdrawal'].split(" ", 1)[0]
+            if float(withdrawal) in [i[0] for i in offer_times]:
                 del offer_times[([i[0] for i in offer_times]).index(float(data['withdrawal']))]
                 # offer_times = [x for x in offer_times if x[0] in offers]
             # participant.offers = offers
@@ -351,7 +352,7 @@ def live_method(player: Player, data):
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
             news=news,
-            offers=[round(i[0], 2) for i in p.participant.offer_times],
+            offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,
             time_needed=p.participant.time_needed,
