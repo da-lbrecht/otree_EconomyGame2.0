@@ -248,28 +248,32 @@ def live_method(player: Player, data):
                         seller.current_offer = C.ASK_MAX
                         seller.current_offer_time = C.MAX_TIMESTAMP
                     # Trading history
-                    buyer_trading_history.insert(0, {"price": str((round(float(price), 2))) + " " + currency_unit,
+                    buyer_trading_history.insert(0, {"price": str('{:.2f}'.format((round(float(price), 2)))) + " "
+                                                              + currency_unit,
                                                      "time": trade_time,
                                                      "tax_on_buyer": str(buyer_tax * 100) + " %",
                                                      "tax_on_seller": str(seller_tax * 100) + " %",
-                                                     "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
-                                                     "price_ceiling": str(
-                                                         round(price_ceiling, 2)) + " " + currency_unit,
-                                                     "profit_from_trade": str(round(
+                                                     "price_floor": str('{:.2f}'.format(round(price_floor, 2))) + " "
+                                                                    + currency_unit,
+                                                     "price_ceiling": str('{:.2f}'.format(round(price_ceiling, 2)))
+                                                                      + " " + currency_unit,
+                                                     "profit_from_trade": str('{:.2f}'.format(round(
                                                          buyer.participant.marginal_evaluation - price -
-                                                         (buyer_tax * price), 2)) + " " + currency_unit,
+                                                         (buyer_tax * price), 2))) + " " + currency_unit,
                                                      }),
                     buyer.participant.trading_history = buyer_trading_history
-                    seller_trading_history.insert(0, {"price": str((round(float(price), 2))) + " " + currency_unit,
+                    seller_trading_history.insert(0, {"price": str('{:.2f}'.format(round(float(price), 2))) + " "
+                                                               + currency_unit,
                                                       "time": trade_time,
                                                       "tax_on_buyer": str(buyer_tax * 100) + " %",
                                                       "tax_on_seller": str(seller_tax * 100) + " %",
-                                                      "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
-                                                      "price_ceiling": str(
-                                                          round(price_ceiling, 2)) + " " + currency_unit,
-                                                      "profit_from_trade": str(round(
+                                                      "price_floor": str('{:.2f}'.format(round(price_floor, 2))) + " "
+                                                                     + currency_unit,
+                                                      "price_ceiling": str('{:.2f}'.format(round(price_ceiling, 2)))
+                                                                       + " " + currency_unit,
+                                                      "profit_from_trade": str('{:.2f}'.format(round(
                                                           price - seller.participant.marginal_evaluation -
-                                                          (seller_tax * price), 2)) + " " + currency_unit,
+                                                          (seller_tax * price), 2))) + " " + currency_unit,
                                                       }),
                     seller.participant.trading_history = seller_trading_history
                     # Update remaining time needed for production/consumption
@@ -336,9 +340,10 @@ def live_method(player: Player, data):
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
-            current_offer=str(p.current_offer) + " " + str(player.session.config['currency_unit']),
+            current_offer=str('{:.2f}'.format(round(p.current_offer, 2))) + " " + str(
+                player.session.config['currency_unit']),
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
-            balance=str(round(p.balance, 2)) + " " + str(player.session.config['currency_unit']),
+            balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
             bids=bids,
             asks=asks,
             highcharts_series=highcharts_series,
@@ -346,11 +351,11 @@ def live_method(player: Player, data):
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
             news=news,
-            offers=[i[0] for i in p.participant.offer_times],
+            offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=json.dumps(dict(offers=p.participant.offer_history)),
             time_needed=p.participant.time_needed,
-            marginal_evaluation=str(p.participant.marginal_evaluation) + " " + str(
+            marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=json.dumps(dict(trades=p.participant.trading_history)),
             refresh_counter=p.participant.refresh_counter,
@@ -406,8 +411,10 @@ class Trading(Page):
         return dict(
             market_opening=market_opening,
             market_closing=market_closing,
-            price_floor=str(price_floor_display) + " " + str(player.session.config['currency_unit']),
-            price_ceiling=str(price_ceiling_display) + " " + str(player.session.config['currency_unit']),
+            price_floor=str('{:.2f}'.format(round(price_floor_display, 2))) + " " + str(
+                player.session.config['currency_unit']),
+            price_ceiling=str('{:.2f}'.format(round(price_ceiling_display))) + " " + str(
+                player.session.config['currency_unit']),
             taxation=taxation,
             seller_tax=seller_tax_display,
             buyer_tax=buyer_tax_display,
