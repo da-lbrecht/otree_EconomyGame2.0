@@ -2,10 +2,7 @@ from otree.api import *
 import time
 from datetime import datetime
 import numpy as np
-import matplotlib.pyplot as plt
-
-import random
-import math
+import json  # Module to convert python dictionaries into JSON objects
 
 ##### START: Definition of production costs and consumption utilities #####
 
@@ -97,8 +94,7 @@ def creating_session(subsession: Subsession):
         participant = p.participant
         participant.offers = []
         participant.offer_times = []
-        participant.trading_prices = []
-        participant.trading_times = []
+        participant.offer_history = []
         participant.trading_history = []
         participant.time_needed = 0
         participant.marginal_evaluation = 999
@@ -155,6 +151,7 @@ def live_method(player: Player, data):
     sellers = [p for p in players if not p.is_buyer]
     news = None
     # Details on market structure
+    currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
         seller_tax = float(player.session.config['seller_tax'])
         buyer_tax = float(player.session.config['buyer_tax'])
@@ -169,7 +166,7 @@ def live_method(player: Player, data):
         price_ceiling = None
     # Details on participants
     participant = player.participant
-    offers = participant.offers
+    # offers = participant.offers
     offer_times = participant.offer_times  # List of tuples of offers and respective timestamp
     participant.error = None  # Empty all error messages
     if data:
@@ -183,18 +180,17 @@ def live_method(player: Player, data):
                     and float(data['offer']) > int(player.session.config['price_ceiling']):
                 player.participant.error = "You are not allowed to ask above the price ceiling."
             else:
-                offers.append(float(data['offer']))
-                participant.offers = offers
+                # offers.append(float(data['offer']))
+                # participant.offers = offers
                 offer_times.append((float(data['offer']), datetime.today().timestamp()))
                 if player.is_buyer:
-                    offers.sort(reverse=True)  # Sort such that highest bid is first list element
-                    player.current_offer = offers[0]
+                    offer_times.sort(key=lambda x: x[0], reverse=True)  # Sort such that highest bid is first list element
+                    player.current_offer = offer_times[0][0]
                 else:
-                    offers.sort(reverse=False)  # Sort such that lowest ask is first list element
-                    player.current_offer = offers[0]
-                sorted_offer_times = [tuple for x in offers for tuple in offer_times if tuple[0] == x]
-                participant.offer_times = sorted_offer_times
-                player.current_offer_time = sorted_offer_times[0][1]
+                    offer_times.sort(key=lambda x: x[0], reverse=False)  # Sort such that lowest ask is first list element
+                    player.current_offer = offer_times[0][0]
+                participant.offer_times = offer_times
+                player.current_offer_time = offer_times[0][1]
                 if player.is_buyer:
                     match = find_match(buyers=[player], sellers=sellers)
                 else:
@@ -205,10 +201,6 @@ def live_method(player: Player, data):
                         price = buyer.current_offer
                     else:
                         price = seller.current_offer
-                    buyer_trading_times = buyer.participant.trading_times
-                    seller_trading_times = seller.participant.trading_times
-                    buyer_trading_prices = buyer.participant.trading_prices
-                    seller_trading_prices = seller.participant.trading_prices
                     buyer_trading_history = buyer.participant.trading_history
                     seller_trading_history = seller.participant.trading_history
                     trade_time = str(datetime.today().ctime())
@@ -225,9 +217,9 @@ def live_method(player: Player, data):
                         buyer_profits=buyer.participant.marginal_evaluation - price - (buyer_tax * price),
                         seller_profits=price - seller.participant.marginal_evaluation - (seller_tax * price),
                         buyer_balance=buyer.balance + buyer.participant.marginal_evaluation - price - (
-                                    buyer_tax * price),
+                                buyer_tax * price),
                         seller_balance=seller.balance + price - seller.participant.marginal_evaluation - (
-                                    seller_tax * price),
+                                seller_tax * price),
                         buyer_tax=buyer_tax,
                         seller_tax=seller_tax,
                         price_floor=price_floor,
@@ -238,63 +230,80 @@ def live_method(player: Player, data):
                     seller.balance += price - seller.participant.marginal_evaluation - (seller_tax * price)
                     # Create message about effected trade
                     news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time)
-                    # Delete bids/asks of effected trade from bid/ask cure
-                    buyer.participant.offers = buyer.participant.offers[1:]
-                    seller.participant.offers = seller.participant.offers[1:]
+                    # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
-                    if len(buyer.participant.offers) >= 1:
-                        buyer.current_offer = buyer.participant.offers[0]
+                    if len(buyer.participant.offer_times) >= 1:
+                        buyer.current_offer = buyer.participant.offer_times[0][0]
                         buyer.current_offer_time = buyer.participant.offer_times[0][1]
                     else:
                         buyer.current_offer = C.BID_MIN
                         buyer.current_offer_time = C.MAX_TIMESTAMP
                     if len(seller.participant.offers) >= 1:
-                        seller.current_offer = seller.participant.offers[0]
+                        seller.current_offer = seller.participant.offer_times[0][0]
                         seller.current_offer_time = seller.participant.offer_times[0][1]
                     else:
                         seller.current_offer = C.ASK_MAX
                         seller.current_offer_time = C.MAX_TIMESTAMP
-                    # Update history of effected trades
-                    buyer_trading_prices.insert(0, float(price))
-                    seller_trading_prices.insert(0, float(price))
-                    buyer.participant.trading_prices = buyer_trading_prices
-                    seller.participant.trading_prices = seller_trading_prices
-                    buyer_trading_times.insert(0, trade_time),
-                    seller_trading_times.insert(0, trade_time),
-                    buyer.participant.trading_times = buyer_trading_times
-                    seller.participant.trading_times = seller_trading_times
-                    buyer_trading_history.extend([float(price), trade_time, buyer_tax, seller_tax, price_floor,
-                                                  price_ceiling])
+                    # Trading history
+                    buyer_trading_history.insert(0, {"price": str((round(float(price), 2))) + " " + currency_unit,
+                                                     "time": trade_time,
+                                                     "tax_on_buyer": str(buyer_tax * 100) + " %",
+                                                     "tax_on_seller": str(seller_tax * 100) + " %",
+                                                     "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
+                                                     "price_ceiling": str(round(price_ceiling, 2)) + " " + currency_unit,
+                                                     "profit_from_trade": str(round(
+                                                         buyer.participant.marginal_evaluation - price -
+                                                         (buyer_tax * price), 2)) + " " + currency_unit,
+                                                     }),
                     buyer.participant.trading_history = buyer_trading_history
-                    seller_trading_history.extend([float(price), trade_time, buyer_tax, seller_tax, price_floor,
-                                                  price_ceiling])
+                    seller_trading_history.insert(0, {"price": str((round(float(price), 2))) + " " + currency_unit,
+                                                      "time": trade_time,
+                                                      "tax_on_buyer": str(buyer_tax * 100) + " %",
+                                                      "tax_on_seller": str(seller_tax * 100) + " %",
+                                                      "price_floor": str(round(price_floor, 2)) + " " + currency_unit,
+                                                      "price_ceiling": str(
+                                                          round(price_ceiling, 2)) + " " + currency_unit,
+                                                      "profit_from_trade": str(round(
+                                                          price - seller.participant.marginal_evaluation -
+                                                          (seller_tax * price), 2)) + " " + currency_unit,
+                                                      }),
                     seller.participant.trading_history = seller_trading_history
                     # Update remaining time needed for production/consumption
                     buyer.participant.time_needed += C.TIME_PER_UNIT
                     seller.participant.time_needed += C.TIME_PER_UNIT
+            # Current offer history, i.e. still standing offers
+            player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+            for x in player.participant.offer_times:
+                player.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
+                                                         "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'withdrawal':
-            if float(data['withdrawal']) in offers:
-                offers.remove(float(data['withdrawal']))
-                offer_times = [x for x in offer_times if x[0] in offers]
-            participant.offers = offers
+            if float(data['withdrawal']) in [i[0] for i in offer_times]:
+                del offer_times[([i[0] for i in offer_times]).index(float(data['withdrawal']))]
+                # offer_times = [x for x in offer_times if x[0] in offers]
+            # participant.offers = offers
             participant.offer_times = offer_times
             if player.is_buyer:
-                offers.sort(reverse=True)  # Sort such that highest bid is first list element
-                if len(offers) >= 1:
-                    player.current_offer = offers[0]
+                offer_times.sort(key=lambda x: x[0], reverse=True)  # Sort such that highest bid is first list element
+                if len(offer_times) >= 1:
+                    player.current_offer = offer_times[0][0]
                     player.current_offer_time = offer_times[0][1]
                 else:
                     player.current_offer = C.BID_MIN
                     player.current_offer_time = C.MAX_TIMESTAMP
             else:
-                offers.sort(reverse=False)  # Sort such that lowest ask is first list element
-                if len(offers) >= 1:
-                    player.current_offer = offers[0]
+                offer_times.sort(key=lambda x: x[0], reverse=False)  # Sort such that lowest ask is first list element
+                if len(offer_times) >= 1:
+                    player.current_offer = offer_times[0][0]
                     player.current_offer_time = offer_times[0][1]
                 else:
                     player.current_offer = C.ASK_MAX
                     player.current_offer_time = C.MAX_TIMESTAMP
+            # Current offer history, i.e. still standing offers
+            player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+            for x in player.participant.offer_times:
+                player.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
+                                                         "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'time_update':
             # Update remaining time needed for production/consumption
             player.participant.current_timestamp = time.time()
@@ -313,11 +322,11 @@ def live_method(player: Player, data):
             else:
                 player.participant.refresh_counter += 1
     # Create lists of all asks/bids by all sellers/buyers
-    raw_bids = [p.participant.offers for p in buyers]  # Collect bids from all buyers
+    raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
     bids = flatten(raw_bids)  # Unnest list
     bids.sort(reverse=True)
     # Collect asks from all sellers
-    raw_asks = [p.participant.offers for p in sellers]  # Collect asks from all sellers
+    raw_asks = [[i[0] for i in p.participant.offer_times] for p in sellers]  # Collect asks from all sellers
     asks = flatten(raw_asks)  # Unnest list
     asks.sort(reverse=False)
     # Create charts
@@ -334,13 +343,12 @@ def live_method(player: Player, data):
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
             news=news,
-            offers=p.participant.offers,
+            offers=[i[0] for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
+            offer_history=json.dumps(dict(offers=p.participant.offer_history)),
             time_needed=p.participant.time_needed,
             marginal_evaluation=p.participant.marginal_evaluation,
-            trading_prices=p.participant.trading_prices,
-            trading_times=p.participant.trading_times,
-            trading_history=p.participant.trading_history,
+            trading_history=json.dumps(dict(trades=p.participant.trading_history)),
             refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
         )
