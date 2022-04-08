@@ -345,10 +345,10 @@ def live_method(player: Player, data):
             news=news,
             offers=[i[0] for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
-            offer_history=json.dumps(dict(offers=p.participant.offer_history)),
+            offer_history=p.participant.offer_history,
             time_needed=p.participant.time_needed,
             marginal_evaluation=p.participant.marginal_evaluation,
-            trading_history=json.dumps(dict(trades=p.participant.trading_history)),
+            trading_history=p.participant.trading_history,
             refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
         )
