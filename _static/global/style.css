@@ -71,17 +71,17 @@ p {
     overflow-y: auto;
     overflow-x: hidden;
 }
-#orders {
+#orders, #graph {
     margin-right: -8px;
 }
-#orders::-webkit-scrollbar { 
+#orders::-webkit-scrollbar, #graph::-webkit-scrollbar { 
     width: 4px;
 }
-#orders::-webkit-scrollbar-track {
+#orders::-webkit-scrollbar-track, #graph::-webkit-scrollbar-track {
     background: lightgrey;
     border-radius: 20px;
 }
-#orders::-webkit-scrollbar-thumb {
+#orders::-webkit-scrollbar-thumb, #graph::-webkit-scrollbar-thumb {
     background: #001C3D;
     border-radius: 20px;
 }

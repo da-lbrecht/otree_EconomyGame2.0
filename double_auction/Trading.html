@@ -122,11 +122,20 @@ Auction Market {{ endblock }} {{ block content }}
           </li>
           <li>
             <button
-              class="nav-item btn p-0 square border-0"
+              class="nav-item btn p-0 square border-0 me-2"
               :class="tab === 'history' ? 'active' : ''"
               @click.prevent="setTabTo('history')"
             >
               History
+            </button>
+          </li>
+          <li>
+            <button
+              class="nav-item btn p-0 square border-0"
+              :class="tab === 'graph' ? 'active' : ''"
+              @click.prevent="setTabTo('graph')"
+            >
+            {{ if player.is_buyer }}MU{{ else }}MC{{ endif }} graph
             </button>
           </li>
         </ul>
@@ -152,13 +161,13 @@ Auction Market {{ endblock }} {{ block content }}
     <div v-show="tab === 'history'" class="mt-2">
       <p>You have no history yet</p>
     </div>
-    <!-- <div>
+    <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
       {{ if player.is_buyer }}
-          {{ include 'double_auction/mu_chart.html' }}
+        <div id="mu_chart"></div>
       {{ else }}
-          {{ include 'double_auction/mc_chart.html' }}
+        <div id="mc_chart"></div>
       {{ endif }}
-    </div> -->
+    </div>
   </main>
 
   <footer class="bg-um-blue text-white pt-1 pb-2">
@@ -238,14 +247,19 @@ Auction Market {{ endblock }} {{ block content }}
       return {
         data: {},
         offer: null,
-        tab: 'open-orders'
+        tab: 'graph',
+        chartDrawn: false
       };
     },
 
     mounted() {
       liveSocket.onmessage = function (e) {
-        console.log(e.data);
+        // console.log(e.data);
         this.data = JSON.parse(e.data);
+        if (this.data.chart_point && !this.chartDrawn) {
+          this.drawMarginChart();
+          this.chartDrawn = true;
+        }
       }.bind(this);
     },
 
@@ -282,14 +296,24 @@ Auction Market {{ endblock }} {{ block content }}
       },
       withdrawOffer(offer) {
         liveSend({"type": "withdrawal", "withdrawal": offer})
+      },
+      drawMarginChart() {
+        if (js_vars.is_buyer) {
+          redrawUtility(this.data.utility_chart_series, this.data.chart_point)
+          return
+        }
+        redrawCost(this.data.cost_chart_series, this.data.chart_point)
       }
     },
   });
   app.config.compilerOptions.delimiters = ["[[", "]]"];
   app.mount("#app");
 
-  document.addEventListener("DOMContentLoaded", (event) => {
+  document.addEventListener("DOMContentLoaded", () => {
     liveSend({});
+    // $('.otree-timer__time-left').on('update.countdown', () => {
+    //   liveSend({"type": "time_update"})
+    // });
   });
 </script>
 

@@ -1,10 +1,99 @@
 {{ extends "otree/Page.html" }}
 {{ load otree static }}
 
-{{ block global_styles  }}
+{{ block global_styles }}
 <link rel="stylesheet" href="{{ static 'global/style.css' }}" />
 {{ endblock }}
 
-{{ block global_scripts  }}
+{{ block global_scripts }}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script>
+  function redrawUtility(series_1, series_2) {
+    Highcharts.chart("mu_chart", {
+      title: {
+        text: "Marginal Utility Schedule",
+      },
+      yAxis: {
+        title: {
+          text: "Utility (points)",
+        },
+      },
 
+      xAxis: {
+        title: {
+          text: "Remaining consumption time (seconds)",
+        },
+        min: 0,
+      },
+
+      plotOptions: {
+        series: {
+          label: {
+            enabled: false,
+          },
+        },
+      },
+
+      series: [
+        {
+          data: series_1,
+          type: "line",
+        },
+        // {
+        //     data: series_2,
+        //     type: 'scatter'
+
+        // }
+      ],
+
+      credits: {
+        enabled: false,
+      },
+    });
+  }
+
+  function redrawCost(series_1, series_2) {
+    Highcharts.chart("mc_chart", {
+      title: {
+        text: "Marginal Cost Schedule",
+      },
+      yAxis: {
+        title: {
+          text: "Costs (points)",
+        },
+      },
+
+      xAxis: {
+        title: {
+          text: "Remaining production time (seconds)",
+        },
+        min: 0,
+      },
+
+      plotOptions: {
+        series: {
+          label: {
+            enabled: false,
+          },
+        },
+      },
+
+      series: [
+        {
+          data: series_1,
+          type: "line",
+        },
+        // {
+        //   data: series_2,
+        //   type: "scatter",
+        // },
+      ],
+
+      credits: {
+        enabled: false,
+      },
+    });
+  }
+</script>
 {{ endblock }}
