@@ -279,7 +279,16 @@ def live_method(player: Player, data):
                     # Update remaining time needed for production/consumption
                     buyer.participant.time_needed += C.TIME_PER_UNIT
                     seller.participant.time_needed += C.TIME_PER_UNIT
-            # Current offer history, i.e. still standing offers
+                    # Update current offer history, i.e. still standing offers after trade
+                    buyer.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+                    for x in buyer.participant.offer_times:
+                        buyer.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
+                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
+                    seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+                    for x in seller.participant.offer_times:
+                        seller.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
+                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
+            # Update current offer history, i.e. standing offers after new offer has been made
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
                 player.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
