@@ -1,3 +1,4 @@
 __pycache__/
 double_auction/__pycache__/
 db.sqlite3
+/.idea/economy_game_2.0.iml
