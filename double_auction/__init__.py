@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 import numpy as np
 import json  # Module to convert python dictionaries into JSON objects
+import sys
 
 ##### START: Definition of production costs and consumption utilities #####
 
@@ -66,8 +67,8 @@ class C(BaseConstants):
     NAME_IN_URL = 'double_auction'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 1
-    BID_MIN = -1000
-    ASK_MAX = 1000
+    BID_MIN = -sys.maxsize
+    ASK_MAX = sys.maxsize
     TIME_PER_UNIT = 600  # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
     MIN_TIMESTAMP = datetime(2000, 1, 1, 0, 0, 0, 0).timestamp()
     MAX_TIMESTAMP = datetime(3001, 1, 1, 0, 0, 0, 0).timestamp()
@@ -345,6 +346,7 @@ def live_method(player: Player, data):
                 player.participant.refresh_counter += 1
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
+    # raw_bids = [[[i[0], str(p.id_in_group)] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
     bids = flatten(raw_bids)  # Unnest list
     bids.sort(reverse=True)
     # Collect asks from all sellers
