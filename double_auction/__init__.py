@@ -344,15 +344,28 @@ def live_method(player: Player, data):
                 player.participant.refresh_counter = 0
             else:
                 player.participant.refresh_counter += 1
+
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
-    # raw_bids = [[[i[0], str(p.id_in_group)] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
-    bids = flatten(raw_bids)  # Unnest list
+    raw_bidders = [[p.id_in_group for i in p.participant.offer_times] for p in buyers]  # Collect bidders
+    bids = flatten(raw_bids)  # Unnest list of bids
+    bidders = flatten(raw_bidders)  # Unnest list of bidders
+    bids_index = [i for i in range(len(bids))]
+    bids_dict = dict(zip(bids_index, bids))  # Dictionary of bid index and bid amount
+    bidders_dict = dict(zip(bids_index, bidders))  # Dictionary of bid index and bidder.id_in_group
+    # bidders_dict = dict(zip(bids_index, [bool(x == player.id_in_group) for x in bidders]))
     bids.sort(reverse=True)
+
     # Collect asks from all sellers
     raw_asks = [[i[0] for i in p.participant.offer_times] for p in sellers]  # Collect asks from all sellers
+    raw_askers = [[p.id_in_group for i in p.participant.offer_times] for p in sellers]  # Collect sellers
     asks = flatten(raw_asks)  # Unnest list
+    askers = flatten(raw_askers)  # Unnest list of sellers
+    asks_index = [i for i in range(len(asks))]
+    asks_dict = dict(zip(asks_index, asks))  # Dictionary of ask index and ask amount
+    askers_dict = dict(zip(asks_index, askers))  # Dictionary of bid index and bidder.id_in_group
     asks.sort(reverse=False)
+
     # Create charts
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
@@ -362,7 +375,10 @@ def live_method(player: Player, data):
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
             balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
             bids=bids,
+            # Create a dictionaries of offers with an offer index, offer amount and player.id_in_group
+            bids_dict=json.dumps(dict(bid=bids_dict, bidder=bidders_dict)),
             asks=asks,
+            asks_dict=json.dumps(dict(ask=asks_dict, asker=askers_dict)),
             highcharts_series=highcharts_series,
             cost_chart_series=cost_chart_series,
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],

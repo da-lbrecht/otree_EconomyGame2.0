@@ -156,12 +156,20 @@ Trade
 <div class="container">
     <div class="row">
         <div class="col-sm">
-            <h4>Bids (in points)</h4>
+            <h4>Bids</h4>
             <table id="bids_table"></table>
         </div>
         <div class="col-sm">
-            <h4>Asks (in points)</h4>
+            <h4>Bids incl. bidder</h4>
+            <table id="bids_ext_table"></table>
+        </div>
+        <div class="col-sm">
+            <h4>Asks</h4>
             <table id="asks_table"></table>
+        </div>
+        <div class="col-sm">
+            <h4>Asks incl. asker</h4>
+            <table id="asks_ext_table"></table>
         </div>
     </div>
 </div>
@@ -186,7 +194,9 @@ Trade
     let my_standing_offers = document.getElementById('offer_history');
     let my_history = document.getElementById('trading_history');
     let bids_table = document.getElementById('bids_table');
+    let bids_ext_table = document.getElementById('bids_ext_table');
     let asks_table = document.getElementById('asks_table');
+    let asks_ext_table = document.getElementById('asks_ext_table');
     let my_id = js_vars.id_in_group;
     let news_div = document.getElementById('news');
     let is_buyer = js_vars.is_buyer;
@@ -223,7 +233,7 @@ Trade
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
             time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
-            trading_history, offer_history} = data;
+            trading_history, offer_history, bids_dict, asks_dict} = data;
         if (news) {
             let {buyer, seller, price, time} = news;
             if (buyer === my_id) {
@@ -262,8 +272,10 @@ Trade
         my_marginal_evaluation.innerHTML = marginal_evaluation;
         bids_table.innerHTML = bids.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
+        bids_ext_table.innerHTML = bids_dict;
         asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
+        asks_ext_table.innerHTML = asks_dict;
         {#redrawChart(highcharts_series);#}
         if (data["refresh_counter"] == 0 && !is_buyer) {
             redrawCost(cost_chart_series, chart_point);
