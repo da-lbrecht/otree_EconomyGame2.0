@@ -409,6 +409,7 @@ class Trading(Page):
     def vars_for_template(player: Player):
         market_opening = player.session.config['market_opening']
         market_closing = player.session.config['market_closing']
+        currency_unit = player.session.config['currency_unit']
         if player.session.config['price_restrictions']:
             price_floor_display = player.session.config['price_floor']
             price_ceiling_display = player.session.config['price_ceiling']
