@@ -10,17 +10,17 @@
         Highcharts.chart('highchart', {
 
             title: {
-                text: 'Marginal Utility Schedule'
+                text: '' // Fill title in quotes if needed
             },
             yAxis: {
                 title: {
-                    text: 'Utility (points)'
+                    text: 'Utility'
                 }
             },
 
             xAxis: {
                 title: {
-                    text: 'Remaining consumption time (seconds)'
+                    text: 'Remaining consumption time'
                 },
                 min: 0
             },
@@ -35,12 +35,14 @@
 
             series: [{
                 data: series_1,
-                type: 'line'
+                type: 'line',
+                name: 'Marginal utility schedule'
 
             },
             {
                 data: series_2,
-                type: 'scatter'
+                type: 'scatter',
+                name: 'Your current marginal utility'
 
             }],
 
