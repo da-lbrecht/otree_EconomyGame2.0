@@ -82,22 +82,23 @@ def creating_session(subsession: Subsession):
     for p in players:
         # this means if the player's ID is not a multiple of 2, they are a buyer.
         # for more buyers, change the 2 to 3
+        participant = p.participant
         p.is_buyer = p.id_in_group % 2 > 0
         p.balance = 0
         p.session_description = p.session.config['description']
         p.current_offer_time = C.MAX_TIMESTAMP
         if p.is_buyer:
             p.current_offer = C.BID_MIN
+            participant.marginal_evaluation = marginal_consumption_utility(0)
         else:
             p.current_offer = C.ASK_MAX
+            participant.marginal_evaluation = marginal_production_costs(0)
         # Initialize participant variables
-        participant = p.participant
         participant.offers = []
         participant.offer_times = []
         participant.offer_history = []
         participant.trading_history = []
         participant.time_needed = 0
-        participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.refresh_counter = 0
