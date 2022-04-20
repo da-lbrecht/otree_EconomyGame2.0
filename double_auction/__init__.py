@@ -351,7 +351,8 @@ def live_method(player: Player, data):
     bids = flatten(raw_bids)  # Unnest list of bids
     bidders = flatten(raw_bidders)  # Unnest list of bidders
     bids_index = [i for i in range(len(bids))]
-    bids_dict = dict(zip(bids_index, bids))  # Dictionary of bid index and bid amount
+    # Dictionary of bid index and bid amount
+    bids_dict = dict(zip(bids_index, [str('{:.2f}'.format(round(x, 2))) for x in bids]))
     bidders_dict = dict(zip(bids_index, bidders))  # Dictionary of bid index and bidder.id_in_group
     # bidders_dict = dict(zip(bids_index, [bool(x == player.id_in_group) for x in bidders]))
     bids.sort(reverse=True)
@@ -362,7 +363,8 @@ def live_method(player: Player, data):
     asks = flatten(raw_asks)  # Unnest list
     askers = flatten(raw_askers)  # Unnest list of sellers
     asks_index = [i for i in range(len(asks))]
-    asks_dict = dict(zip(asks_index, asks))  # Dictionary of ask index and ask amount
+    # Dictionary of ask index and ask amount
+    asks_dict = dict(zip(asks_index, [str('{:.2f}'.format(round(x, 2))) for x in asks]))
     askers_dict = dict(zip(asks_index, askers))  # Dictionary of bid index and bidder.id_in_group
     asks.sort(reverse=False)
 
