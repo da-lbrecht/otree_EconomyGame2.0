@@ -374,10 +374,10 @@ def live_method(player: Player, data):
                 player.session.config['currency_unit']),
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
             balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
-            bids=bids,
+            bids=[str('{:.2f}'.format(round(x, 2))) for x in bids],
             # Create a dictionaries of offers with an offer index, offer amount and player.id_in_group
             bids_dict=json.dumps(dict(bid=bids_dict, bidder=bidders_dict)),
-            asks=asks,
+            asks=[str('{:.2f}'.format(round(x, 2))) for x in asks],
             asks_dict=json.dumps(dict(ask=asks_dict, asker=askers_dict)),
             highcharts_series=highcharts_series,
             cost_chart_series=cost_chart_series,
