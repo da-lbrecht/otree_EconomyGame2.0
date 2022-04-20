@@ -301,7 +301,7 @@ def live_method(player: Player, data):
         elif data['type'] == 'withdrawal':
             withdrawal = data['withdrawal'].split(" ", 1)[0]
             if float(withdrawal) in [i[0] for i in offer_times]:
-                del offer_times[([i[0] for i in offer_times]).index(float(data['withdrawal']))]
+                del offer_times[([i[0] for i in offer_times]).index(float(withdrawal))]
                 # offer_times = [x for x in offer_times if x[0] in offers]
             # participant.offers = offers
             participant.offer_times = offer_times
