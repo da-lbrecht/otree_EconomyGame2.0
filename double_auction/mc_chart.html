@@ -9,6 +9,10 @@
     function redrawCost(series_1, series_2) {
         Highcharts.chart('highchart', {
 
+            chart: {
+                animation: false // Update without animation
+            },
+
             title: {
                 text: '' // Fill title in quotes if needed
             },
