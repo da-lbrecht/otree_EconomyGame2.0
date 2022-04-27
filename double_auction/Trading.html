@@ -1,10 +1,18 @@
 {{ block title }}
+{{ if player.is_admin }}
+Update Market
+{{ else }}
 Trade
+{{ endif }}
 {{ endblock }}
 {{ block content }}
 
 {{ if player.is_admin }}
 <span> Tax on buyers in percent: </span><input type="number" id="buyer_tax_admin">
+<br>
+<br>
+<br>
+<button type="button" onclick="updateMarket()" id="btn-update-market"> Send update </button>
 {{ else }}
 <p id="news" style="color: green"></p>
 
@@ -74,7 +82,8 @@ Trade
         </td>
         <th>
             {{ if taxation }}
-                {{ buyer_tax }} %
+<!--                {{ buyer_tax }} %-->
+                <span id="buyer_tax"></span>
             {{ else }}
                 -
             {{ endif }}
@@ -207,6 +216,8 @@ Trade
     let my_offer = document.getElementById('my_offer');
     let my_withdrawal = document.getElementById('my_withdrawal');
     let error_div = document.getElementById('error');
+    let admin_buyer_tax = document.getElementById('buyer_tax_admin')
+    let admin_update = document.getElementById('buyer_tax_admin')
 
     function showNews(msg) {
         news_div.innerText = msg;
@@ -232,11 +243,13 @@ Trade
     }
 
     function liveRecv(data) {
-        console.log(data)
+        {{ if player.is_admin }}
+        {{ else }}
+            console.log(data)
         // javascript destructuring assignment
         let {bids, asks, highcharts_series, current_offer, current_offer_time, balance, news, offers, offer_times,
             time_needed, marginal_evaluation, cost_chart_series, utility_chart_series, chart_point, error,
-            trading_history, offer_history, bids_dict, asks_dict} = data;
+            trading_history, offer_history, bids_dict, asks_dict, buyer_tax} = data;
         if (news) {
             let {buyer, seller, price, time} = news;
             if (buyer === my_id) {
@@ -266,8 +279,9 @@ Trade
                 '<br>');
         }
         document.getElementById('balance').innerHTML = balance;
-        document.getElementById('trading_history').innerHTML = trading_history
-        document.getElementById('offer_history').innerHTML = offer_history
+        document.getElementById('trading_history').innerHTML = trading_history;
+        document.getElementById('offer_history').innerHTML = offer_history;
+        document.getElementById('buyer_tax').innerHTML = buyer_tax;
 {#        if (!is_buyer && num_items === 0) {
             btnOffer.disabled = true;
         }#}
@@ -285,8 +299,10 @@ Trade
         }
         else if (is_buyer) {
             redrawUtility(utility_chart_series, chart_point);
-        }
+            }
+        {{ endif }}
     }
+
 
     function sendOffer() {
         liveSend({"type": "offer", "offer": my_offer.value})
@@ -297,6 +313,12 @@ Trade
         liveSend({"type": "withdrawal", "withdrawal": my_withdrawal.value})
     }
 
+    function updateMarket() {
+        liveSend({"type": "market_update",
+                  "buyer_tax_admin": admin_buyer_tax.value})
+    }
+
+    {{ if player.is_admin == 0 }}
     my_offer.addEventListener("keydown", function (event) {
         if (event.key === "Enter") {
             sendOffer();
@@ -308,6 +330,16 @@ Trade
             withdrawOffer();
         }
     });
+
+    {{ else }}
+
+    admin_update.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            updateMarket();
+        }
+    });
+
+    {{ endif }}
 
     document.addEventListener('DOMContentLoaded', (event) => {
         liveSend({})

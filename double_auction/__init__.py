@@ -69,6 +69,7 @@ def creating_session(subsession: Subsession):
         # this means if the player's ID is not a multiple of 2, they are a buyer.
         # for more buyers, change the 2 to 3
         participant = p.participant
+        session = subsession.session
         p.is_buyer = p.id_in_group % 2 > 0
         if p.id_in_group == 1:
             p.is_admin = 1
@@ -92,6 +93,8 @@ def creating_session(subsession: Subsession):
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.error = ""
+        # Initialize session variables
+        session.buyer_tax = p.session.config['buyer_tax']
 
 
 class Group(BaseGroup):
@@ -141,11 +144,13 @@ def live_method(player: Player, data):
     buyers = [p for p in players if p.is_buyer]
     sellers = [p for p in players if not p.is_buyer and p.is_admin == 0]
     news = None
+    # Admin update of market structure
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
         seller_tax = float(player.session.config['seller_tax'])
-        buyer_tax = float(player.session.config['buyer_tax'])
+        # buyer_tax = float(player.session.config['buyer_tax'])
+        buyer_tax = float(player.subsession.session.buyer_tax)
     else:
         seller_tax = 0
         buyer_tax = 0
@@ -328,6 +333,10 @@ def live_method(player: Player, data):
                 player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
             elif player.is_buyer == 0 and player.is_admin != 1:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
+        elif data['type'] == 'market_update':
+            # Admin update of market structure
+            player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])
+
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -394,6 +403,7 @@ def live_method(player: Player, data):
                 player.session.config['currency_unit']),
             trading_history=json.dumps(dict(trades=p.participant.trading_history)),
             error=p.participant.error,
+            buyer_tax=str('{:.1f}'.format(round(buyer_tax*100, 2))) + " " + str('%'),
         )
         for p in players
     }

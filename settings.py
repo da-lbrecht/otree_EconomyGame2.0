@@ -65,4 +65,5 @@ PARTICIPANT_FIELDS = [
 
 SESSION_FIELDS = [
     'description',
+    'buyer_tax'
 ]
