@@ -286,7 +286,7 @@ def live_method(player: Player, data):
                     for x in buyer.participant.offer_times:
                         buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
                                                                          currency_unit,
-                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
+                                                                "offer_time": datetime.fromtimestamp(x[1]).ctime()})
                     seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in seller.participant.offer_times:
                         seller.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
@@ -350,11 +350,19 @@ def live_method(player: Player, data):
     raw_bidders = [[p.id_in_group for i in p.participant.offer_times] for p in buyers]  # Collect bidders
     bids = flatten(raw_bids)  # Unnest list of bids
     bidders = flatten(raw_bidders)  # Unnest list of bidders
-    bids_index = [i for i in range(len(bids))]
-    # Dictionary of bid index and bid amount
-    bids_dict = dict(zip(bids_index, [str('{:.2f}'.format(round(x, 2))) for x in bids]))
-    bidders_dict = dict(zip(bids_index, bidders))  # Dictionary of bid index and bidder.id_in_group
-    # bidders_dict = dict(zip(bids_index, [bool(x == player.id_in_group) for x in bidders]))
+    # Dictionary of bid amount and bidder
+    bid_keys = ["bid" for i in range(len(bids))]
+    bidder_keys = ["bidder" for i in range(len(bidders))]
+    overall_bids_dict_list = [[bid_keys[i], bids[i], bidder_keys[i], bidders[i]] for i in range(len(bids))]
+    overall_bids_dict = {
+        "bids": [
+            {
+                overall_bids_dict_list[i][0]: str('{:.2f}'.format(round(overall_bids_dict_list[i][1], 2))),
+                overall_bids_dict_list[i][2]: overall_bids_dict_list[i][3]
+            }
+            for i in range(len(overall_bids_dict_list))
+        ]
+    }
     bids.sort(reverse=True)
 
     # Collect asks from all sellers
@@ -362,10 +370,19 @@ def live_method(player: Player, data):
     raw_askers = [[p.id_in_group for i in p.participant.offer_times] for p in sellers]  # Collect sellers
     asks = flatten(raw_asks)  # Unnest list
     askers = flatten(raw_askers)  # Unnest list of sellers
-    asks_index = [i for i in range(len(asks))]
-    # Dictionary of ask index and ask amount
-    asks_dict = dict(zip(asks_index, [str('{:.2f}'.format(round(x, 2))) for x in asks]))
-    askers_dict = dict(zip(asks_index, askers))  # Dictionary of bid index and bidder.id_in_group
+    # Dictionary of ask amount and asker
+    ask_keys = ["ask" for i in range(len(asks))]
+    asker_keys = ["asker" for i in range(len(askers))]
+    overall_asks_dict_list = [[ask_keys[i], asks[i], asker_keys[i], askers[i]] for i in range(len(asks))]
+    overall_asks_dict = {
+        "asks": [
+            {
+                overall_asks_dict_list[i][0]: str('{:.2f}'.format(round(overall_asks_dict_list[i][1], 2))),
+                overall_asks_dict_list[i][2]: overall_asks_dict_list[i][3]
+            }
+            for i in range(len(overall_asks_dict_list))
+        ]
+    }
     asks.sort(reverse=False)
 
     # Create charts
@@ -377,10 +394,9 @@ def live_method(player: Player, data):
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
             balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
             bids=[str('{:.2f}'.format(round(x, 2))) for x in bids],
-            # Create a dictionaries of offers with an offer index, offer amount and player.id_in_group
-            bids_dict=json.dumps(dict(bid=bids_dict, bidder=bidders_dict)),
+            bids_dict=json.dumps(overall_bids_dict),
             asks=[str('{:.2f}'.format(round(x, 2))) for x in asks],
-            asks_dict=json.dumps(dict(ask=asks_dict, asker=askers_dict)),
+            asks_dict=json.dumps(overall_asks_dict),
             highcharts_series=highcharts_series,
             cost_chart_series=cost_chart_series,
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
