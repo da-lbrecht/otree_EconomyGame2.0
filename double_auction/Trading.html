@@ -3,6 +3,9 @@ Trade
 {{ endblock }}
 {{ block content }}
 
+{{ if player.is_admin }}
+<span> Tax on buyers in percent: </span><input type="number" id="buyer_tax_admin">
+{{ else }}
 <p id="news" style="color: green"></p>
 
 <!-- Display of countdown till market closing -->
@@ -184,7 +187,7 @@ Trade
 
 <br><br>
 {{ include 'double_auction/chart.html' }}
-
+{{ endif }}
 
 <script>
 

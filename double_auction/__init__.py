@@ -7,20 +7,6 @@ import sys
 
 ##### START: Definition of production costs and consumption utilities #####
 
-# Production Costs with production facilities of different efficiency p_eff_1, ..., p_eff_5, and corresponding
-# capacities p_cap_1, ..., p_cap_2
-p_eff_1 = 25
-p_eff_2 = 50
-p_eff_3 = 100
-p_eff_4 = 200
-p_eff_5 = 400
-p_cap_1 = 600  # Any capacity needs to ne at least C.TIME_PER_UNIT
-p_cap_2 = 600
-p_cap_3 = 600
-p_cap_4 = 600
-p_cap_5 = 600
-
-
 def marginal_production_costs(t):
     c = round((max((600 - t), 0) * 50 + (600 - max(600 - t, 0)) * 100) / 600, 2)
     return c
@@ -32,7 +18,6 @@ def marginal_consumption_utility(t):
 
 
 # Graphs
-
 
 cost_x = np.arange(0, 1810, 10)
 cost_y = np.empty(shape=len(cost_x))
@@ -85,6 +70,10 @@ def creating_session(subsession: Subsession):
         # for more buyers, change the 2 to 3
         participant = p.participant
         p.is_buyer = p.id_in_group % 2 > 0
+        if p.id_in_group == 1:
+            p.is_admin = 1
+        else:
+            p.is_admin = 0
         p.balance = 0
         p.session_description = p.session.config['description']
         p.current_offer_time = C.MAX_TIMESTAMP
@@ -111,6 +100,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     session_description = models.StringField()
+    is_admin = models.BooleanField(initial=0)
     is_buyer = models.BooleanField()
     current_offer = models.FloatField()
     current_offer_time = models.FloatField()
@@ -149,7 +139,7 @@ def live_method(player: Player, data):
     group = player.group
     players = group.get_players()
     buyers = [p for p in players if p.is_buyer]
-    sellers = [p for p in players if not p.is_buyer]
+    sellers = [p for p in players if not p.is_buyer and p.is_admin == 0]
     news = None
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
@@ -177,7 +167,7 @@ def live_method(player: Player, data):
                     and float(data['offer']) < int(player.session.config['price_floor']):
                 player.participant.error = "You are not allowed to bid below the price floor."
             elif player.session.config['price_restrictions'] \
-                    and player.is_buyer == 0 \
+                    and player.is_buyer == 0 and player.is_admin != 1 \
                     and float(data['offer']) > int(player.session.config['price_ceiling']):
                 player.participant.error = "You are not allowed to ask above the price ceiling."
             else:
@@ -188,7 +178,7 @@ def live_method(player: Player, data):
                     offer_times.sort(key=lambda x: x[0],
                                      reverse=True)  # Sort such that highest bid is first list element
                     player.current_offer = offer_times[0][0]
-                else:
+                elif player.is_buyer == 0 and player.is_admin != 1:
                     offer_times.sort(key=lambda x: x[0],
                                      reverse=False)  # Sort such that lowest ask is first list element
                     player.current_offer = offer_times[0][0]
@@ -196,7 +186,7 @@ def live_method(player: Player, data):
                 player.current_offer_time = offer_times[0][1]
                 if player.is_buyer:
                     match = find_match(buyers=[player], sellers=sellers)
-                else:
+                elif player.is_buyer == 0 and player.is_admin != 1:
                     match = find_match(buyers=buyers, sellers=[player])
                 if match:
                     [buyer, seller] = match
@@ -312,7 +302,7 @@ def live_method(player: Player, data):
                 else:
                     player.current_offer = C.BID_MIN
                     player.current_offer_time = C.MAX_TIMESTAMP
-            else:
+            elif player.is_buyer == 0 and player.is_admin != 1:
                 offer_times.sort(key=lambda x: x[0], reverse=False)  # Sort such that lowest ask is first list element
                 if len(offer_times) >= 1:
                     player.current_offer = offer_times[0][0]
@@ -336,7 +326,7 @@ def live_method(player: Player, data):
             # Update marginal utility/costs
             if player.is_buyer:
                 player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
-            else:
+            elif player.is_buyer == 0 and player.is_admin != 1:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
 
     # Create lists of all asks/bids by all sellers/buyers
@@ -421,7 +411,7 @@ class Trading(Page):
 
     @staticmethod
     def js_vars(player: Player):
-        return dict(id_in_group=player.id_in_group, is_buyer=player.is_buyer)
+        return dict(id_in_group=player.id_in_group, is_buyer=player.is_buyer, is_admin=player.is_admin)
 
     @staticmethod
     def get_timeout_seconds(player: Player):
