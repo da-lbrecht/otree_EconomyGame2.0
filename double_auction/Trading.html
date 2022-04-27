@@ -276,11 +276,11 @@ Trade
         asks_table.innerHTML = asks.map(e => `<tr><th> ${e} </tr></th>`).join(
                 '<br>');
         asks_ext_table.innerHTML = asks_dict;
-        {#redrawChart(highcharts_series);#}
-        if (data["refresh_counter"] == 0 && !is_buyer) {
+        // {#redrawChart(highcharts_series);#}
+        if (!is_buyer) {
             redrawCost(cost_chart_series, chart_point);
         }
-        else if (data["refresh_counter"] == 0 && is_buyer) {
+        else if (is_buyer) {
             redrawUtility(utility_chart_series, chart_point);
         }
     }

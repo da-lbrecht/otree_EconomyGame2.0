@@ -102,7 +102,6 @@ def creating_session(subsession: Subsession):
         participant.time_needed = 0
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
-        participant.refresh_counter = 0
         participant.error = ""
 
 
@@ -339,11 +338,6 @@ def live_method(player: Player, data):
                 player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
             else:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
-            # Update refresh counter
-            if player.participant.refresh_counter == 10:
-                player.participant.refresh_counter = 0
-            else:
-                player.participant.refresh_counter += 1
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -409,7 +403,6 @@ def live_method(player: Player, data):
             marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=json.dumps(dict(trades=p.participant.trading_history)),
-            refresh_counter=p.participant.refresh_counter,
             error=p.participant.error,
         )
         for p in players
