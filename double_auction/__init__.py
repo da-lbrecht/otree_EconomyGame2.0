@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 import numpy as np
 import json  # Module to convert python dictionaries into JSON objects
+import sys
 
 ##### START: Definition of production costs and consumption utilities #####
 
@@ -66,8 +67,8 @@ class C(BaseConstants):
     NAME_IN_URL = 'double_auction'
     PLAYERS_PER_GROUP = None
     NUM_ROUNDS = 1
-    BID_MIN = -1000
-    ASK_MAX = 1000
+    BID_MIN = -sys.maxsize
+    ASK_MAX = sys.maxsize
     TIME_PER_UNIT = 600  # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
     MIN_TIMESTAMP = datetime(2000, 1, 1, 0, 0, 0, 0).timestamp()
     MAX_TIMESTAMP = datetime(3001, 1, 1, 0, 0, 0, 0).timestamp()
@@ -82,22 +83,23 @@ def creating_session(subsession: Subsession):
     for p in players:
         # this means if the player's ID is not a multiple of 2, they are a buyer.
         # for more buyers, change the 2 to 3
+        participant = p.participant
         p.is_buyer = p.id_in_group % 2 > 0
         p.balance = 0
         p.session_description = p.session.config['description']
         p.current_offer_time = C.MAX_TIMESTAMP
         if p.is_buyer:
             p.current_offer = C.BID_MIN
+            participant.marginal_evaluation = marginal_consumption_utility(0)
         else:
             p.current_offer = C.ASK_MAX
+            participant.marginal_evaluation = marginal_production_costs(0)
         # Initialize participant variables
-        participant = p.participant
         participant.offers = []
         participant.offer_times = []
         participant.offer_history = []
         participant.trading_history = []
         participant.time_needed = 0
-        participant.marginal_evaluation = 999
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.refresh_counter = 0
@@ -279,15 +281,27 @@ def live_method(player: Player, data):
                     # Update remaining time needed for production/consumption
                     buyer.participant.time_needed += C.TIME_PER_UNIT
                     seller.participant.time_needed += C.TIME_PER_UNIT
-            # Current offer history, i.e. still standing offers
+                    # Update current offer history, i.e. still standing offers after trade
+                    buyer.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+                    for x in buyer.participant.offer_times:
+                        buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                                                                         currency_unit,
+                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
+                    seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
+                    for x in seller.participant.offer_times:
+                        seller.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                                                                          currency_unit,
+                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
+            # Update current offer history, i.e. standing offers after new offer has been made
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
-                player.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
+                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                                                                  currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'withdrawal':
             withdrawal = data['withdrawal'].split(" ", 1)[0]
             if float(withdrawal) in [i[0] for i in offer_times]:
-                del offer_times[([i[0] for i in offer_times]).index(float(data['withdrawal']))]
+                del offer_times[([i[0] for i in offer_times]).index(float(withdrawal))]
                 # offer_times = [x for x in offer_times if x[0] in offers]
             # participant.offers = offers
             participant.offer_times = offer_times
@@ -310,7 +324,8 @@ def live_method(player: Player, data):
             # Current offer history, i.e. still standing offers
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
-                player.participant.offer_history.append({"offer": str(x[0]) + " " + currency_unit,
+                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                                                                  currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'time_update':
             # Update remaining time needed for production/consumption
@@ -329,14 +344,30 @@ def live_method(player: Player, data):
                 player.participant.refresh_counter = 0
             else:
                 player.participant.refresh_counter += 1
+
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
-    bids = flatten(raw_bids)  # Unnest list
+    raw_bidders = [[p.id_in_group for i in p.participant.offer_times] for p in buyers]  # Collect bidders
+    bids = flatten(raw_bids)  # Unnest list of bids
+    bidders = flatten(raw_bidders)  # Unnest list of bidders
+    bids_index = [i for i in range(len(bids))]
+    # Dictionary of bid index and bid amount
+    bids_dict = dict(zip(bids_index, [str('{:.2f}'.format(round(x, 2))) for x in bids]))
+    bidders_dict = dict(zip(bids_index, bidders))  # Dictionary of bid index and bidder.id_in_group
+    # bidders_dict = dict(zip(bids_index, [bool(x == player.id_in_group) for x in bidders]))
     bids.sort(reverse=True)
+
     # Collect asks from all sellers
     raw_asks = [[i[0] for i in p.participant.offer_times] for p in sellers]  # Collect asks from all sellers
+    raw_askers = [[p.id_in_group for i in p.participant.offer_times] for p in sellers]  # Collect sellers
     asks = flatten(raw_asks)  # Unnest list
+    askers = flatten(raw_askers)  # Unnest list of sellers
+    asks_index = [i for i in range(len(asks))]
+    # Dictionary of ask index and ask amount
+    asks_dict = dict(zip(asks_index, [str('{:.2f}'.format(round(x, 2))) for x in asks]))
+    askers_dict = dict(zip(asks_index, askers))  # Dictionary of bid index and bidder.id_in_group
     asks.sort(reverse=False)
+
     # Create charts
     highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
@@ -345,8 +376,11 @@ def live_method(player: Player, data):
                 player.session.config['currency_unit']),
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
             balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
-            bids=bids,
-            asks=asks,
+            bids=[str('{:.2f}'.format(round(x, 2))) for x in bids],
+            # Create a dictionaries of offers with an offer index, offer amount and player.id_in_group
+            bids_dict=json.dumps(dict(bid=bids_dict, bidder=bidders_dict)),
+            asks=[str('{:.2f}'.format(round(x, 2))) for x in asks],
+            asks_dict=json.dumps(dict(ask=asks_dict, asker=askers_dict)),
             highcharts_series=highcharts_series,
             cost_chart_series=cost_chart_series,
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
@@ -395,6 +429,7 @@ class Trading(Page):
     def vars_for_template(player: Player):
         market_opening = player.session.config['market_opening']
         market_closing = player.session.config['market_closing']
+        currency_unit = player.session.config['currency_unit']
         if player.session.config['price_restrictions']:
             price_floor_display = player.session.config['price_floor']
             price_ceiling_display = player.session.config['price_ceiling']

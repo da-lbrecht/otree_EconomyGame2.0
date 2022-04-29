@@ -9,18 +9,22 @@
     function redrawCost(series_1, series_2) {
         Highcharts.chart('highchart', {
 
+            chart: {
+                animation: false // Update without animation
+            },
+
             title: {
-                text: 'Marginal Cost Schedule'
+                text: '' // Fill title in quotes if needed
             },
             yAxis: {
                 title: {
-                    text: 'Costs (points)'
+                    text: 'Costs'
                 }
             },
 
             xAxis: {
                 title: {
-                    text: 'Remaining production time (seconds)'
+                    text: 'Remaining production time'
                 },
                 min: 0
             },
@@ -35,12 +39,14 @@
 
             series: [{
                 data: series_1,
-                type: 'line'
+                type: 'line',
+                name: 'Marginal cost schedule'
 
             },
             {
                 data: series_2,
-                type: 'scatter'
+                type: 'scatter',
+                name: 'Your current marginal cost'
 
             }],
 
