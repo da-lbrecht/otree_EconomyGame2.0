@@ -144,7 +144,7 @@ Auction Market {{ endblock }} {{ block content }}
     <ul id="orders" v-show="tab === 'open-orders'" class="list-unstyled mt-1 mb-0 pt-1 pe-2 overflow-y-auto">
       <li v-for="(order, index) in openOrders" :key="index">
         <div class="row mb-2">
-          <div class="col">[[ order.offer ]]</div>
+          <div class="col"><span v-html="order.offer"></div>
           <div class="col-auto">[[ order.offer_time ]]</div>
           <div class="col-auto">
             <button class="btn p-0" style="margin-top: -.5rem" @click.prevent="withdrawOffer(order.offer)">
@@ -161,10 +161,10 @@ Auction Market {{ endblock }} {{ block content }}
     <ul v-show="tab === 'history'" class="list-unstyled mt-2 mb-0 overflow-auto">
       <li v-for="(trade, index) in tradingHistory" :key="index">
         <div class="row mb-2">
-          <div class="col">[[ trade.price ]]</div>
-          <div class="col-auto">[[ trade.profit_from_trade ]]</div>
-          <div class="col-auto">[[ trade.price_floor ]]</div>
-          <div class="col-auto">[[ trade.price_ceiling ]]</div>
+          <div class="col"><span v-html="trade.price"></div>
+          <div class="col-auto"><span v-html="trade.profit_from_trade"></span></div>
+          <div class="col-auto"><span v-html="trade.price_floor"></span></div>
+          <div class="col-auto"><span v-html="trade.price_ceiling"></span></div>
           <div class="col-auto">[[ trade.time ]]</div>
         </div>
       </li>
@@ -206,7 +206,7 @@ Auction Market {{ endblock }} {{ block content }}
           </svg>
         </div>
       </div>
-      <div class="col text-end">[[ data.marginal_evaluation ]] points</div>
+      <div class="col text-end"><span v-html="data.marginal_evaluation"></span></div>
     </div>
     <div class="row">
       <div class="col-auto">
