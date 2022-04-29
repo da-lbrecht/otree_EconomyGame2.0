@@ -256,20 +256,16 @@ Auction Market {{ endblock }} {{ block content }}
       return {
         data: {},
         offer: null,
-        tab: 'open-orders',
-        chartDrawn: false
+        tab: 'open-orders'
       };
     },
 
     mounted() {
       liveSocket.onmessage = function (e) {
-        console.log(e.data);
+        // console.log(e.data);
         this.data = JSON.parse(e.data);
-        console.log(this.data)
-        if (this.data.chart_point && !this.chartDrawn) {
-          this.drawMarginChart();
-          this.chartDrawn = true;
-        }
+        // console.log(this.data)
+        this.drawMarginChart();
       }.bind(this);
     },
 
@@ -321,7 +317,7 @@ Auction Market {{ endblock }} {{ block content }}
       }
     },
   });
-  
+
   app.config.compilerOptions.delimiters = ["[[", "]]"];
   app.mount("#app");
 

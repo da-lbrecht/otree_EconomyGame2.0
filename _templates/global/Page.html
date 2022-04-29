@@ -10,88 +10,106 @@
 <script src="https://code.highcharts.com/modules/series-label.js"></script>
 <script>
   function redrawUtility(series_1, series_2) {
-    Highcharts.chart("mu_chart", {
+    Highcharts.chart('mu_chart', {
+
+      chart: {
+        animation: false // Update without animation
+      },
+
       title: {
-        text: "Marginal Utility Schedule",
+        text: '' // Fill title in quotes if needed
       },
       yAxis: {
         title: {
-          text: "Utility (points)",
-        },
+          text: 'Utility'
+        }
       },
 
       xAxis: {
         title: {
-          text: "Remaining consumption time (seconds)",
+          text: 'Remaining consumption time'
         },
-        min: 0,
+        min: 0
       },
 
       plotOptions: {
         series: {
           label: {
-            enabled: false,
+            enabled: false
           },
-        },
+          animation: false
+        }
       },
 
-      series: [
-        {
-          data: series_1,
-          type: "line",
-        },
-        {
-            data: series_2,
-            type: 'scatter'
-        }
-      ],
+      series: [{
+        data: series_1,
+        type: 'line',
+        name: 'Marginal utility schedule'
+
+      },
+      {
+        data: series_2,
+        type: 'scatter',
+        name: 'Your current marginal utility'
+
+      }],
 
       credits: {
-        enabled: false,
+        enabled: false
       },
+
     });
   }
 
   function redrawCost(series_1, series_2) {
-    Highcharts.chart("mc_chart", {
+    Highcharts.chart('mc_chart', {
+
+      chart: {
+        animation: false // Update without animation
+      },
+
       title: {
-        text: "Marginal Cost Schedule",
+        text: '' // Fill title in quotes if needed
       },
       yAxis: {
         title: {
-          text: "Costs (points)",
-        },
+          text: 'Costs'
+        }
       },
 
       xAxis: {
         title: {
-          text: "Remaining production time (seconds)",
+          text: 'Remaining production time'
         },
-        min: 0,
+        min: 0
       },
 
       plotOptions: {
         series: {
           label: {
-            enabled: false,
+            enabled: false
           },
-        },
+          animation: false
+        }
       },
 
-      series: [
-        {
-          data: series_1,
-          type: "line",
-        },
-        {
-          data: series_2,
-          type: "scatter",
-        },
-      ],
+      series: [{
+        data: series_1,
+        type: 'line',
+        name: 'Marginal cost schedule'
+
+      },
+      {
+        data: series_2,
+        type: 'scatter',
+        name: 'Your current marginal cost'
+
+      }],
 
       credits: {
-        enabled: false,
-      },
+        enabled: false
+      }
+
     });
   }
 </script>
