@@ -142,7 +142,7 @@ def live_method(player: Player, data):
     group = player.group
     players = group.get_players()
     buyers = [p for p in players if p.is_buyer]
-    sellers = [p for p in players if not p.is_buyer and p.is_admin == 0]
+    sellers = [p for p in players if not p.is_buyer and p.is_admin != 1]
     news = None
     # Admin update of market structure
     # Details on market structure
