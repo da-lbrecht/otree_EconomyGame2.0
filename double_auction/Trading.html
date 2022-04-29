@@ -263,9 +263,9 @@ Auction Market {{ endblock }} {{ block content }}
 
     mounted() {
       liveSocket.onmessage = function (e) {
-        // console.log(e.data);
+        console.log(e.data);
         this.data = JSON.parse(e.data);
-        // console.log(this.data)
+        console.log(this.data)
         if (this.data.chart_point && !this.chartDrawn) {
           this.drawMarginChart();
           this.chartDrawn = true;

@@ -34,6 +34,7 @@
                     label: {
                         enabled: false
                     },
+                    animation: false
                 }
             },
 
@@ -55,5 +56,10 @@
             },
 
         });
+    }
+
+    function updateUtility(series_1, series_2) {
+        Highcharts.chart.series[1].setData(series_2, true);
+        Highcharts.chart.update({});
     }
 </script>
