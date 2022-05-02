@@ -89,3 +89,7 @@ p {
     background: #001C3D;
     border-radius: 20px;
 }
+
+.order:hover {
+    background-color: #E2EFFF;
+}

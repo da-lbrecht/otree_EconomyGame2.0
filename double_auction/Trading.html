@@ -149,9 +149,9 @@ Auction Market {{ endblock }} {{ block content }}
     </nav>
     <ul id="orders" v-show="tab === 'open-orders'" class="list-unstyled mt-1 mb-0 pt-1 pe-2 overflow-y-auto">
       <li v-for="(order, index) in openOrders" :key="index">
-        <div class="row mb-2">
-          <div class="col"><span v-html="order.offer"></div>
-          <div class="col-auto">[[ order.offer_time ]]</div>
+        <div class="row mb-2 order">
+          <div class="col pe-0"><span v-html="order.offer"></div>
+          <div class="col-auto p-0">[[ order.offer_time ]]</div>
           <div class="col-auto">
             <button class="btn p-0" style="margin-top: -.5rem" @click.prevent="withdrawOffer(order.offer)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
