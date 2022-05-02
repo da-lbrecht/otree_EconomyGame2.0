@@ -179,7 +179,7 @@ Auction Market {{ endblock }} {{ block content }}
         <tbody class="w-max-content">
           <tr v-for="(trade, index) in tradingHistory" :key="index">
             <td><div class="w-max-content" v-html="trade.price"></td>
-              <td><div class="w-max-content">[[ trade.tax_on_buyer ]]</div></td>
+            <td><div class="w-max-content">[[ trade.tax_on_buyer ]]</div></td>
             <td><div class="w-max-content" v-html="trade.profit_from_trade"></div></td>
             <td><div class="w-max-content" v-html="trade.price_ceiling"></div></td>
             <td><div class="w-max-content" v-html="trade.price_floor"></div></td>
