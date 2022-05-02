@@ -112,3 +112,13 @@ p {
     padding-right: .5rem;
     padding-left: .5rem;
 }
+
+#mu_chart, #mc_chart {
+    height: 100%;
+}
+
+@media (min-height: 805px) {
+    #mu_chart, #mc_chart {
+        height: unset;
+    }
+}
