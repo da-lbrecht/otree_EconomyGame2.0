@@ -277,10 +277,10 @@ Auction Market {{ endblock }} {{ block content }}
 
     computed: {
       lowestAsks() {
-        return this.data.asks?.sort((a, b) => b - a).slice(-3);
+        return this.data.asks?.sort((a, b) => b.ask - a.ask).slice(-3);
       },
       highestBids() {
-        return this.data.bids?.sort((a, b) => b - a).slice(0, 3);
+        return this.data.bids?.sort((a, b) => b.bid - a.bid).slice(0, 3);
       },
       openOrders() {
         const openOrders = this.data.offer_history ?? [];
