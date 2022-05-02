@@ -46,6 +46,10 @@ p {
     min-height: 108px;
 }
 
+.highlight {
+    background-color: #E2EFFF;
+}
+
 .nav-item {
     opacity: 50%;
 }

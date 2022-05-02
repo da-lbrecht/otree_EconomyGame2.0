@@ -95,15 +95,21 @@ Auction Market {{ endblock }} {{ block content }}
   <main class="bg-white grid" style="grid-template-rows: min-content min-content minmax(0 ,1fr);">
     <div id="asks-and-bids" class="row pt-2 pb-1">
       <div class="col text-end">
-        <p class="fw-bold">Asks (in points)</p>
+        <p class="fw-bold pe-1">Asks (in points)</p>
         <ul class="list-unstyled mb-0">
-          <li v-for="(ask, index) in lowestAsks" :key="index">[[ ask ]]</li>
+          <li v-for="(ask, index) in lowestAsks"
+          :class="{ highlight: playerId === ask.asker }"
+          class="pe-1"
+          :key="index">[[ ask.ask ]]</li>
         </ul>
       </div>
       <div class="col text-end">
-        <p class="fw-bold">Bids (in points)</p>
+        <p class="fw-bold pe-1">Bids (in points)</p>
         <ul class="list-unstyled mb-0">
-          <li v-for="(bid, index) in highestBids" :key="index">[[ bid ]]</li>
+          <li v-for="(bid, index) in highestBids"
+          :class="{ highlight: playerId === bid.bidder }"
+          class="pe-1"
+          :key="index">[[ bid.bid ]]</li>
         </ul>
       </div>
     </div>
@@ -293,6 +299,9 @@ Auction Market {{ endblock }} {{ block content }}
         })
 
         return tradingHistory;
+      },
+      playerId() {
+          return js_vars.id_in_group
       }
     },
 
