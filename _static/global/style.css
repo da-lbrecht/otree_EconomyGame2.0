@@ -52,7 +52,7 @@ p {
     min-height: 108px;
 }
 
-.highlight {
+.highlight, .order:hover, #history tbody tr:hover {
     background-color: #E2EFFF;
 }
 
@@ -85,7 +85,7 @@ p {
     margin-right: -.5rem;
 }
 #history {
-    height: calc(100% - .75rem);
+    height: calc(100% - .5rem);
 }
 #orders::-webkit-scrollbar, #history::-webkit-scrollbar, #graph::-webkit-scrollbar { 
     width: .25rem;
@@ -102,6 +102,13 @@ p {
     border-radius: 20px;
 }
 
-.order:hover {
-    background-color: #E2EFFF;
+#history th:first-of-type, #history td:first-of-type {
+    padding-left: 0;
+}
+#history th:last-of-type, #history td:last-of-type {
+    margin-right: .5rem;
+}
+#history th, #history td {
+    padding-right: .5rem;
+    padding-left: .5rem;
 }

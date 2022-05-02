@@ -164,18 +164,31 @@ Auction Market {{ endblock }} {{ block content }}
       </li>
       <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
-    <ul id="history" v-show="tab === 'history'" class="list-unstyled mt-2 mb-0 overflow-auto">
-      <li v-for="(trade, index) in tradingHistory" :key="index">
-        <div class="row mb-2 w-max-content">
-          <div class="col"><span v-html="trade.price"></div>
-          <div class="col-auto"><span v-html="trade.profit_from_trade"></span></div>
-          <div class="col-auto"><span v-html="trade.price_floor"></span></div>
-          <div class="col-auto"><span v-html="trade.price_ceiling"></span></div>
-          <div class="col-auto">[[ trade.time ]]</div>
-        </div>
-      </li>
-      <p v-if="!tradingHistory.length">You have no history yet</p>
-    </ul>
+    <div id="history" v-show="tab === 'history'" class="w-100 flex-column mt-1 mb-0 overflow-auto" style="display: flex">
+      <table class="table table-borderless table-sm">
+        <thead>
+          <tr>
+            <th scope="col">Offer</th>
+            <th scope="col">Tax</th>
+            <th scope="col">Profit</th>
+            <th scope="col">Pc</th>
+            <th scope="col">Pf</th>
+            <th scope="col">Date</th>
+          </tr>
+        </thead>
+        <tbody class="w-max-content">
+          <tr v-for="(trade, index) in tradingHistory" :key="index">
+            <td><div class="w-max-content" v-html="trade.price"></td>
+              <td><div class="w-max-content">[[ trade.tax_on_buyer ]]</div></td>
+            <td><div class="w-max-content" v-html="trade.profit_from_trade"></div></td>
+            <td><div class="w-max-content" v-html="trade.price_ceiling"></div></td>
+            <td><div class="w-max-content" v-html="trade.price_floor"></div></td>
+            <td><div class="w-max-content">[[ trade.time ]]</div></td>
+          </tr>
+        </tbody>
+        <p v-if="!tradingHistory.length">You have no history yet</p>
+      </table>
+    </div>
     <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
       {{ if player.is_buyer }}
         <div id="mu_chart"></div>
