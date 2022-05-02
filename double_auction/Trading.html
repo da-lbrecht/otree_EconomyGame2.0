@@ -165,7 +165,7 @@ Auction Market {{ endblock }} {{ block content }}
       <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
     <div id="history" v-show="tab === 'history'" class="w-100 flex-column mt-1 mb-0 overflow-auto" style="display: flex">
-      <table class="table table-borderless table-sm">
+      <table v-if="tradingHistory.length" class="table table-borderless table-sm">
         <thead>
           <tr>
             <th scope="col">Offer</th>
@@ -186,7 +186,7 @@ Auction Market {{ endblock }} {{ block content }}
             <td><div class="w-max-content">[[ trade.time ]]</div></td>
           </tr>
         </tbody>
-        <p v-if="!tradingHistory.length">You have no history yet</p>
+        <p v-else class="pt-1">You have no history yet</p>
       </table>
     </div>
     <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
