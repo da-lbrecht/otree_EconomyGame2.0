@@ -14,6 +14,7 @@ p {
     max-height: 100vh;
     overflow-y: hidden;
     box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    max-width: 1024px;
 }
 
 .otree-title, .otree-timer {
