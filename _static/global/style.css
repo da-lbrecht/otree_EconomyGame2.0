@@ -31,6 +31,10 @@ p {
     height: 100vh;
 }
 
+.w-max-content {
+    width: max-content;
+}
+
 .btn {
     color: #001C3D !important;
 }
@@ -75,17 +79,23 @@ p {
     overflow-y: auto;
     overflow-x: hidden;
 }
-#orders, #graph {
-    margin-right: -8px;
+#orders, #history, #graph {
+    margin-right: -.5rem;
 }
-#orders::-webkit-scrollbar, #graph::-webkit-scrollbar { 
-    width: 4px;
+#history {
+    height: calc(100% - .75rem);
 }
-#orders::-webkit-scrollbar-track, #graph::-webkit-scrollbar-track {
+#orders::-webkit-scrollbar, #history::-webkit-scrollbar, #graph::-webkit-scrollbar { 
+    width: .25rem;
+}
+#history::-webkit-scrollbar {
+    height: .25rem;
+}
+#orders::-webkit-scrollbar-track, #history::-webkit-scrollbar-track, #graph::-webkit-scrollbar-track {
     background: lightgrey;
     border-radius: 20px;
 }
-#orders::-webkit-scrollbar-thumb, #graph::-webkit-scrollbar-thumb {
+#orders::-webkit-scrollbar-thumb, #history::-webkit-scrollbar-thumb, #graph::-webkit-scrollbar-thumb {
     background: #001C3D;
     border-radius: 20px;
 }

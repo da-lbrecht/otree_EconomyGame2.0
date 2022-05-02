@@ -164,9 +164,9 @@ Auction Market {{ endblock }} {{ block content }}
       </li>
       <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
-    <ul v-show="tab === 'history'" class="list-unstyled mt-2 mb-0 overflow-auto">
+    <ul id="history" v-show="tab === 'history'" class="list-unstyled mt-2 mb-0 overflow-auto">
       <li v-for="(trade, index) in tradingHistory" :key="index">
-        <div class="row mb-2">
+        <div class="row mb-2 w-max-content">
           <div class="col"><span v-html="trade.price"></div>
           <div class="col-auto"><span v-html="trade.profit_from_trade"></span></div>
           <div class="col-auto"><span v-html="trade.price_floor"></span></div>
