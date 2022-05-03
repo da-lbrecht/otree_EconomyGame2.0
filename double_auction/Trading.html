@@ -186,8 +186,8 @@ Auction Market {{ endblock }} {{ block content }}
             <td><div class="w-max-content">[[ trade.time ]]</div></td>
           </tr>
         </tbody>
-        <p v-else class="pt-1">You have no history yet</p>
       </table>
+      <p v-else class="pt-1">You have no history yet</p>
     </div>
     <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
       {{ if player.is_buyer }}
