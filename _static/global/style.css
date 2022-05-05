@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #fff;
+    color: #001C3D;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+.otree-body {
+    max-height: 100vh;
+    overflow-y: hidden;
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    max-width: 1024px;
+}
+
+.otree-title, .otree-timer {
+    display: none;
+}
+
+.debug-info {
+    display: none;
+}
+
+.grid {
+    display: grid;
+}
+
+.h-100vh {
+    height: 100vh;
+}
+
+.w-max-content {
+    width: max-content;
+}
+
+.btn {
+    color: #001C3D !important;
+}
+.bg-um-blue {
+    background-color: #001C3D;
+}
+
+.opacity-50 {
+    opacity: 50%;
+}
+
+#asks-and-bids {
+    min-height: 108px;
+}
+
+.highlight, .order:hover, #history tbody tr:hover {
+    background-color: #E2EFFF;
+}
+
+.nav-item {
+    opacity: 50%;
+}
+.nav-item.active {
+    opacity: 100%;
+    border-bottom: 3px solid !important;
+}
+
+.square {
+    border-radius: 0;
+}
+
+.btn-um-orange {
+    background-color: #E84E10;
+    color: #fff !important;
+}
+.btn-um-orange:hover {
+    color: #fff;
+    background-color: #cf4b17;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+#orders, #history, #graph {
+    margin-right: -.5rem;
+}
+#history {
+    height: calc(100% - .5rem);
+}
+#orders::-webkit-scrollbar, #history::-webkit-scrollbar, #graph::-webkit-scrollbar { 
+    width: .25rem;
+}
+#history::-webkit-scrollbar {
+    height: .25rem;
+}
+#orders::-webkit-scrollbar-track, #history::-webkit-scrollbar-track, #graph::-webkit-scrollbar-track {
+    background: lightgrey;
+    border-radius: 20px;
+}
+#orders::-webkit-scrollbar-thumb, #history::-webkit-scrollbar-thumb, #graph::-webkit-scrollbar-thumb {
+    background: #001C3D;
+    border-radius: 20px;
+}
+
+#history th:first-of-type, #history td:first-of-type {
+    padding-left: 0;
+}
+#history th:last-of-type, #history td:last-of-type {
+    margin-right: .5rem;
+}
+#history th, #history td {
+    padding-right: .5rem;
+    padding-left: .5rem;
+}
+
+#mu_chart, #mc_chart {
+    height: 100%;
+}
+
+@media (min-height: 805px) {
+    #mu_chart, #mc_chart {
+        height: unset;
+    }
+}
