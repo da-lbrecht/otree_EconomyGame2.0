@@ -174,16 +174,16 @@ def live_method(player: Player, data):
         if data['type'] == 'offer':
             if player.session.config['price_restrictions'] \
                     and player.is_buyer \
-                    and float(data['offer']) < int(player.session.config['price_floor']):
+                    and round(float(data['offer']),2) < int(player.session.config['price_floor']):
                 player.participant.error = "You are not allowed to bid below the price floor."
             elif player.session.config['price_restrictions'] \
                     and player.is_buyer == 0 \
-                    and float(data['offer']) > int(player.session.config['price_ceiling']):
+                    and round(float(data['offer']),2) > int(player.session.config['price_ceiling']):
                 player.participant.error = "You are not allowed to ask above the price ceiling."
             else:
                 # offers.append(float(data['offer']))
                 # participant.offers = offers
-                offer_times.append((float(data['offer']), datetime.today().timestamp()))
+                offer_times.append((round(float(data['offer']),2), datetime.today().timestamp()))
                 if player.is_buyer:
                     offer_times.sort(key=lambda x: x[0],
                                      reverse=True)  # Sort such that highest bid is first list element
@@ -283,18 +283,18 @@ def live_method(player: Player, data):
                     # Update current offer history, i.e. still standing offers after trade
                     buyer.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in buyer.participant.offer_times:
-                        buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                        buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
                                                                          currency_unit,
                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
                     seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in seller.participant.offer_times:
-                        seller.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                        seller.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
                                                                           currency_unit,
                                                                  "offer_time": datetime.fromtimestamp(x[1]).ctime()})
             # Update current offer history, i.e. standing offers after new offer has been made
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
-                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
                                                                   currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'withdrawal':
@@ -323,7 +323,7 @@ def live_method(player: Player, data):
             # Current offer history, i.e. still standing offers
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
-                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0]))) + " " +
+                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
                                                                   currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'time_update':
@@ -452,7 +452,7 @@ class Trading(Page):
             market_closing=market_closing,
             price_floor=str('{:.2f}'.format(round(price_floor_display, 2))) + " " + str(
                 player.session.config['currency_unit']),
-            price_ceiling=str('{:.2f}'.format(round(price_ceiling_display))) + " " + str(
+            price_ceiling=str('{:.2f}'.format(round(price_ceiling_display, 2))) + " " + str(
                 player.session.config['currency_unit']),
             taxation=taxation,
             seller_tax=seller_tax_display,
