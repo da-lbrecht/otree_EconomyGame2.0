@@ -7,28 +7,37 @@ import sys
 
 ##### START: Definition of production costs and consumption utilities #####
 
-# Production Costs with production facilities of different efficiency p_eff_1, ..., p_eff_5, and corresponding
-# capacities p_cap_1, ..., p_cap_2
-p_eff_1 = 25
-p_eff_2 = 50
-p_eff_3 = 100
-p_eff_4 = 200
-p_eff_5 = 400
-p_cap_1 = 600  # Any capacity needs to ne at least C.TIME_PER_UNIT
-p_cap_2 = 600
-p_cap_3 = 600
-p_cap_4 = 600
-p_cap_5 = 600
-
-
 def marginal_production_costs(t):
-    c = round((max((600 - t), 0) * 50 + (600 - max(600 - t, 0)) * 100) / 600, 2)
+    if t == 0:
+        c = 25
+    elif t <= 600:
+        c = 50
+    elif t <= 1200:
+        c = 75
+    else:
+        c = 100
     return c
 
 
 def marginal_consumption_utility(t):
-    u = round((max((600 - t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
+    if t == 0:
+        u = 100
+    elif t <= 600:
+        u = 75
+    elif t <= 1200:
+        u = 50
+    else:
+        u = 25
     return u
+
+# def marginal_production_costs(t):
+#     c = round((max((600 - t), 0) * 50 + (600 - max(600 - t, 0)) * 100) / 600, 2)
+#     return c
+#
+#
+# def marginal_consumption_utility(t):
+#     u = round((max((600 - t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
+#     return u
 
 
 # Graphs
