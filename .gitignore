@@ -1,4 +1,5 @@
 __pycache__/
 double_auction/__pycache__/
+double_auction/Heroku Deployment using CLI.txt
 db.sqlite3
 /.idea/*
