@@ -1,0 +1,25 @@
+# Open terminal/power shell
+
+# Change directory to local directory containing the project
+cd /Users/Home-DAlbrecht/Desktop/PhD Maastricht/ECONOMY GAME 2.0/HEROKU
+
+# Clone project from github
+git clone https://github.com/dalbrechtNL/economy_game.git
+
+# Move into app directory
+cd economy_game
+
+# Add git remote
+heroku git:remote -a economy-game
+
+# List branches
+git branch -a
+
+# Push to heroku master branch of heroku remote
+git push heroku master
+
+# Switch to command line interface in economy-game app on heroku webpage
+    # reset database
+    otree resetdb
+    # start production server
+    otree prodserver
