@@ -1,10 +1,11 @@
 # Open terminal/power shell
 
 # Change directory to local directory containing the project
-cd ""/Users/Home-DAlbrecht/Desktop/PhD Maastricht/ECONOMY GAME 2.0/HEROKU"
+cd "/Users/Home-DAlbrecht/Desktop/PhD Maastricht/ECONOMY GAME 2.0/HEROKU"
 
 # Clone project from github
 git clone https://github.com/dalbrechtNL/economy_game.git
+
 
 # Move into app directory
 cd economy_game
@@ -18,12 +19,13 @@ git branch -a
 # Push to heroku master branch of heroku remote
 git push heroku master
 
-# Set environmental variables on heroku server
+        ## --> TO BE UPDATED!!!
+                # Set environmental variables on heroku server
 
-heroku run export ADMIN_PASSWORD=my_password
-heroku run export OTREE_PRODUCTION=1
-heroku run export OTREE_AUTH_LEVEL=DEMO
-# heroku run export DATABASE_URL = 'postgres://postgres@localhost/hiddenagenda_db' ## --> TO BE UPDATED!!!
+                heroku run export ADMIN_PASSWORD=my_password
+                heroku run export OTREE_PRODUCTION=1
+                heroku run export OTREE_AUTH_LEVEL=DEMO
+                # heroku run export DATABASE_URL = 'postgres://postgres@localhost/hiddenagenda_db'
 
     # reset database
     heroku run otree resetdb
