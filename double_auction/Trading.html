@@ -1,275 +1,285 @@
 {% extends "global/Page.html" %} {% load otree %} {{ block title }} Double
 Auction Market {{ endblock }} {{ block content }}
 
-<div
-  id="app"
-  class="row grid h-100vh"
-  style="grid-template-rows: min-content minmax(0, 1fr) min-content"
->
-  <header class="bg-um-blue text-white pb-1">
-    <div class="row">
-      <div class="col">
-        <h1 class="fw-light">
-          {{ if player.is_buyer }}Buyer{{ else }}Seller{{ endif }}
-        </h1>
-      </div>
-      <div class="col-auto">
-        <p id="market_closing_time" class="text-end opacity-50">
-          Market closing time<br />{{ market_closing }}
-        </p>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <p class="fw-bolder">Profit</p>
-      </div>
-      <div class="col text-end">
-        <p><span v-html="data.balance"></span></p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <p class="fw-bolder">Tax</p>
-      </div>
-      <div class="col text-end">
-        <p>{{ buyer_tax }} %</p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder me-1">Price ceiling (Pc)</p>
-        <div
-          class="d-flex"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Sellers are not allowed to ask higher than the price ceiling"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-info-circle-fill"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
-            />
-          </svg>
+{{ if player.is_admin }}
+  <span> Tax on buyers in percent: </span><input type="number" id="buyer_tax_admin">
+  <br>
+  <br>
+  <br>
+  <button type="button" onclick="updateMarket()" id="btn-update-market"> Send update </button>
+{{ else }}
+  <div
+    id="app"
+    class="row grid h-100vh"
+    style="grid-template-rows: min-content minmax(0, 1fr) min-content"
+  >
+    <header class="bg-um-blue text-white pb-1">
+      <div class="row">
+        <div class="col">
+          <h1 class="fw-light">
+            {{ if player.is_buyer }}Buyer{{ else }}Seller{{ endif }}
+          </h1>
+        </div>
+        <div class="col-auto">
+          <p id="market_closing_time" class="text-end opacity-50">
+            Market closing time<br />{{ market_closing }}
+          </p>
         </div>
       </div>
-      <div class="col text-end">
-        <p>{{ price_ceiling }}</p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder me-1">Price floor (Pf)</p>
-        <div
-          class="d-flex"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Buyers are not allowed to bid lower than the price floor"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-info-circle-fill"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
-            />
-          </svg>
+
+      <div class="row">
+        <div class="col">
+          <p class="fw-bolder">Profit</p>
+        </div>
+        <div class="col text-end">
+          <p><span v-html="data.balance"></span></p>
         </div>
       </div>
-      <div class="col text-end">
-        <p>{{ price_floor }}</p>
+      <div class="row">
+        <div class="col">
+          <p class="fw-bolder">Tax</p>
+        </div>
+        <div class="col text-end">
+          <p>{{ buyer_tax }} %</p>
+        </div>
       </div>
-    </div>
-  </header>
+      <div class="row">
+        <div class="col-auto d-flex">
+          <p class="fw-bolder me-1">Price ceiling (Pc)</p>
+          <div
+            class="d-flex"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Sellers are not allowed to ask higher than the price ceiling"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-info-circle-fill"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="col text-end">
+          <p>{{ price_ceiling }}</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-auto d-flex">
+          <p class="fw-bolder me-1">Price floor (Pf)</p>
+          <div
+            class="d-flex"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Buyers are not allowed to bid lower than the price floor"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-info-circle-fill"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="col text-end">
+          <p>{{ price_floor }}</p>
+        </div>
+      </div>
+    </header>
 
-  <main class="bg-white grid" style="grid-template-rows: min-content min-content minmax(0 ,1fr);">
-    <div id="asks-and-bids" class="row pt-2 pb-1">
-      <div class="col text-end">
-        <p class="fw-bold pe-1">Asks</p>
-        <ul class="list-unstyled mb-0">
-          <li v-for="(ask, index) in lowestAsks"
-          :class="{ 'highlight fw-bold': playerId === ask.asker }"
-          class="pe-1"
-          :key="index">[[ ask.ask ]]</li>
-        </ul>
+    <main class="bg-white grid" style="grid-template-rows: min-content min-content minmax(0 ,1fr);">
+      <div id="asks-and-bids" class="row pt-2 pb-1">
+        <div class="col text-end">
+          <p class="fw-bold pe-1">Asks</p>
+          <ul class="list-unstyled mb-0">
+            <li v-for="(ask, index) in lowestAsks"
+            :class="{ 'highlight fw-bold': playerId === ask.asker }"
+            class="pe-1"
+            :key="index">[[ ask.ask ]]</li>
+          </ul>
+        </div>
+        <div class="col text-end">
+          <p class="fw-bold pe-1">Bids</p>
+          <ul class="list-unstyled mb-0">
+            <li v-for="(bid, index) in highestBids"
+            :class="{ 'highlight fw-bold': playerId === bid.bidder }"
+            class="pe-1"
+            :key="index">[[ bid.bid ]]</li>
+          </ul>
+        </div>
       </div>
-      <div class="col text-end">
-        <p class="fw-bold pe-1">Bids</p>
-        <ul class="list-unstyled mb-0">
-          <li v-for="(bid, index) in highestBids"
-          :class="{ 'highlight fw-bold': playerId === bid.bidder }"
-          class="pe-1"
-          :key="index">[[ bid.bid ]]</li>
-        </ul>
-      </div>
-    </div>
 
-    <nav class="row">
-      <div class="col">
-        <ul class="nav pt-2">
-          <li>
-            <button
-              class="nav-item btn p-0 square border-0 me-3"
-              :class="tab === 'open-orders' ? 'active' : ''"
-              @click.prevent="setTabTo('open-orders')"
-            >
-              Open orders
-            </button>
-          </li>
-          <li>
-            <button
-              class="nav-item btn p-0 square border-0 me-3"
-              :class="tab === 'history' ? 'active' : ''"
-              @click.prevent="setTabTo('history')"
-            >
-              History
-            </button>
-          </li>
-          <li>
-            <button
-              class="nav-item btn p-0 square border-0"
-              :class="tab === 'graph' ? 'active' : ''"
-              @click.prevent="setTabTo('graph')"
-            >
-            {{ if player.is_buyer }}MU{{ else }}MC{{ endif }} graph
-            </button>
-          </li>
-        </ul>
+      <nav class="row">
+        <div class="col">
+          <ul class="nav pt-2">
+            <li>
+              <button
+                class="nav-item btn p-0 square border-0 me-3"
+                :class="tab === 'open-orders' ? 'active' : ''"
+                @click.prevent="setTabTo('open-orders')"
+              >
+                Open orders
+              </button>
+            </li>
+            <li>
+              <button
+                class="nav-item btn p-0 square border-0 me-3"
+                :class="tab === 'history' ? 'active' : ''"
+                @click.prevent="setTabTo('history')"
+              >
+                History
+              </button>
+            </li>
+            <li>
+              <button
+                class="nav-item btn p-0 square border-0"
+                :class="tab === 'graph' ? 'active' : ''"
+                @click.prevent="setTabTo('graph')"
+              >
+              {{ if player.is_buyer }}MU{{ else }}MC{{ endif }} graph
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <ul id="orders" v-show="tab === 'open-orders'" class="list-unstyled mt-1 mb-0 pt-1 pe-2 overflow-y-auto">
+        <li v-for="(order, index) in openOrders" :key="index">
+          <div class="row mb-2 order">
+            <div class="col pe-0"><span v-html="order.offer"></div>
+            <div class="col-auto p-0">[[ order.offer_time ]]</div>
+            <div class="col-auto">
+              <button class="btn p-0" style="margin-top: -.5rem" @click.prevent="withdrawOffer(order.offer)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
+                  <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </li>
+        <p v-if="!openOrders.length">You have no open orders yet</p>
+      </ul>
+      <div id="history" v-show="tab === 'history'" class="w-100 flex-column mt-1 mb-0 overflow-auto" style="display: flex">
+        <table v-if="tradingHistory.length" class="table table-borderless table-sm">
+          <thead>
+            <tr>
+              <th scope="col">Offer</th>
+              <th scope="col">Tax</th>
+              <th scope="col">Profit</th>
+              <th scope="col">Pc</th>
+              <th scope="col">Pf</th>
+              <th scope="col">Date</th>
+            </tr>
+          </thead>
+          <tbody class="w-max-content">
+            <tr v-for="(trade, index) in tradingHistory" :key="index">
+              <td><div class="w-max-content" v-html="trade.price"></td>
+              <td><div class="w-max-content">[[ trade.tax_on_buyer ]]</div></td>
+              <td><div class="w-max-content" v-html="trade.profit_from_trade"></div></td>
+              <td><div class="w-max-content" v-html="trade.price_ceiling"></div></td>
+              <td><div class="w-max-content" v-html="trade.price_floor"></div></td>
+              <td><div class="w-max-content">[[ trade.time ]]</div></td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-else class="pt-1">You have no history yet</p>
       </div>
-    </nav>
-    <ul id="orders" v-show="tab === 'open-orders'" class="list-unstyled mt-1 mb-0 pt-1 pe-2 overflow-y-auto">
-      <li v-for="(order, index) in openOrders" :key="index">
-        <div class="row mb-2 order">
-          <div class="col pe-0"><span v-html="order.offer"></div>
-          <div class="col-auto p-0">[[ order.offer_time ]]</div>
-          <div class="col-auto">
-            <button class="btn p-0" style="margin-top: -.5rem" @click.prevent="withdrawOffer(order.offer)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
-                <path fill-rule="evenodd" d="M2.146 2.146a.5.5 0 0 0 0 .708l11 11a.5.5 0 0 0 .708-.708l-11-11a.5.5 0 0 0-.708 0Z"/>
-              </svg>
+      <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
+        {{ if player.is_buyer }}
+          <div id="mu_chart"></div>
+        {{ else }}
+          <div id="mc_chart"></div>
+        {{ endif }}
+      </div>
+    </main>
+
+    <footer class="bg-um-blue text-white pt-1 pb-2">
+      <div class="row">
+        <div class="col-auto d-flex">
+          <p class="fw-bolder me-1">
+            Marginal {{ if player.is_buyer }}Utility (MU){{ else }}Cost (MC){{ endif }}
+          </p>
+          <div
+            class="d-flex"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="You want to {{ if player.is_buyer }}buy lower{{ else }}sell higher{{ endif }} than
+            this number"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-info-circle-fill"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="col text-end"><span v-html="data.marginal_evaluation"></span></div>
+      </div>
+      <div class="row">
+        <div class="col-auto">
+          <p class="fw-bolder">
+            {{ if player.is_buyer }}Consumption{{ else }}Production{{ endif }}
+            time
+          </p>
+        </div>
+        <div class="col text-end">
+          <p>[[ data.time_needed ]] seconds</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col d-flex justify-content-end">
+          <div class="input-group mt-2">
+            <input
+              type="number"
+              step="1"
+              class="form-control text-end"
+              placeholder="Offer (in points)"
+              aria-label="Offer in points"
+              aria-describedby="button-offer"
+              v-model="offer"
+              @keydown.enter.prevent="sendOffer"
+            />
+            <button
+              class="btn btn-um-orange fw-bold"
+              type="button"
+              id="button-offer"
+              @click="sendOffer"
+            >
+              {{ if player.is_buyer }}BID{{ else }}ASK{{ endif }}
             </button>
           </div>
         </div>
-      </li>
-      <p v-if="!openOrders.length">You have no open orders yet</p>
-    </ul>
-    <div id="history" v-show="tab === 'history'" class="w-100 flex-column mt-1 mb-0 overflow-auto" style="display: flex">
-      <table v-if="tradingHistory.length" class="table table-borderless table-sm">
-        <thead>
-          <tr>
-            <th scope="col">Offer</th>
-            <th scope="col">Tax</th>
-            <th scope="col">Profit</th>
-            <th scope="col">Pc</th>
-            <th scope="col">Pf</th>
-            <th scope="col">Date</th>
-          </tr>
-        </thead>
-        <tbody class="w-max-content">
-          <tr v-for="(trade, index) in tradingHistory" :key="index">
-            <td><div class="w-max-content" v-html="trade.price"></td>
-            <td><div class="w-max-content">[[ trade.tax_on_buyer ]]</div></td>
-            <td><div class="w-max-content" v-html="trade.profit_from_trade"></div></td>
-            <td><div class="w-max-content" v-html="trade.price_ceiling"></div></td>
-            <td><div class="w-max-content" v-html="trade.price_floor"></div></td>
-            <td><div class="w-max-content">[[ trade.time ]]</div></td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="pt-1">You have no history yet</p>
-    </div>
-    <div id="graph" v-show="tab === 'graph'" class="mt-2 overflow-y-auto">
-      {{ if player.is_buyer }}
-        <div id="mu_chart"></div>
-      {{ else }}
-        <div id="mc_chart"></div>
-      {{ endif }}
-    </div>
-  </main>
-
-  <footer class="bg-um-blue text-white pt-1 pb-2">
-    <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder me-1">
-          Marginal {{ if player.is_buyer }}Utility (MU){{ else }}Cost (MC){{ endif }}
-        </p>
-        <div
-          class="d-flex"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="You want to {{ if player.is_buyer }}buy lower{{ else }}sell higher{{ endif }} than
-          this number"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-info-circle-fill"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
-            />
-          </svg>
-        </div>
       </div>
-      <div class="col text-end"><span v-html="data.marginal_evaluation"></span></div>
-    </div>
-    <div class="row">
-      <div class="col-auto">
-        <p class="fw-bolder">
-          {{ if player.is_buyer }}Consumption{{ else }}Production{{ endif }}
-          time
-        </p>
-      </div>
-      <div class="col text-end">
-        <p>[[ data.time_needed ]] seconds</p>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col d-flex justify-content-end">
-        <div class="input-group mt-2">
-          <input
-            type="number"
-            step="1"
-            class="form-control text-end"
-            placeholder="Offer (in points)"
-            aria-label="Offer in points"
-            aria-describedby="button-offer"
-            v-model="offer"
-            @keydown.enter.prevent="sendOffer"
-          />
-          <button
-            class="btn btn-um-orange fw-bold"
-            type="button"
-            id="button-offer"
-            @click="sendOffer"
-          >
-            {{ if player.is_buyer }}BID{{ else }}ASK{{ endif }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </footer>
-</div>
+    </footer>
+  </div>
+{{ endif }}
 
 {{ endblock }} {{ block scripts }}
 
+<script>  console.log("Hello world") </script>
 <script src="https://unpkg.com/vue@3"></script>
 <script>
+  console.log("Hello world");
   let app = Vue.createApp({
     data() {
       return {
@@ -281,9 +291,9 @@ Auction Market {{ endblock }} {{ block content }}
 
     mounted() {
       liveSocket.onmessage = function (e) {
-        // console.log(e.data);
+        console.log(e.data);
         this.data = JSON.parse(e.data);
-        console.log(this.data)
+        console.log(this.data);
         this.drawMarginChart();
       }.bind(this);
     },
@@ -330,6 +340,10 @@ Auction Market {{ endblock }} {{ block content }}
       withdrawOffer(offer) {
         liveSend({"type": "withdrawal", "withdrawal": offer})
       },
+      updateMarket() {
+        liveSend({"type": "market_update",
+                  "buyer_tax_admin": admin_buyer_tax.value})
+    }
       drawMarginChart() {
         if (js_vars.is_buyer) {
           redrawUtility(this.data.utility_chart_series, this.data.chart_point)

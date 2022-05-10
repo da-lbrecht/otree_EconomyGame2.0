@@ -93,7 +93,9 @@ def creating_session(subsession: Subsession):
         # this means if the player's ID is not a multiple of 2, they are a buyer.
         # for more buyers, change the 2 to 3
         participant = p.participant
+        session = subsession.session
         p.is_buyer = p.id_in_group % 2 > 0
+        p.is_admin = p.id_in_group == 1
         p.balance = 0
         p.session_description = p.session.config['description']
         p.current_offer_time = C.MAX_TIMESTAMP
@@ -112,6 +114,8 @@ def creating_session(subsession: Subsession):
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.error = ""
+        # Initialize session variables
+        session.buyer_tax = p.session.config['buyer_tax']
 
 
 class Group(BaseGroup):
@@ -120,6 +124,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     session_description = models.StringField()
+    is_admin = models.BooleanField()
     is_buyer = models.BooleanField()
     current_offer = models.FloatField()
     current_offer_time = models.FloatField()
@@ -158,13 +163,14 @@ def live_method(player: Player, data):
     group = player.group
     players = group.get_players()
     buyers = [p for p in players if p.is_buyer]
-    sellers = [p for p in players if not p.is_buyer]
+    sellers = [p for p in players if not p.is_buyer and p.is_admin != 1]
     news = None
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
         seller_tax = float(player.session.config['seller_tax'])
-        buyer_tax = float(player.session.config['buyer_tax'])
+        # buyer_tax = float(player.session.config['buyer_tax'])
+        buyer_tax = float(player.subsession.session.buyer_tax)
     else:
         seller_tax = 0
         buyer_tax = 0
@@ -197,7 +203,7 @@ def live_method(player: Player, data):
                     offer_times.sort(key=lambda x: x[0],
                                      reverse=True)  # Sort such that highest bid is first list element
                     player.current_offer = offer_times[0][0]
-                else:
+                elif player.is_buyer == 0 and player.is_admin != 1:
                     offer_times.sort(key=lambda x: x[0],
                                      reverse=False)  # Sort such that lowest ask is first list element
                     player.current_offer = offer_times[0][0]
@@ -205,7 +211,7 @@ def live_method(player: Player, data):
                 player.current_offer_time = offer_times[0][1]
                 if player.is_buyer:
                     match = find_match(buyers=[player], sellers=sellers)
-                else:
+                elif player.is_buyer == 0 and player.is_admin != 1:
                     match = find_match(buyers=buyers, sellers=[player])
                 if match:
                     [buyer, seller] = match
@@ -243,8 +249,8 @@ def live_method(player: Player, data):
                     # Create message about effected trade
                     news = [
                         dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time),
-                        datetime.fromtimestamp(x[1]).ctime()
-                            ]
+                        str(datetime.today().ctime())
+                    ]
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
@@ -295,18 +301,18 @@ def live_method(player: Player, data):
                     # Update current offer history, i.e. still standing offers after trade
                     buyer.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in buyer.participant.offer_times:
-                        buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
+                        buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0], 2))) + " " +
                                                                          currency_unit,
                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
                     seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in seller.participant.offer_times:
-                        seller.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
+                        seller.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0], 2))) + " " +
                                                                           currency_unit,
                                                                  "offer_time": datetime.fromtimestamp(x[1]).ctime()})
             # Update current offer history, i.e. standing offers after new offer has been made
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
-                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
+                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0], 2))) + " " +
                                                                   currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'withdrawal':
@@ -324,7 +330,7 @@ def live_method(player: Player, data):
                 else:
                     player.current_offer = C.BID_MIN
                     player.current_offer_time = C.MAX_TIMESTAMP
-            else:
+            elif player.is_buyer == 0 and player.is_admin != 1:
                 offer_times.sort(key=lambda x: x[0], reverse=False)  # Sort such that lowest ask is first list element
                 if len(offer_times) >= 1:
                     player.current_offer = offer_times[0][0]
@@ -335,7 +341,7 @@ def live_method(player: Player, data):
             # Current offer history, i.e. still standing offers
             player.participant.offer_history = []  # Empty offer history before recreating based on most recent info
             for x in player.participant.offer_times:
-                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0],2))) + " " +
+                player.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0], 2))) + " " +
                                                                   currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'time_update':
@@ -348,8 +354,12 @@ def live_method(player: Player, data):
             # Update marginal utility/costs
             if player.is_buyer:
                 player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
-            else:
+            elif player.is_buyer == 0 and player.is_admin != 1:
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
+        elif data['type'] == 'market_update':
+            # Admin update of market structure
+            player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])
+
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -410,6 +420,7 @@ def live_method(player: Player, data):
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
             error=p.participant.error,
+            buyer_tax=str('{:.1f}'.format(round(buyer_tax*100, 2))) + " " + str('%'),
         )
         for p in players
     }
@@ -427,7 +438,7 @@ class Trading(Page):
 
     @staticmethod
     def js_vars(player: Player):
-        return dict(id_in_group=player.id_in_group, is_buyer=player.is_buyer)
+        return dict(id_in_group=player.id_in_group, is_buyer=player.is_buyer, is_admin=player.is_admin)
 
     @staticmethod
     def get_timeout_seconds(player: Player):
