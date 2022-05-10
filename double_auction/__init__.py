@@ -481,6 +481,7 @@ class Trading(Page):
             taxation=taxation,
             seller_tax=seller_tax_display,
             buyer_tax=buyer_tax_display,
+            currency_unit=str(player.session.config['currency_unit']),
         )
 
 
