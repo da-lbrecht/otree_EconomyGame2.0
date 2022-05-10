@@ -241,7 +241,10 @@ def live_method(player: Player, data):
                     buyer.balance += buyer.participant.marginal_evaluation - price - (buyer_tax * price)
                     seller.balance += price - seller.participant.marginal_evaluation - (seller_tax * price)
                     # Create message about effected trade
-                    news = dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time)
+                    news = [
+                        dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time),
+                        datetime.fromtimestamp(x[1]).ctime()
+                            ]
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
