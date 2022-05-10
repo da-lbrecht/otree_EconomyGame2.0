@@ -5,6 +5,7 @@ import numpy as np
 import json  # Module to convert python dictionaries into JSON objects
 import sys
 
+
 ##### START: Definition of production costs and consumption utilities #####
 
 def marginal_production_costs(t):
@@ -29,6 +30,7 @@ def marginal_consumption_utility(t):
     else:
         u = 25
     return u
+
 
 # def marginal_production_costs(t):
 #     c = round((max((600 - t), 0) * 50 + (600 - max(600 - t, 0)) * 100) / 600, 2)
@@ -95,7 +97,7 @@ def creating_session(subsession: Subsession):
         participant = p.participant
         session = subsession.session
         p.is_buyer = p.id_in_group % 2 > 0
-        p.is_admin = p.id_in_group == 1
+        p.is_admin = p.id_in_group == 1  # The first participant link is for admin use only!!!
         p.balance = 0
         p.session_description = p.session.config['description']
         p.current_offer_time = C.MAX_TIMESTAMP
@@ -189,16 +191,16 @@ def live_method(player: Player, data):
         if data['type'] == 'offer':
             if player.session.config['price_restrictions'] \
                     and player.is_buyer \
-                    and round(float(data['offer']),2) < int(player.session.config['price_floor']):
+                    and round(float(data['offer']), 2) < int(player.session.config['price_floor']):
                 player.participant.error = "You are not allowed to bid below the price floor."
             elif player.session.config['price_restrictions'] \
                     and player.is_buyer == 0 \
-                    and round(float(data['offer']),2) > int(player.session.config['price_ceiling']):
+                    and round(float(data['offer']), 2) > int(player.session.config['price_ceiling']):
                 player.participant.error = "You are not allowed to ask above the price ceiling."
             else:
                 # offers.append(float(data['offer']))
                 # participant.offers = offers
-                offer_times.append((round(float(data['offer']),2), datetime.today().timestamp()))
+                offer_times.append((round(float(data['offer']), 2), datetime.today().timestamp()))
                 if player.is_buyer:
                     offer_times.sort(key=lambda x: x[0],
                                      reverse=True)  # Sort such that highest bid is first list element
@@ -360,7 +362,6 @@ def live_method(player: Player, data):
             # Admin update of market structure
             player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])
 
-
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
     raw_bidders = [[p.id_in_group for i in p.participant.offer_times] for p in buyers]  # Collect bidders
@@ -371,12 +372,12 @@ def live_method(player: Player, data):
     bidder_keys = ["bidder" for i in range(len(bidders))]
     overall_bids_dict_list = [[bid_keys[i], bids[i], bidder_keys[i], bidders[i]] for i in range(len(bids))]
     overall_bids = [
-            {
-                overall_bids_dict_list[i][0]: str('{:.2f}'.format(round(overall_bids_dict_list[i][1], 2))),
-                overall_bids_dict_list[i][2]: overall_bids_dict_list[i][3]
-            }
-            for i in range(len(overall_bids_dict_list))
-        ]
+        {
+            overall_bids_dict_list[i][0]: str('{:.2f}'.format(round(overall_bids_dict_list[i][1], 2))),
+            overall_bids_dict_list[i][2]: overall_bids_dict_list[i][3]
+        }
+        for i in range(len(overall_bids_dict_list))
+    ]
     bids.sort(reverse=True)
 
     # Collect asks from all sellers
@@ -389,12 +390,12 @@ def live_method(player: Player, data):
     asker_keys = ["asker" for i in range(len(askers))]
     overall_asks_dict_list = [[ask_keys[i], asks[i], asker_keys[i], askers[i]] for i in range(len(asks))]
     overall_asks = [
-            {
-                overall_asks_dict_list[i][0]: str('{:.2f}'.format(round(overall_asks_dict_list[i][1], 2))),
-                overall_asks_dict_list[i][2]: overall_asks_dict_list[i][3]
-            }
-            for i in range(len(overall_asks_dict_list))
-        ]
+        {
+            overall_asks_dict_list[i][0]: str('{:.2f}'.format(round(overall_asks_dict_list[i][1], 2))),
+            overall_asks_dict_list[i][2]: overall_asks_dict_list[i][3]
+        }
+        for i in range(len(overall_asks_dict_list))
+    ]
     asks.sort(reverse=False)
 
     # Create charts
@@ -420,9 +421,9 @@ def live_method(player: Player, data):
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
             error=p.participant.error,
-            buyer_tax=str('{:.1f}'.format(round(buyer_tax*100, 2))) + " " + str('%'),
+            buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
         )
-        for p in players
+        for p in players if p.is_admin is False
     }
 
 

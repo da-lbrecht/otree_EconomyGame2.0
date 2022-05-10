@@ -1,18 +1,52 @@
 {% extends "global/Page.html" %} {% load otree %} {{ block title }} Double
 Auction Market {{ endblock }} {{ block content }}
 
-{{ if player.is_admin }}
-  <span> Tax on buyers in percent: </span><input type="number" id="buyer_tax_admin">
-  <br>
-  <br>
-  <br>
-  <button type="button" onclick="updateMarket()" id="btn-update-market"> Send update </button>
-{{ else }}
   <div
     id="app"
     class="row grid h-100vh"
     style="grid-template-rows: min-content minmax(0, 1fr) min-content"
   >
+
+{{ if player.is_admin }}
+  <header class="bg-um-blue text-white pb-1">
+    <div class="row">
+      <div class="col">
+        <h1 class="fw-light">
+          Admin View
+        </h1>
+      </div>
+        <div class="col-auto">
+          <p id="admin_description" class="text-end opacity-50">
+            Make changes to the market parameters<br />
+          </p>
+        </div>
+      </div>
+    </div>
+  </header>
+  <br>
+  <br>
+  <span> Tax on buyers in percent: </span><input type="number" id="buyer_tax_admin">
+  <br>
+  <br>
+  <span> Tax on sellers in percent: </span><input type="number" id="seller_tax_admin">
+  <br>
+  <br>
+  <span> Price ceiling: </span><input type="number" id="price_ceiling_admin">
+  <br>
+  <br>
+  <span> Price floor: </span><input type="number" id="price_floor_admin">
+  <br>
+  <br>
+  <br>
+  <button
+    class="btn btn-um-orange fw-bold"
+    type="button"
+    id="btn-update-market"
+    @click="updateMarket"
+  >Update Market
+  </button>
+{{ else }}
+
     <header class="bg-um-blue text-white pb-1">
       <div class="row">
         <div class="col">
@@ -275,11 +309,8 @@ Auction Market {{ endblock }} {{ block content }}
 {{ endif }}
 
 {{ endblock }} {{ block scripts }}
-
-<script>  console.log("Hello world") </script>
 <script src="https://unpkg.com/vue@3"></script>
 <script>
-  console.log("Hello world");
   let app = Vue.createApp({
     data() {
       return {
@@ -293,7 +324,7 @@ Auction Market {{ endblock }} {{ block content }}
       liveSocket.onmessage = function (e) {
         console.log(e.data);
         this.data = JSON.parse(e.data);
-        console.log(this.data);
+        console.log(this.data)
         this.drawMarginChart();
       }.bind(this);
     },
@@ -341,9 +372,12 @@ Auction Market {{ endblock }} {{ block content }}
         liveSend({"type": "withdrawal", "withdrawal": offer})
       },
       updateMarket() {
-        liveSend({"type": "market_update",
-                  "buyer_tax_admin": admin_buyer_tax.value})
-    }
+        liveSend({
+          "type": "market_update",
+          "buyer_tax_admin": admin_buyer_tax.value
+        })
+        console.log("Market update sent!");
+      },
       drawMarginChart() {
         if (js_vars.is_buyer) {
           redrawUtility(this.data.utility_chart_series, this.data.chart_point)
