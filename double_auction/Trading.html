@@ -12,32 +12,53 @@ Auction Market {{ endblock }} {{ block content }}
     <div class="row">
       <div class="col">
         <h1 class="fw-light">
-          Admin View
+          Admin Page
         </h1>
       </div>
         <div class="col-auto">
           <p id="admin_description" class="text-end opacity-50">
-            Make changes to the market parameters<br />
+            You can change the market parameters here...<br>
           </p>
         </div>
-      </div>
     </div>
   </header>
-  <br>
-  <br>
-  <span> Tax on buyers in percent: </span><input type="number" id="buyer_tax_admin">
-  <br>
-  <br>
-  <span> Tax on sellers in percent: </span><input type="number" id="seller_tax_admin">
-  <br>
-  <br>
-  <span> Price ceiling: </span><input type="number" id="price_ceiling_admin">
-  <br>
-  <br>
-  <span> Price floor: </span><input type="number" id="price_floor_admin">
-  <br>
-  <br>
-  <br>
+
+  <div class="row">
+    <div class="col">
+      <p class="fw-bolder">Tax on buyers in percent:</p>
+    </div>
+    <div class="col text-end">
+      <p><input type="number" id="buyer_tax_admin"></p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <p class="fw-bolder">Tax on sellers in percent:</p>
+    </div>
+    <div class="col text-end">
+      <p><input type="number" id="seller_tax_admin"></p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <p class="fw-bolder">Price ceiling:</p>
+    </div>
+    <div class="col text-end">
+      <p><input type="number" id="price_ceiling_admin"></p>
+    </div>
+  </div>
+
+   <div class="row">
+    <div class="col">
+      <p class="fw-bolder">Price floor:</p>
+    </div>
+    <div class="col text-end">
+      <p><input type="number" id="price_floor_admin"></p>
+    </div>
+  </div>
+
   <button
     class="btn btn-um-orange fw-bold"
     type="button"
@@ -316,6 +337,7 @@ Auction Market {{ endblock }} {{ block content }}
       return {
         data: {},
         offer: null,
+        admin_buyer_tax: document.getElementById('buyer_tax_admin'),
         tab: 'open-orders'
       };
     },
