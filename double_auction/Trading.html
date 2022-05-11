@@ -24,46 +24,48 @@ Auction Market {{ endblock }} {{ block content }}
     </div>
   </header>
 
-  <div class="row">
-    <p style="margin-bottom:1cm;">
-    <div class="col">
-      <p class="fw-bolder">Tax on buyers in percent:</p>
+  <main class="bg-white grid" style="grid-template-rows: min-content min-content minmax(0 ,1fr);">
+    <div class="row">
+      <p style="margin-bottom:1cm;">
+      <div class="col-auto d-flex">
+        <p class="fw-bolder">Tax on buyers in percent:</p>
+      </div>
+      <div class="col text-end">
+        <p><input type="number" id="buyer_tax_admin"></p>
+      </div>
     </div>
-    <div class="col text-end">
-      <p><input type="number" id="buyer_tax_admin"></p>
-    </div>
-  </div>
 
-  <div class="row">
-    <p style="margin-bottom:0.5cm;">
-    <div class="col">
-      <p class="fw-bolder">Tax on sellers in percent:</p>
+    <div class="row">
+      <p style="margin-bottom:0.5cm;">
+      <div class="col-auto d-flex">
+        <p class="fw-bolder">Tax on sellers in percent:</p>
+      </div>
+      <div class="col text-end">
+        <p><input type="number" id="seller_tax_admin"></p>
+      </div>
     </div>
-    <div class="col text-end">
-      <p><input type="number" id="seller_tax_admin"></p>
-    </div>
-  </div>
 
-  <div class="row">
-    <p style="margin-bottom:0.5cm;">
-    <div class="col">
-      <p class="fw-bolder">Price ceiling:</p>
+    <div class="row">
+      <p style="margin-bottom:0.5cm;">
+      <div class="col-auto d-flex">
+        <p class="fw-bolder">Price ceiling:</p>
+      </div>
+      <div class="col text-end">
+        <p><input type="number" id="price_ceiling_admin"></p>
+      </div>
     </div>
-    <div class="col text-end">
-      <p><input type="number" id="price_ceiling_admin"></p>
-    </div>
-  </div>
 
-   <div class="row">
-    <p style="margin-bottom:0.5cm;">
-    <div class="col">
-      <p class="fw-bolder">Price floor:</p>
+     <div class="row">
+      <p style="margin-bottom:0.5cm;">
+      <div class="col-auto d-flex">
+        <p class="fw-bolder">Price floor:</p>
+      </div>
+      <div class="col text-end">
+        <p><input type="number" id="price_floor_admin"></p>
+      </div>
+      <p style="margin-bottom:1cm;">
     </div>
-    <div class="col text-end">
-      <p><input type="number" id="price_floor_admin"></p>
-    </div>
-    <p style="margin-bottom:1cm;">
-  </div>
+  </main>
 
   <footer class="bg-um-blue text-white pt-1 pb-2">
     <div class="row">
