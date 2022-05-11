@@ -422,8 +422,9 @@ def live_method(player: Player, data):
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
             error=p.participant.error,
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
+            currency_unit=str(player.session.config['currency_unit']),
         )
-        for p in players if p.is_admin is False
+        for p in players  # if p.is_admin is False
     }
 
 
