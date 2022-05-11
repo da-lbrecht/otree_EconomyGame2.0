@@ -30,7 +30,7 @@ Auction Market {{ endblock }} {{ block content }}
       <p class="fw-bolder">Tax on buyers in percent:</p>
     </div>
     <div class="col text-end">
-      <p><input type="number" id="buyer_tax_admin"></p>
+      <p><input type="number" v-model="buyer_tax_admin"></p>
     </div>
   </div>
 
@@ -415,7 +415,7 @@ Auction Market {{ endblock }} {{ block content }}
       return {
         data: {},
         offer: null,
-        admin_buyer_tax: document.getElementById('buyer_tax_admin'),
+        buyer_tax_admin: null,
         tab: 'open-orders'
       };
     },
@@ -474,7 +474,7 @@ Auction Market {{ endblock }} {{ block content }}
       updateMarket() {
         liveSend({
           "type": "market_update",
-          "buyer_tax_admin": admin_buyer_tax.value
+          "buyer_tax_admin": this.buyer_tax_admin
         })
         console.log("Market update sent!");
       },
