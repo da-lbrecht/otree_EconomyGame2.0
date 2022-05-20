@@ -83,7 +83,7 @@ Auction Market {{ endblock }} {{ block content }}
   </footer>
 {{ else }}
 
-    <div class="toast-container position-absolute top-0 start-50 translate-middle-x z-index-1 mt-2">
+    <div class="toast-container position-absolute top-0 start-50 translate-middle-x z-index-1 pt-2 overflow-hidden mh-100">
       <div v-for="(message, index) in messages" :key="index" class="toast d-flex flex-column bg-um-orange text-white" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
           <div class="toast-body">
@@ -431,21 +431,30 @@ Auction Market {{ endblock }} {{ block content }}
         offer: null,
         buyer_tax_admin: null,
         tab: 'open-orders',
-        messages: [{ time: 'test', text: 'This is the first message'}, { time: 'test2', text: 'This is the second message'}]
+        messages: []
       };
     },
 
-    mounted() {
-      liveSocket.onmessage = function (e) {
-        console.log(e.data);
+    async mounted() {
+      liveSocket.onmessage = async function (e) {
+        // console.log(e.data);
         this.data = JSON.parse(e.data);
-        console.log(this.data)
+        // console.log(this.data)
         this.drawMarginChart();
-        const news = this.data.news;
-        if (news && !this.messages.some(message => message.text === news)) {
-          this.messages.push({ time: 'test', text: news});
+
+        let news = null;
+        if (this.data.news) news = this.data.news[0];
+        if (news && !this.messages.some(message => message.time === news.time)) {
+          this.messages.push({ time: news.time, text: 'Item was sold to player ' + news.buyer + ' by player ' + news.seller });
+          localStorage.setItem('messages', JSON.stringify(this.messages))
+          await new Promise(res => setTimeout(res, 100))
+          this.showToastMessages()
         }
       }.bind(this);
+
+      this.messages = JSON.parse(localStorage.getItem('messages')) || []
+      await new Promise(res => setTimeout(res, 100))
+      this.showToastMessages()
     },
 
     computed: {
@@ -480,7 +489,8 @@ Auction Market {{ endblock }} {{ block content }}
 
     methods: {
       removeMessage(index) {
-        this.messages.splice(index, 1);
+        this.messages.splice(index, 1)
+        localStorage.setItem('messages', JSON.stringify(this.messages))
       },
       setTabTo(value) {
         this.tab = value
@@ -506,6 +516,11 @@ Auction Market {{ endblock }} {{ block content }}
           return
         }
         redrawCost(this.data.cost_chart_series, this.data.chart_point)
+      },
+      showToastMessages() {
+        [].slice.call(document.querySelectorAll('.toast'))
+          .map(toastEl => new bootstrap.Toast(toastEl, { autohide: false }))
+          .forEach(toast => toast.show())
       }
     },
   });
@@ -519,21 +534,12 @@ Auction Market {{ endblock }} {{ block content }}
       liveSend({"type": "time_update"})
     });
   });
-</script>
 
-<script>
   // Initialize tooltips with javascript
   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
   var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   	return new bootstrap.Tooltip(tooltipTriggerEl)
   })
-
-  // Initialize toast pop-ups
-  var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-  var toastList = toastElList.map(function (toastEl) {
-    return new bootstrap.Toast(toastEl, { autohide: false })
-  })
-  toastList.forEach(toast => toast.show());
 </script>
 
 {{ endblock scripts }}
