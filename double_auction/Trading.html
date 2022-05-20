@@ -439,6 +439,10 @@ Auction Market {{ endblock }} {{ block content }}
         this.data = JSON.parse(e.data);
         console.log(this.data)
         this.drawMarginChart();
+        const news = this.data.news;
+        if (news && !this.messages.some(message => message.text === news)) {
+          this.messages.push({ time: 'test', text: news});
+        }
       }.bind(this);
     },
 
