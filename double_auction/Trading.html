@@ -81,6 +81,18 @@ Auction Market {{ endblock }} {{ block content }}
   </footer>
 {{ else }}
 
+    <div class="toast-container position-absolute top-0 start-50 translate-middle-x z-index-1 mt-2">
+      <div v-for="(message, index) in messages" :key="index" class="toast d-flex flex-column bg-um-orange text-white" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            [[ message.text ]]
+          </div>
+          <button type="button" class="btn-close me-2 m-auto" @click="removeMessage(index)" aria-label="Close"></button>
+        </div>
+        <small class="align-self-end m-2 mt-0">[[ message.time ]]</small>
+      </div>
+    </div>
+
     <header class="bg-um-blue text-white pb-1">
       <div class="row">
         <div class="col">
@@ -416,7 +428,8 @@ Auction Market {{ endblock }} {{ block content }}
         data: {},
         offer: null,
         buyer_tax_admin: null,
-        tab: 'open-orders'
+        tab: 'open-orders',
+        messages: [{ time: 'test', text: 'This is the first message'}, { time: 'test2', text: 'This is the second message'}]
       };
     },
 
@@ -460,6 +473,9 @@ Auction Market {{ endblock }} {{ block content }}
     },
 
     methods: {
+      removeMessage(index) {
+        this.messages.splice(index, 1);
+      },
       setTabTo(value) {
         this.tab = value
       },
@@ -505,6 +521,13 @@ Auction Market {{ endblock }} {{ block content }}
   var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   	return new bootstrap.Tooltip(tooltipTriggerEl)
   })
+
+  // Initialize toast pop-ups
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl, { autohide: false })
+  })
+  toastList.forEach(toast => toast.show());
 </script>
 
 {{ endblock scripts }}
