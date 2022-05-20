@@ -422,8 +422,10 @@ def live_method(player: Player, data):
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
             error=p.participant.error,
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
+            currency_unit=currency_unit,
+            time_unit=str(player.session.config['time_unit']),
         )
-        for p in players if p.is_admin is False
+        for p in players  # if p.is_admin is False
     }
 
 
@@ -456,7 +458,6 @@ class Trading(Page):
     def vars_for_template(player: Player):
         market_opening = player.session.config['market_opening']
         market_closing = player.session.config['market_closing']
-        currency_unit = player.session.config['currency_unit']
         if player.session.config['price_restrictions']:
             price_floor_display = player.session.config['price_floor']
             price_ceiling_display = player.session.config['price_ceiling']
