@@ -170,6 +170,7 @@ def live_method(player: Player, data):
     buyers = [p for p in players if p.is_buyer]
     sellers = [p for p in players if not p.is_buyer and p.is_admin != 1]
     news = None
+    market_news = None
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
@@ -370,6 +371,7 @@ def live_method(player: Player, data):
             player.subsession.session.seller_tax = float(data['seller_tax_admin'])
             player.subsession.session.price_floor = float(data['price_floor_admin'])
             player.subsession.session.price_ceiling = float(data['price_ceiling_admin'])
+            market_news = ["The market has been updated!", str(datetime.today().ctime())]
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -440,6 +442,7 @@ def live_method(player: Player, data):
             seller_tax_admin=round(seller_tax * 100, 2),
             price_floor_admin=round(price_floor, 2),
             price_ceiling_admin=round(price_ceiling, 2),
+            market_news=market_news,
             currency_unit=currency_unit,
             time_unit=str(player.session.config['time_unit']),
         )
