@@ -118,6 +118,9 @@ def creating_session(subsession: Subsession):
         participant.error = ""
         # Initialize session variables
         session.buyer_tax = p.session.config['buyer_tax']
+        session.seller_tax = p.session.config['seller_tax']
+        session.price_floor = p.session.config['price_floor']
+        session.price_ceiling = p.session.config['price_ceiling']
 
 
 class Group(BaseGroup):
@@ -170,15 +173,18 @@ def live_method(player: Player, data):
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
-        seller_tax = float(player.session.config['seller_tax'])
+        # seller_tax = float(player.session.config['seller_tax'])
+        seller_tax = float(player.subsession.session.seller_tax)
         # buyer_tax = float(player.session.config['buyer_tax'])
         buyer_tax = float(player.subsession.session.buyer_tax)
     else:
         seller_tax = 0
         buyer_tax = 0
     if player.session.config['price_restrictions']:
-        price_floor = player.session.config['price_floor']
-        price_ceiling = player.session.config['price_ceiling']
+        # price_floor = player.session.config['price_floor']
+        price_floor = float(player.subsession.session.price_floor)
+        # price_ceiling = player.session.config['price_ceiling']
+        price_ceiling = float(player.subsession.session.price_ceiling)
     else:
         price_floor = None
         price_ceiling = None
@@ -361,6 +367,9 @@ def live_method(player: Player, data):
         elif data['type'] == 'market_update':
             # Admin update of market structure
             player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])
+            player.subsession.session.seller_tax = float(data['seller_tax_admin'])
+            player.subsession.session.price_floor = float(data['price_floor_admin'])
+            player.subsession.session.price_ceiling = float(data['price_ceiling_admin'])
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -422,6 +431,15 @@ def live_method(player: Player, data):
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
             error=p.participant.error,
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
+            seller_tax=str('{:.1f}'.format(round(seller_tax * 100, 2))) + " " + str('%'),
+            price_floor=str('{:.1f}'.format(round(price_floor, 2))) + " " + str(
+                player.session.config['currency_unit']),
+            price_ceiling=str('{:.1f}'.format(round(price_ceiling, 2))) + " " + str(
+                player.session.config['currency_unit']),
+            buyer_tax_admin=round(buyer_tax * 100, 2),
+            seller_tax_admin=round(seller_tax * 100, 2),
+            price_floor_admin=round(price_floor, 2),
+            price_ceiling_admin=round(price_ceiling, 2),
             currency_unit=currency_unit,
             time_unit=str(player.session.config['time_unit']),
         )

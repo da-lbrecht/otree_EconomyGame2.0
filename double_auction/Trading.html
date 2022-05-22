@@ -188,7 +188,7 @@ Auction Market {{ endblock }} {{ block content }}
         </div>
         <div class="col text-end">
           <p>{{ seller_tax }} %</p>
-        </div>
+        </div>x
       </div>
       <div class="row">
         <div class="col-auto d-flex">
@@ -437,9 +437,9 @@ Auction Market {{ endblock }} {{ block content }}
 
     async mounted() {
       liveSocket.onmessage = async function (e) {
-        // console.log(e.data);
+        console.log(e.data);
         this.data = JSON.parse(e.data);
-        // console.log(this.data)
+        console.log(this.data)
         this.drawMarginChart();
 
         let news = null;
