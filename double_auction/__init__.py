@@ -431,7 +431,7 @@ def live_method(player: Player, data):
             marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
-            error=p.participant.error,
+            error=[p.participant.error, str(datetime.today().ctime())],
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
             seller_tax=str('{:.1f}'.format(round(seller_tax * 100, 2))) + " " + str('%'),
             price_floor=str('{:.1f}'.format(round(price_floor, 2))) + " " + str(
