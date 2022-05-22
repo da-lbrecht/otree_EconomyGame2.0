@@ -28,6 +28,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     taxation=True,
     seller_tax=0.1,
     buyer_tax=0.2,
+    anonymity=True,
 
     doc="")
 
