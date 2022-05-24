@@ -446,13 +446,13 @@ Auction Market {{ endblock }} {{ block content }}
         if (this.data.news) news = this.data.news;
         if (news && !this.messages.some(message => message.time === news.time)) {
           this.messages.push({ time: news.time, text: news.message, type: 'news' });
-          localStorage.setItem('messages', JSON.stringify(this.messages))
+          sessionStorage.setItem('messages', JSON.stringify(this.messages))
           await new Promise(res => setTimeout(res, 100))
           this.showToastMessages()
         }
       }.bind(this);
 
-      this.messages = JSON.parse(localStorage.getItem('messages')) || []
+      this.messages = JSON.parse(sessionStorage.getItem('messages')) || []
       await new Promise(res => setTimeout(res, 100))
       this.showToastMessages()
     },
@@ -495,7 +495,7 @@ Auction Market {{ endblock }} {{ block content }}
     methods: {
       removeMessage(index) {
         this.messages.splice(index, 1)
-        localStorage.setItem('messages', JSON.stringify(this.messages))
+        sessionStorage.setItem('messages', JSON.stringify(this.messages))
       },
       setTabTo(value) {
         this.tab = value
