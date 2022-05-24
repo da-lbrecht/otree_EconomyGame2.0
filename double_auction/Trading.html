@@ -446,7 +446,7 @@ Auction Market {{ endblock }} {{ block content }}
         if (this.data.news) news = this.data.news;
         if (news && !this.messages.some(message => message.time === news.time)) {
           this.messages.push({ time: news.time, text: news.message, type: 'news' });
-          saveMessagesToStorage()
+          this.saveMessagesToStorage()
           await new Promise(res => setTimeout(res, 100))
           this.showToastMessages()
         }
