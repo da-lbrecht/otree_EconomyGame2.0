@@ -484,6 +484,11 @@ Auction Market {{ endblock }} {{ block content }}
       },
       playerId() {
         return js_vars.id_in_group
+      },
+      playerHash() {
+        const splitPathname = window.location.pathname.split('/')
+        const pPosition = splitPathname.indexOf('p')
+        return splitPathname[pPosition + 1]
       }
     },
 
