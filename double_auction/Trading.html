@@ -11,7 +11,7 @@ Auction Market {{ endblock }} {{ block content }}
     <div v-for="(message, index) in messages" :key="index" class="toast d-flex flex-column bg-um-orange text-white" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">
-          [[ message.text ]]
+          <span v-html="message.text"></span>
         </div>
         <button type="button" class="btn-close me-2 m-auto" @click="removeMessage(index)" aria-label="Close"></button>
       </div>
