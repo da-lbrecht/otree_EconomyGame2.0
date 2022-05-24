@@ -489,6 +489,9 @@ Auction Market {{ endblock }} {{ block content }}
         const splitPathname = window.location.pathname.split('/')
         const pPosition = splitPathname.indexOf('p')
         return splitPathname[pPosition + 1]
+      },
+      storageKey() {
+        return 'messages_' + this.playerHash
       }
     },
 
