@@ -437,10 +437,10 @@ Auction Market {{ endblock }} {{ block content }}
 
     async mounted() {
       liveSocket.onmessage = async function (e) {
-        console.log(e.data);
+        // console.log(e.data);
         this.data = JSON.parse(e.data);
-        console.log(this.data)
-        this.drawMarginChart();
+        // console.log(this.data)
+        if (!this.playerIsAdmin) this.drawMarginChart();
 
         let news = null;
         if (this.data.news) news = this.data.news;
@@ -481,6 +481,9 @@ Auction Market {{ endblock }} {{ block content }}
         })
 
         return tradingHistory;
+      },
+      playerIsAdmin() {
+        return js_vars.is_admin
       },
       playerId() {
         return js_vars.id_in_group
