@@ -115,7 +115,8 @@ def creating_session(subsession: Subsession):
         participant.time_needed = 0
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
-        participant.error = ""
+        participant.error = None
+        participant.news = None
         # Initialize session variables
         session.buyer_tax = p.session.config['buyer_tax']
         session.seller_tax = p.session.config['seller_tax']
@@ -169,7 +170,7 @@ def live_method(player: Player, data):
     players = group.get_players()
     buyers = [p for p in players if p.is_buyer]
     sellers = [p for p in players if not p.is_buyer and p.is_admin != 1]
-    news = None
+    player.participant.news = None
     market_news = None
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
@@ -263,34 +264,42 @@ def live_method(player: Player, data):
                     # ALTERNATIVE MESSAGE ABOUT EFFECTED TRADE
                     if player.session.config['anonymity']:
                         if player.is_buyer:
-                            news = ["You bought one unit at price "
-                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                    + " "
-                                    + currency_unit,
-                                    str(datetime.today().ctime())]
+                            player.participant.news = dict(
+                                                            message="You bought one unit at price "
+                                                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                                                    + " "
+                                                                    + currency_unit,
+                                                            time=str(datetime.today().ctime())
+                                                           )
                         else:
-                            news = ["You sold one unit at price "
-                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                    + " "
-                                    + currency_unit,
-                                    str(datetime.today().ctime())]
+                            player.participant.news = dict(
+                                                            message="You sold one unit at price "
+                                                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                                                    + " "
+                                                                    + currency_unit,
+                                                            time=str(datetime.today().ctime())
+                                                           )
                     else:
                         if player.is_buyer:
-                            news = ["You bought one unit at price "
-                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                    + " "
-                                    + currency_unit
-                                    + "from Seller "
-                                    + seller.id_in_group,
-                                    str(datetime.today().ctime())]
+                            player.participant.news = dict(
+                                                            message="You bought one unit at price "
+                                                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                                                    + " "
+                                                                    + currency_unit
+                                                                    + " from Seller "
+                                                                    + str(seller.id_in_group),
+                                                            time=str(datetime.today().ctime())
+                                                           )
                         else:
-                            news = ["You sold one unit at price "
-                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                    + " "
-                                    + currency_unit
-                                    + " to Buyer "
-                                    + buyer.id_in_group,
-                                    str(datetime.today().ctime())]
+                            player.participant.news = dict(
+                                                            message="You sold one unit at price "
+                                                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                                                    + " "
+                                                                    + currency_unit
+                                                                    + " to Buyer "
+                                                                    + str(buyer.id_in_group),
+                                                            time=str(datetime.today().ctime())
+                                                           )
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
@@ -402,7 +411,10 @@ def live_method(player: Player, data):
             player.subsession.session.seller_tax = float(data['seller_tax_admin'])
             player.subsession.session.price_floor = float(data['price_floor_admin'])
             player.subsession.session.price_ceiling = float(data['price_ceiling_admin'])
-            market_news = ["The market has been updated!", str(datetime.today().ctime())]
+            market_news = dict(
+                message="The market has been updated!",
+                time=str(datetime.today().ctime())
+            )
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -454,7 +466,7 @@ def live_method(player: Player, data):
             cost_chart_series=cost_chart_series,
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
-            news=news,
+            news=p.participant.news,
             offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,  # json.dumps(dict(offers=p.participant.offer_history)),
@@ -462,7 +474,7 @@ def live_method(player: Player, data):
             marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
-            error=[p.participant.error, str(datetime.today().ctime())],
+            error=dict(message=p.participant.error, time=str(datetime.today().ctime())),
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
             seller_tax=str('{:.1f}'.format(round(seller_tax * 100, 2))) + " " + str('%'),
             price_floor=str('{:.1f}'.format(round(price_floor, 2))) + " " + str(

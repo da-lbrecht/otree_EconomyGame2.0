@@ -28,7 +28,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     taxation=True,
     seller_tax=0.1,
     buyer_tax=0.2,
-    anonymity=True,
+    anonymity=False,
 
     doc="")
 
@@ -63,6 +63,7 @@ PARTICIPANT_FIELDS = [
     'current_timestamp',
     'refresh_counter',
     'error',
+    'news'
 ]
 
 SESSION_FIELDS = [
