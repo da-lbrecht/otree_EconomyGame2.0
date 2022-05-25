@@ -42,7 +42,7 @@ Auction Market {{ endblock }} {{ block content }}
         <label for="buyer_tax_admin" class="form-label fw-bolder">Tax on buyers in percent:</label>
       </div>
       <div class="col d-flex justify-content-end">
-        <input type="number" class="form-control" id="buyer_tax_admin" v-model="data.buyer_tax_admin">
+        <input type="number" class="form-control" id="buyer_tax_admin" :placeholder="data.buyer_tax_admin" v-model="buyer_tax_admin">
       </div>
     </div>
 
@@ -51,7 +51,7 @@ Auction Market {{ endblock }} {{ block content }}
         <label for="seller_tax_admin" class="form-label fw-bolder">Tax on sellers in percent:</label>
       </div>
       <div class="col d-flex justify-content-end">
-        <input type="number" class="form-control" id="seller_tax_admin" v-model="data.seller_tax_admin">
+        <input type="number" class="form-control" id="seller_tax_admin" :placeholder="data.seller_tax_admin" v-model="seller_tax_admin">
       </div>
     </div>
 
@@ -60,7 +60,7 @@ Auction Market {{ endblock }} {{ block content }}
         <label for="price_ceiling_admin" class="form-label fw-bolder">Price ceiling:</label>
       </div>
       <div class="col d-flex justify-content-end">
-        <input type="number" class="form-control" id="price_ceiling_admin" v-model="data.price_ceiling_admin">
+        <input type="number" class="form-control" id="price_ceiling_admin" :placeholder="data.price_ceiling_admin" v-model="price_ceiling_admin">
       </div>
     </div>
 
@@ -69,7 +69,7 @@ Auction Market {{ endblock }} {{ block content }}
         <label for="price_floor_admin" class="form-label fw-bolder">Price floor:</label>
       </div>
       <div class="col d-flex justify-content-end">
-        <input type="number" class="form-control" id="price_floor_admin" v-model="data.price_floor_admin">
+        <input type="number" class="form-control" id="price_floor_admin" :placeholder="data.price_floor_admin" v-model="price_floor_admin">
       </div>
     </div>
   </main>
@@ -181,7 +181,7 @@ Auction Market {{ endblock }} {{ block content }}
         </div>
         </div>
         <div class="col text-end">
-          <p>{{ seller_tax }} %</p>
+          <p>[[ data.seller_tax ]]</p>
         </div>
       </div>
       <div class="row">
@@ -208,7 +208,7 @@ Auction Market {{ endblock }} {{ block content }}
           </div>
         </div>
         <div class="col text-end">
-          <p>{{ price_ceiling }}</p>
+          <p><span v-html="data.price_ceiling"></span></p>
         </div>
       </div>
       <div class="row">
@@ -235,7 +235,7 @@ Auction Market {{ endblock }} {{ block content }}
           </div>
         </div>
         <div class="col text-end">
-          <p>{{ price_floor }}</p>
+          <p><span v-html="data.price_floor"></span></p>
         </div>
       </div>
     </header>
@@ -423,9 +423,12 @@ Auction Market {{ endblock }} {{ block content }}
       return {
         data: {},
         offer: null,
-        buyer_tax_admin: null,
         tab: 'open-orders',
-        messages: []
+        messages: [],
+        buyer_tax_admin: null,
+        seller_tax_admin: null,
+        price_ceiling_admin: null,
+        price_floor_admin: null
       };
     },
 
@@ -511,8 +514,12 @@ Auction Market {{ endblock }} {{ block content }}
       updateMarket() {
         liveSend({
           "type": "market_update",
-          "buyer_tax_admin": this.buyer_tax_admin
+          "buyer_tax_admin": this.buyer_tax_admin?.toString() || this.data.buyer_tax_admin,
+          "seller_tax_admin": this.seller_tax_admin?.toString() || this.data.seller_tax_admin,
+          "price_ceiling_admin": this.price_ceiling_admin?.toString() || this.data.price_ceiling_admin,
+          "price_floor_admin": this.price_floor_admin?.toString() || this.data.price_floor_admin
         })
+        this.buyer_tax_admin = this.seller_tax_admin = this.price_ceiling_admin = this.price_floor_admin = null
         console.log("Market update sent!");
       },
       drawMarginChart() {
