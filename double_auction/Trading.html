@@ -8,7 +8,7 @@ Auction Market {{ endblock }} {{ block content }}
 >
 
   <div class="toast-container position-absolute top-0 start-50 translate-middle-x z-index-1 pt-2 overflow-hidden mh-100">
-    <div v-for="(message, index) in messages" :key="index" class="toast d-flex flex-column bg-um-orange text-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div v-for="(message, index) in messages" :key="index" :class="toastColor(message.type)" class="toast d-flex flex-column text-white" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">
           <span v-html="message.text"></span>
@@ -441,15 +441,7 @@ Auction Market {{ endblock }} {{ block content }}
         this.data = JSON.parse(e.data);
         // console.log(this.data)
         if (!this.playerIsAdmin) this.drawMarginChart();
-
-        let news = null;
-        if (this.data.news) news = this.data.news;
-        if (news && !this.messages.some(message => message.time === news.time)) {
-          this.messages.push({ time: news.time, text: news.message, type: 'news' });
-          this.saveMessagesToStorage()
-          await new Promise(res => setTimeout(res, 100))
-          this.showToastMessages()
-        }
+        await this.displayAllMessages()
       }.bind(this);
 
       this.messages = JSON.parse(sessionStorage.getItem(this.storageKey)) || []
@@ -532,6 +524,31 @@ Auction Market {{ endblock }} {{ block content }}
         }
         redrawCost(this.data.cost_chart_series, this.data.chart_point)
       },
+      async displayAllMessages() {
+        if (this.data.news && !this.messageIsAlreadyInCollection(this.data.news)) {
+          this.messages.push({ time: this.data.news.time, text: this.data.news.message, type: 'news' });
+        }
+        
+        if (this.data.error?.text && !this.messageIsAlreadyInCollection(this.data.error)) {
+          this.messages.push({ time: this.data.error.time, text: this.data.error.message, type: 'error' });
+        }
+
+        if (this.data.market_news && !this.messageIsAlreadyInCollection(this.data.market_news)) {
+          this.messages.push({ time: this.data.market_news.time, text: this.data.market_news.message, type: 'market_news' });
+        }
+
+        if (this.messages) {
+          this.saveMessagesToStorage()
+          await new Promise(res => setTimeout(res, 100))
+          this.showToastMessages()
+        }
+      },
+      messageIsAlreadyInCollection(message) {
+        return this.messages.some(_message => {
+          return _message.time === message.time && 
+          _message.message === message.text
+        })
+      },
       saveMessagesToStorage() {
         sessionStorage.setItem(this.storageKey, JSON.stringify(this.messages))
       },
@@ -539,6 +556,13 @@ Auction Market {{ endblock }} {{ block content }}
         [].slice.call(document.querySelectorAll('.toast'))
           .map(toastEl => new bootstrap.Toast(toastEl, { autohide: false }))
           .forEach(toast => toast.show())
+      },
+      toastColor(messageType) {
+        switch(messageType) {
+          case 'error': return 'bg-um-red'
+          case 'market_news': return 'bg-um-light-blue'
+          default: return 'bg-um-orange'
+        }
       }
     },
   });

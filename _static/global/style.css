@@ -51,8 +51,14 @@ p {
 .bg-um-blue {
     background-color: #001C3D;
 }
+.bg-um-light-blue {
+    background-color: #00A2DB;
+}
 .bg-um-orange {
     background-color: #E84E10;
+}
+.bg-um-red {
+    background-color: #AE0B12;
 }
 
 .opacity-50 {
