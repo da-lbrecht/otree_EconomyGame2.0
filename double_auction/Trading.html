@@ -37,39 +37,39 @@ Auction Market {{ endblock }} {{ block content }}
   </header>
 
   <main class="bg-white">
-    <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder">Tax on buyers in percent:</p>
+    <div class="row mt-3">
+      <div class="col-auto">
+        <label for="buyer_tax_admin" class="form-label fw-bolder">Tax on buyers in percent:</label>
       </div>
-      <div class="col text-end">
-        <p><input type="number" id="buyer_tax_admin"></p>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder">Tax on sellers in percent:</p>
-      </div>
-      <div class="col text-end">
-        <p><input type="number" id="seller_tax_admin"></p>
+      <div class="col d-flex justify-content-end">
+        <input type="number" class="form-control" id="buyer_tax_admin" v-model="data.buyer_tax_admin">
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder">Price ceiling:</p>
+    <div class="row mt-3">
+      <div class="col-auto">
+        <label for="seller_tax_admin" class="form-label fw-bolder">Tax on sellers in percent:</label>
       </div>
-      <div class="col text-end">
-        <p><input type="number" id="price_ceiling_admin"></p>
+      <div class="col d-flex justify-content-end">
+        <input type="number" class="form-control" id="seller_tax_admin" v-model="data.seller_tax_admin">
       </div>
     </div>
 
-     <div class="row">
-      <div class="col-auto d-flex">
-        <p class="fw-bolder">Price floor:</p>
+    <div class="row mt-3">
+      <div class="col-auto">
+        <label for="price_ceiling_admin" class="form-label fw-bolder">Price ceiling:</label>
       </div>
-      <div class="col text-end">
-        <p><input type="number" id="price_floor_admin"></p>
+      <div class="col d-flex justify-content-end">
+        <input type="number" class="form-control" id="price_ceiling_admin" v-model="data.price_ceiling_admin">
+      </div>
+    </div>
+
+     <div class="row mt-3">
+      <div class="col-auto">
+        <label for="price_floor_admin" class="form-label fw-bolder">Price floor:</label>
+      </div>
+      <div class="col d-flex justify-content-end">
+        <input type="number" class="form-control" id="price_floor_admin" v-model="data.price_floor_admin">
       </div>
     </div>
   </main>
