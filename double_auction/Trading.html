@@ -315,10 +315,11 @@ Auction Market {{ endblock }} {{ block content }}
     </ul>
     <div id="history" v-show="tab === 'history'" class="w-100 flex-column mt-1 mb-0 overflow-auto" style="display: flex">
       <table v-if="tradingHistory.length" class="table table-borderless table-sm">
-        <thead>
+        <thead class="position-sticky top-0 bg-white">
           <tr>
             <th scope="col">Offer</th>
-            <th scope="col">Tax</th>
+            <th scope="col">Buyer tax</th>
+            <th scope="col">Seller tax</th>
             <th scope="col">Profit</th>
             <th scope="col">Pc</th>
             <th scope="col">Pf</th>
@@ -329,6 +330,7 @@ Auction Market {{ endblock }} {{ block content }}
           <tr v-for="(trade, index) in tradingHistory" :key="index">
             <td><div class="w-max-content" v-html="trade.price"></td>
             <td><div class="w-max-content">[[ trade.tax_on_buyer ]]</div></td>
+            <td><div class="w-max-content">[[ trade.tax_on_seller ]]</div></td>
             <td><div class="w-max-content" v-html="trade.profit_from_trade"></div></td>
             <td><div class="w-max-content" v-html="trade.price_ceiling"></div></td>
             <td><div class="w-max-content" v-html="trade.price_floor"></div></td>
