@@ -313,7 +313,7 @@ Auction Market {{ endblock }} {{ block content }}
       </li>
       <p v-if="!openOrders.length">You have no open orders yet</p>
     </ul>
-    <div id="history" v-show="tab === 'history'" class="w-100 flex-column mt-1 mb-0 overflow-auto" style="display: flex">
+    <div id="history" v-show="tab === 'history'" class="overflow-auto mt-1 mb-0">
       <table v-if="tradingHistory.length" class="table table-borderless table-sm">
         <thead class="position-sticky top-0 bg-white">
           <tr>
