@@ -99,8 +99,14 @@ def creating_session(subsession: Subsession):
         p.is_buyer = p.id_in_group % 2 > 0
         p.is_admin = p.id_in_group == 1  # The first participant link is for admin use only!!!
         p.balance = 0
-        p.session_description = p.session.config['description']
         p.current_offer_time = C.MAX_TIMESTAMP
+        # Inherit market parameters from session configs
+        p.session_description = p.session.config['description']
+        p.currency_unit = p.session.config['currency_unit']
+        p.time_unit = p.session.config['time_unit']
+        p.market_opening = p.session.config['market_opening']
+        p.market_closing = p.session.config['market_closing']
+
         if p.is_buyer:
             p.current_offer = C.BID_MIN
             participant.marginal_evaluation = marginal_consumption_utility(0)
@@ -130,6 +136,10 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     session_description = models.StringField()
+    currency_unit = models.StringField()
+    time_unit = models.StringField()
+    market_opening = models.StringField()
+    market_closing = models.StringField()
     is_admin = models.BooleanField()
     is_buyer = models.BooleanField()
     current_offer = models.FloatField()
@@ -520,34 +530,42 @@ class Trading(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        market_opening = player.session.config['market_opening']
-        market_closing = player.session.config['market_closing']
-        if player.session.config['price_restrictions']:
-            price_floor_display = player.session.config['price_floor']
-            price_ceiling_display = player.session.config['price_ceiling']
-        else:
-            price_floor_display = "-"
-            price_ceiling_display = "-"
-        if player.session.config['taxation']:
-            taxation = True
-            seller_tax_display = player.session.config['seller_tax'] * 100
-            buyer_tax_display = player.session.config['buyer_tax'] * 100
-        else:
-            taxation = False
-            seller_tax_display = 0
-            buyer_tax_display = 0
         return dict(
-            market_opening=market_opening,
-            market_closing=market_closing,
-            price_floor=str('{:.2f}'.format(round(price_floor_display, 2))) + " " + str(
-                player.session.config['currency_unit']),
-            price_ceiling=str('{:.2f}'.format(round(price_ceiling_display, 2))) + " " + str(
-                player.session.config['currency_unit']),
-            taxation=taxation,
-            seller_tax=seller_tax_display,
-            buyer_tax=buyer_tax_display,
-            currency_unit=str(player.session.config['currency_unit']),
+            market_opening=player.session.config['market_opening'],
+            market_closing=player.session.config['market_closing'],
         )
+
+    # @staticmethod
+    # def vars_for_template(player: Player):
+    #     market_opening = player.session.config['market_opening']
+    #     market_closing = player.session.config['market_closing']
+    #     if player.session.config['price_restrictions']:
+    #         price_floor_display = player.session.config['price_floor']
+    #         price_ceiling_display = player.session.config['price_ceiling']
+    #     else:
+    #         price_floor_display = "-"
+    #         price_ceiling_display = "-"
+    #     if player.session.config['taxation']:
+    #         taxation = True
+    #         seller_tax_display = player.session.config['seller_tax'] * 100
+    #         buyer_tax_display = player.session.config['buyer_tax'] * 100
+    #     else:
+    #         taxation = False
+    #         seller_tax_display = 0
+    #         buyer_tax_display = 0
+    #     return dict(
+    #         market_opening=market_opening,
+    #         market_closing=market_closing,
+    #         price_floor=str('{:.2f}'.format(round(price_floor_display, 2))) + " " + str(
+    #             player.session.config['currency_unit']),
+    #         price_ceiling=str('{:.2f}'.format(round(price_ceiling_display, 2))) + " " + str(
+    #             player.session.config['currency_unit']),
+    #         taxation=taxation,
+    #         seller_tax=seller_tax_display,
+    #         buyer_tax=buyer_tax_display,
+    #         currency_unit=str(player.session.config['currency_unit']),
+    #         time_unit=str(player.session.config['time_unit']),
+    #     )
 
 
 class ResultsWaitPage(WaitPage):
