@@ -483,9 +483,9 @@ def live_method(player: Player, data):
             error=dict(message=p.participant.error, time=str(datetime.today().ctime())),
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
             seller_tax=str('{:.1f}'.format(round(seller_tax * 100, 2))) + " " + str('%'),
-            price_floor=str('{:.1f}'.format(round(price_floor, 2))) + " " + str(
+            price_floor=str('{:.2f}'.format(round(price_floor, 2))) + " " + str(
                 player.session.config['currency_unit']),
-            price_ceiling=str('{:.1f}'.format(round(price_ceiling, 2))) + " " + str(
+            price_ceiling=str('{:.2f}'.format(round(price_ceiling, 2))) + " " + str(
                 player.session.config['currency_unit']),
             buyer_tax_admin=round(buyer_tax * 100, 2),
             seller_tax_admin=round(seller_tax * 100, 2),
