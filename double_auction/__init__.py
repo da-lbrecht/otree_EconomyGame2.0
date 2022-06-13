@@ -206,11 +206,19 @@ def live_method(player: Player, data):
             if player.session.config['price_restrictions'] \
                     and player.is_buyer \
                     and round(float(data['offer']), 2) < int(player.session.config['price_floor']):
-                player.participant.error = "You are not allowed to bid below the price floor."
+                #player.participant.error = "You are not allowed to bid below the price floor."
+                player.participant.error = dict(
+                    message="You are not allowed to bid below the price floor.",
+                    time=str(datetime.today().ctime())
+                )
             elif player.session.config['price_restrictions'] \
                     and player.is_buyer == 0 \
                     and round(float(data['offer']), 2) > int(player.session.config['price_ceiling']):
-                player.participant.error = "You are not allowed to ask above the price ceiling."
+                #player.participant.error = "You are not allowed to ask above the price ceiling."
+                player.participant.error = dict(
+                    message="You are not allowed to ask above the price ceiling.",
+                    time=str(datetime.today().ctime())
+                )
             else:
                 # offers.append(float(data['offer']))
                 # participant.offers = offers
@@ -269,43 +277,40 @@ def live_method(player: Player, data):
                     # ]
                     # ALTERNATIVE MESSAGE ABOUT EFFECTED TRADE
                     if player.session.config['anonymity']:
-                        #if player.is_buyer:
-                            buyer.participant.news = dict(
-                                                            message="You bought one unit at price "
-                                                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                                                    + " "
-                                                                    + currency_unit,
-                                                            time=str(datetime.today().ctime())
-                                                           )
-                        # if not player.is_buyer:
-                            seller.participant.news = dict(
-                                                            message="You sold one unit at price "
-                                                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                                                    + " "
-                                                                    + currency_unit,
-                                                            time=str(datetime.today().ctime())
-                                                           )
+                        buyer.participant.news = dict(
+                                                        message="You bought one unit at price "
+                                                                + str('{:.2f}'.format((round(float(price), 2))))
+                                                                + " "
+                                                                + currency_unit,
+                                                        time=str(datetime.today().ctime())
+                                                       )
+
+                        seller.participant.news = dict(
+                                                        message="You sold one unit at price "
+                                                                + str('{:.2f}'.format((round(float(price), 2))))
+                                                                + " "
+                                                                + currency_unit,
+                                                        time=str(datetime.today().ctime())
+                                                       )
                     else:
-                        #if player.is_buyer:
-                            buyer.participant.news = dict(
-                                                            message="You bought one unit at price "
-                                                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                                                    + " "
-                                                                    + currency_unit
-                                                                    + " from Seller "
-                                                                    + str(seller.id_in_group),
-                                                            time=str(datetime.today().ctime())
-                                                           )
-                        # if not player.is_buyer:
-                            seller.participant.news = dict(
-                                                            message="You sold one unit at price "
-                                                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                                                    + " "
-                                                                    + currency_unit
-                                                                    + " to Buyer "
-                                                                    + str(buyer.id_in_group),
-                                                            time=str(datetime.today().ctime())
-                                                           )
+                        buyer.participant.news = dict(
+                                                        message="You bought one unit at price "
+                                                                + str('{:.2f}'.format((round(float(price), 2))))
+                                                                + " "
+                                                                + currency_unit
+                                                                + " from Seller "
+                                                                + str(seller.id_in_group),
+                                                        time=str(datetime.today().ctime())
+                                                       )
+                        seller.participant.news = dict(
+                                                        message="You sold one unit at price "
+                                                                + str('{:.2f}'.format((round(float(price), 2))))
+                                                                + " "
+                                                                + currency_unit
+                                                                + " to Buyer "
+                                                                + str(buyer.id_in_group),
+                                                        time=str(datetime.today().ctime())
+                                                       )
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
@@ -491,7 +496,7 @@ def live_method(player: Player, data):
             price_ceiling_admin=round(price_ceiling, 2),
             currency_unit=currency_unit,
             time_unit=str(player.session.config['time_unit']),
-            error=dict(message=p.participant.error, time=str(datetime.today().ctime())),
+            error=p.participant.error,
             market_news=market_news,
             news=p.participant.news,
         )
