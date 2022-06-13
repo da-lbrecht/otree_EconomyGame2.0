@@ -269,16 +269,16 @@ def live_method(player: Player, data):
                     # ]
                     # ALTERNATIVE MESSAGE ABOUT EFFECTED TRADE
                     if player.session.config['anonymity']:
-                        if player.is_buyer:
-                            player.participant.news = dict(
+                        #if player.is_buyer:
+                            buyer.participant.news = dict(
                                                             message="You bought one unit at price "
                                                                     + str('{:.2f}'.format((round(float(price), 2))))
                                                                     + " "
                                                                     + currency_unit,
                                                             time=str(datetime.today().ctime())
                                                            )
-                        else:
-                            player.participant.news = dict(
+                        # if not player.is_buyer:
+                            seller.participant.news = dict(
                                                             message="You sold one unit at price "
                                                                     + str('{:.2f}'.format((round(float(price), 2))))
                                                                     + " "
@@ -286,8 +286,8 @@ def live_method(player: Player, data):
                                                             time=str(datetime.today().ctime())
                                                            )
                     else:
-                        if player.is_buyer:
-                            player.participant.news = dict(
+                        #if player.is_buyer:
+                            buyer.participant.news = dict(
                                                             message="You bought one unit at price "
                                                                     + str('{:.2f}'.format((round(float(price), 2))))
                                                                     + " "
@@ -296,8 +296,8 @@ def live_method(player: Player, data):
                                                                     + str(seller.id_in_group),
                                                             time=str(datetime.today().ctime())
                                                            )
-                        else:
-                            player.participant.news = dict(
+                        # if not player.is_buyer:
+                            seller.participant.news = dict(
                                                             message="You sold one unit at price "
                                                                     + str('{:.2f}'.format((round(float(price), 2))))
                                                                     + " "
@@ -472,7 +472,6 @@ def live_method(player: Player, data):
             cost_chart_series=cost_chart_series,
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=utility_chart_series,
-            news=p.participant.news,
             offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,  # json.dumps(dict(offers=p.participant.offer_history)),
@@ -480,7 +479,6 @@ def live_method(player: Player, data):
             marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
-            error=dict(message=p.participant.error, time=str(datetime.today().ctime())),
             buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
             seller_tax=str('{:.1f}'.format(round(seller_tax * 100, 2))) + " " + str('%'),
             price_floor=str('{:.2f}'.format(round(price_floor, 2))) + " " + str(
@@ -491,9 +489,11 @@ def live_method(player: Player, data):
             seller_tax_admin=round(seller_tax * 100, 2),
             price_floor_admin=round(price_floor, 2),
             price_ceiling_admin=round(price_ceiling, 2),
-            market_news=market_news,
             currency_unit=currency_unit,
             time_unit=str(player.session.config['time_unit']),
+            error=dict(message=p.participant.error, time=str(datetime.today().ctime())),
+            market_news=market_news,
+            news=p.participant.news,
         )
         for p in players  # if p.is_admin is False
     }
