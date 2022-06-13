@@ -185,17 +185,13 @@ def live_method(player: Player, data):
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
     if player.session.config['taxation']:
-        # seller_tax = float(player.session.config['seller_tax'])
         seller_tax = float(player.subsession.session.seller_tax)
-        # buyer_tax = float(player.session.config['buyer_tax'])
         buyer_tax = float(player.subsession.session.buyer_tax)
     else:
         seller_tax = 0
         buyer_tax = 0
     if player.session.config['price_restrictions']:
-        # price_floor = player.session.config['price_floor']
         price_floor = float(player.subsession.session.price_floor)
-        # price_ceiling = player.session.config['price_ceiling']
         price_ceiling = float(player.subsession.session.price_ceiling)
     else:
         price_floor = None
@@ -417,8 +413,8 @@ def live_method(player: Player, data):
                 player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
         elif data['type'] == 'market_update':
             # Admin update of market structure
-            player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])
-            player.subsession.session.seller_tax = float(data['seller_tax_admin'])
+            player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])/100
+            player.subsession.session.seller_tax = float(data['seller_tax_admin'])/100
             player.subsession.session.price_floor = float(data['price_floor_admin'])
             player.subsession.session.price_ceiling = float(data['price_ceiling_admin'])
             market_news = dict(
