@@ -23,11 +23,14 @@ SESSION_CONFIG_DEFAULTS = dict(
     currency_unit='&euro;',
     time_unit='seconds',
     price_floor=0,
-    price_ceiling=100,
-    seller_tax=0.1,
-    buyer_tax=0.2,
-    anonymity=False,
-
+    price_ceiling=1000,
+    seller_tax=0.0,
+    buyer_tax=0.0,
+    anonymity=True,
+    target_equilibrium_price=50,
+    minimum_mc=25,
+    maximum_mu=100,
+    evaluation_step_size=25,
     doc="")
 
 # ISO-639 code
