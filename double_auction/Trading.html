@@ -57,7 +57,7 @@ Auction Market {{ endblock }} {{ block content }}
 
     <div class="row mt-3">
       <div class="col-auto">
-        <label for="price_ceiling_admin" class="form-label fw-bolder">Price ceiling:</label>
+        <label for="price_ceiling_admin" class="form-label fw-bolder">Price ceiling in [[decodeHTML(currencyUnit)]]:</label>
       </div>
       <div class="col d-flex justify-content-end">
         <input type="number" class="form-control" id="price_ceiling_admin" :placeholder="roundToDecimals(data.price_ceiling_admin, 2)" v-model="price_ceiling_admin">
@@ -66,7 +66,7 @@ Auction Market {{ endblock }} {{ block content }}
 
      <div class="row mt-3">
       <div class="col-auto">
-        <label for="price_floor_admin" class="form-label fw-bolder">Price floor:</label>
+        <label for="price_floor_admin" class="form-label fw-bolder">Price floor in [[decodeHTML(currencyUnit)]]:</label>
       </div>
       <div class="col d-flex justify-content-end">
         <input type="number" class="form-control" id="price_floor_admin" :placeholder="roundToDecimals(data.price_floor_admin, 2)" v-model="price_floor_admin">
@@ -397,8 +397,8 @@ Auction Market {{ endblock }} {{ block content }}
             type="number"
             step="1"
             class="form-control text-end"
-            placeholder="Your Offer"
-            aria-label="Your Offer"
+            :placeholder="`Your offer in ${decodeHTML(currencyUnit)}`"
+            :aria-label="`Your offer in ${decodeHTML(currencyUnit)}`"
             aria-describedby="button-offer"
             v-model="offer"
             @keydown.enter.prevent="sendOffer"
@@ -480,6 +480,9 @@ Auction Market {{ endblock }} {{ block content }}
       playerId() {
         return js_vars.id_in_group
       },
+      currencyUnit() {
+        return js_vars.currency_unit
+      },
       playerHash() {
         const splitPathname = window.location.pathname.split('/')
         const pPosition = splitPathname.indexOf('p')
@@ -526,6 +529,11 @@ Auction Market {{ endblock }} {{ block content }}
           return
         }
         redrawCost(this.data.cost_chart_series, this.data.chart_point)
+      },
+      decodeHTML(str) {
+        var textArea = document.createElement('textarea');
+        textArea.innerHTML = str;
+        return textArea.value;
       },
       async displayAllMessages() {
         if (this.data.news && !this.messageIsAlreadyInCollection(this.data.news)) {
