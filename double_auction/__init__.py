@@ -185,18 +185,18 @@ def live_method(player: Player, data):
     market_news = None
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
-    if player.session.config['taxation']:
-        seller_tax = float(player.subsession.session.seller_tax)
-        buyer_tax = float(player.subsession.session.buyer_tax)
-    else:
-        seller_tax = 0
-        buyer_tax = 0
-    if player.session.config['price_restrictions']:
-        price_floor = float(player.subsession.session.price_floor)
-        price_ceiling = float(player.subsession.session.price_ceiling)
-    else:
-        price_floor = None
-        price_ceiling = None
+    # if player.session.config['taxation']:
+    seller_tax = float(player.subsession.session.seller_tax)
+    buyer_tax = float(player.subsession.session.buyer_tax)
+    # else:
+    #     seller_tax = 0
+    #     buyer_tax = 0
+    # if player.session.config['price_restrictions']:
+    price_floor = float(player.subsession.session.price_floor)
+    price_ceiling = float(player.subsession.session.price_ceiling)
+    # else:
+    #     price_floor = None
+    #     price_ceiling = None
     # Details on participants
     participant = player.participant
     # offers = participant.offers
@@ -204,25 +204,21 @@ def live_method(player: Player, data):
     participant.error = None  # Empty all error messages
     if data:
         if data['type'] == 'offer':
-            if player.session.config['price_restrictions'] \
-                    and player.is_buyer \
+            # Check if offer violates price restrictions
+            if player.is_buyer \
                     and round(float(data['offer']), 2) < int(player.session.config['price_floor']):
-                #player.participant.error = "You are not allowed to bid below the price floor."
                 player.participant.error = dict(
                     message="You are not allowed to bid below the price floor.",
                     time=str(datetime.today().ctime())
                 )
-            elif player.session.config['price_restrictions'] \
-                    and player.is_buyer == 0 \
+            elif player.is_buyer == 0 \
                     and round(float(data['offer']), 2) > int(player.session.config['price_ceiling']):
-                #player.participant.error = "You are not allowed to ask above the price ceiling."
                 player.participant.error = dict(
                     message="You are not allowed to ask above the price ceiling.",
                     time=str(datetime.today().ctime())
                 )
+            # Process offer
             else:
-                # offers.append(float(data['offer']))
-                # participant.offers = offers
                 offer_times.append((round(float(data['offer']), 2), datetime.today().timestamp()))
                 if player.is_buyer:
                     offer_times.sort(key=lambda x: x[0],
@@ -234,6 +230,7 @@ def live_method(player: Player, data):
                     player.current_offer = offer_times[0][0]
                 participant.offer_times = offer_times
                 player.current_offer_time = offer_times[0][1]
+                # Search for matching offers
                 if player.is_buyer:
                     match = find_match(buyers=[player], sellers=sellers)
                 elif player.is_buyer == 0 and player.is_admin != 1:
@@ -271,12 +268,7 @@ def live_method(player: Player, data):
                     # Calculate new balances
                     buyer.balance += buyer.participant.marginal_evaluation - price - (buyer_tax * price)
                     seller.balance += price - seller.participant.marginal_evaluation - (seller_tax * price)
-                    # # Create message about effected trade
-                    # news = [
-                    #     dict(buyer=buyer.id_in_group, seller=seller.id_in_group, price=price, time=trade_time),
-                    #     str(datetime.today().ctime())
-                    # ]
-                    # ALTERNATIVE MESSAGE ABOUT EFFECTED TRADE
+                    # Create message about effected trade
                     if player.session.config['anonymity']:
                         buyer.participant.news = dict(
                                                         message="You bought one unit at price "
@@ -688,38 +680,6 @@ class Trading(Page):
             market_opening=player.session.config['market_opening'],
             market_closing=player.session.config['market_closing'],
         )
-
-    # @staticmethod
-    # def vars_for_template(player: Player):
-    #     market_opening = player.session.config['market_opening']
-    #     market_closing = player.session.config['market_closing']
-    #     if player.session.config['price_restrictions']:
-    #         price_floor_display = player.session.config['price_floor']
-    #         price_ceiling_display = player.session.config['price_ceiling']
-    #     else:
-    #         price_floor_display = "-"
-    #         price_ceiling_display = "-"
-    #     if player.session.config['taxation']:
-    #         taxation = True
-    #         seller_tax_display = player.session.config['seller_tax'] * 100
-    #         buyer_tax_display = player.session.config['buyer_tax'] * 100
-    #     else:
-    #         taxation = False
-    #         seller_tax_display = 0
-    #         buyer_tax_display = 0
-    #     return dict(
-    #         market_opening=market_opening,
-    #         market_closing=market_closing,
-    #         price_floor=str('{:.2f}'.format(round(price_floor_display, 2))) + " " + str(
-    #             player.session.config['currency_unit']),
-    #         price_ceiling=str('{:.2f}'.format(round(price_ceiling_display, 2))) + " " + str(
-    #             player.session.config['currency_unit']),
-    #         taxation=taxation,
-    #         seller_tax=seller_tax_display,
-    #         buyer_tax=buyer_tax_display,
-    #         currency_unit=str(player.session.config['currency_unit']),
-    #         time_unit=str(player.session.config['time_unit']),
-    #     )
 
 
 class ResultsWaitPage(WaitPage):
