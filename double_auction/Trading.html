@@ -532,7 +532,7 @@ Auction Market {{ endblock }} {{ block content }}
           this.messages.push({ time: this.data.news.time, text: this.data.news.message, type: 'news' });
         }
         
-        if (this.data.error?.text && !this.messageIsAlreadyInCollection(this.data.error)) {
+        if (this.data.error && !this.messageIsAlreadyInCollection(this.data.error)) {
           this.messages.push({ time: this.data.error.time, text: this.data.error.message, type: 'error' });
         }
 
