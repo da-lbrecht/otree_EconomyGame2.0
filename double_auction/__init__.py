@@ -669,7 +669,13 @@ class Trading(Page):
 
     @staticmethod
     def js_vars(player: Player):
-        return dict(id_in_group=player.id_in_group, is_buyer=player.is_buyer, is_admin=player.is_admin)
+        return dict(
+            id_in_group=player.id_in_group,
+            is_buyer=player.is_buyer,
+            is_admin=player.is_admin,
+            currency_unit=player.currency_unit,
+            time_unit=player.time_unit
+        )
 
     @staticmethod
     def get_timeout_seconds(player: Player):
