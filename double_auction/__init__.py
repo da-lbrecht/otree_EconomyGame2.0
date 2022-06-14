@@ -11,9 +11,9 @@ import sys
 def marginal_production_costs(t):
     if t == 0:
         c = 25
-    elif t <= 600:
+    elif t <= 60:
         c = 50
-    elif t <= 1200:
+    elif t <= 120:
         c = 75
     else:
         c = 100
@@ -23,9 +23,9 @@ def marginal_production_costs(t):
 def marginal_consumption_utility(t):
     if t == 0:
         u = 100
-    elif t <= 600:
+    elif t <= 60:
         u = 75
-    elif t <= 1200:
+    elif t <= 120:
         u = 50
     else:
         u = 25
@@ -45,13 +45,13 @@ def marginal_consumption_utility(t):
 # Graphs
 
 
-cost_x = np.arange(0, 1810, 10)
+cost_x = np.arange(0, 181, 1)
 cost_y = np.empty(shape=len(cost_x))
 for x in range(0, len(cost_x) - 1):
     cost_y[x] = marginal_production_costs(cost_x[x])
 cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
 
-utility_x = np.arange(0, 1810, 10)
+utility_x = np.arange(0, 181, 1)
 utility_y = np.empty(shape=len(utility_x))
 for x in range(0, len(utility_x) - 1):
     utility_y[x] = marginal_consumption_utility(utility_x[x])
@@ -80,7 +80,8 @@ class C(BaseConstants):
     NUM_ROUNDS = 1
     BID_MIN = -sys.maxsize
     ASK_MAX = sys.maxsize
-    TIME_PER_UNIT = 600  # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
+    TIME_PER_UNIT = 60  # Time to produce/consume one unit is 1 minutes, i.e. 1*60=60 seconds
+    # TIME_PER_UNIT = 600  # Time to produce/consume one unit is 10 minutes, i.e. 10*60=600 seconds
     MIN_TIMESTAMP = datetime(2000, 1, 1, 0, 0, 0, 0).timestamp()
     MAX_TIMESTAMP = datetime(3001, 1, 1, 0, 0, 0, 0).timestamp()
 
