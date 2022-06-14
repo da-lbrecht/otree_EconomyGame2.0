@@ -6,62 +6,32 @@ import json  # Module to convert python dictionaries into JSON objects
 import sys
 
 
-##### START: Definition of production costs and consumption utilities #####
-
-def marginal_production_costs(t):
+def marginal_production_costs(t, min_mc, step):
     if t == 0:
-        c = 25
+        c = min_mc
     elif t <= 60:
-        c = 50
+        c = min_mc+1*step
     elif t <= 120:
-        c = 75
+        c = min_mc+2*step
     else:
-        c = 100
+        c = min_mc+3*step
     return c
 
 
-def marginal_consumption_utility(t):
+def marginal_consumption_utility(t, max_mu, step):
     if t == 0:
-        u = 100
+        u = max_mu
     elif t <= 60:
-        u = 75
+        u = max_mu-1*step
     elif t <= 120:
-        u = 50
+        u = max_mu-2*step
     else:
-        u = 25
+        u = max_mu-3*step
     return u
 
 
-# def marginal_production_costs(t):
-#     c = round((max((600 - t), 0) * 50 + (600 - max(600 - t, 0)) * 100) / 600, 2)
-#     return c
-#
-#
-# def marginal_consumption_utility(t):
-#     u = round((max((600 - t), 0) * 100 + (600 - max(600 - t, 0)) * 50) / 600, 2)
-#     return u
+# Define other general functions
 
-
-# Graphs
-
-
-cost_x = np.arange(0, 181, 1)
-cost_y = np.empty(shape=len(cost_x))
-for x in range(0, len(cost_x) - 1):
-    cost_y[x] = marginal_production_costs(cost_x[x])
-cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
-
-utility_x = np.arange(0, 181, 1)
-utility_y = np.empty(shape=len(utility_x))
-for x in range(0, len(utility_x) - 1):
-    utility_y[x] = marginal_consumption_utility(utility_x[x])
-utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
-
-
-##### END: Definition of production costs and consumption utilities #####
-
-
-# Further Functions
 
 def flatten(list_of_lists):  # Python function to unlist lists
     if len(list_of_lists) == 0:
@@ -100,6 +70,18 @@ def creating_session(subsession: Subsession):
         p.is_buyer = p.id_in_group % 2 > 0
         p.is_admin = p.id_in_group == 1  # The first participant link is for admin use only!!!
         p.balance = 0
+        # Randomize costs and utility functions
+        p.min_mc = np.random.randint(
+            low=p.session.config['lower_bound_minimum_mc'],
+            high=p.session.config['upper_bound_minimum_mc'],
+            size=1, dtype=int
+        )[0]
+        p.max_mu = np.random.randint(
+            low=p.session.config['lower_bound_maximum_mu'],
+            high=p.session.config['upper_bound_maximum_mu'],
+            size=1, dtype=int)[0]
+        p.step_mu = p.session.config['mu_step_size']
+        p.step_mc = p.session.config['mc_step_size']
         p.current_offer_time = C.MAX_TIMESTAMP
         # Inherit market parameters from session configs
         p.session_description = p.session.config['description']
@@ -107,13 +89,12 @@ def creating_session(subsession: Subsession):
         p.time_unit = p.session.config['time_unit']
         p.market_opening = p.session.config['market_opening']
         p.market_closing = p.session.config['market_closing']
-
         if p.is_buyer:
             p.current_offer = C.BID_MIN
-            participant.marginal_evaluation = marginal_consumption_utility(0)
+            participant.marginal_evaluation = marginal_consumption_utility(0, p.max_mu, p.step_mu)
         else:
             p.current_offer = C.ASK_MAX
-            participant.marginal_evaluation = marginal_production_costs(0)
+            participant.marginal_evaluation = marginal_production_costs(0, p.min_mc, p.step_mc)
         # Initialize participant variables
         participant.offers = []
         participant.offer_times = []
@@ -129,6 +110,18 @@ def creating_session(subsession: Subsession):
         session.seller_tax = p.session.config['seller_tax']
         session.price_floor = p.session.config['price_floor']
         session.price_ceiling = p.session.config['price_ceiling']
+        # Create data for MC/MU graphs
+        cost_x = np.arange(0, 181, 1)
+        cost_y = np.empty(shape=len(cost_x))
+        for x in range(0, len(cost_x) - 1):
+            cost_y[x] = marginal_production_costs(cost_x[x], p.min_mc, p.step_mc)
+        participant.cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
+
+        utility_x = np.arange(0, 181, 1)
+        utility_y = np.empty(shape=len(utility_x))
+        for x in range(0, len(utility_x) - 1):
+            utility_y[x] = marginal_consumption_utility(utility_x[x], p.max_mu, p.step_mu)
+        participant.utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
 
 
 class Group(BaseGroup):
@@ -146,6 +139,10 @@ class Player(BasePlayer):
     current_offer = models.FloatField()
     current_offer_time = models.FloatField()
     balance = models.FloatField()
+    min_mc = models.FloatField()
+    max_mu = models.FloatField()
+    step_mc = models.FloatField()
+    step_mu = models.FloatField()
 
 
 class Transaction(ExtraModel):
@@ -185,18 +182,10 @@ def live_method(player: Player, data):
     market_news = None
     # Details on market structure
     currency_unit = str(player.session.config['currency_unit'])
-    # if player.session.config['taxation']:
     seller_tax = float(player.subsession.session.seller_tax)
     buyer_tax = float(player.subsession.session.buyer_tax)
-    # else:
-    #     seller_tax = 0
-    #     buyer_tax = 0
-    # if player.session.config['price_restrictions']:
     price_floor = float(player.subsession.session.price_floor)
     price_ceiling = float(player.subsession.session.price_ceiling)
-    # else:
-    #     price_floor = None
-    #     price_ceiling = None
     # Details on participants
     participant = player.participant
     # offers = participant.offers
@@ -271,39 +260,39 @@ def live_method(player: Player, data):
                     # Create message about effected trade
                     if player.session.config['anonymity']:
                         buyer.participant.news = dict(
-                                                        message="You bought one unit at price "
-                                                                + str('{:.2f}'.format((round(float(price), 2))))
-                                                                + " "
-                                                                + currency_unit,
-                                                        time=str(datetime.today().ctime())
-                                                       )
+                            message="You bought one unit at price "
+                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                    + " "
+                                    + currency_unit,
+                            time=str(datetime.today().ctime())
+                        )
 
                         seller.participant.news = dict(
-                                                        message="You sold one unit at price "
-                                                                + str('{:.2f}'.format((round(float(price), 2))))
-                                                                + " "
-                                                                + currency_unit,
-                                                        time=str(datetime.today().ctime())
-                                                       )
+                            message="You sold one unit at price "
+                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                    + " "
+                                    + currency_unit,
+                            time=str(datetime.today().ctime())
+                        )
                     else:
                         buyer.participant.news = dict(
-                                                        message="You bought one unit at price "
-                                                                + str('{:.2f}'.format((round(float(price), 2))))
-                                                                + " "
-                                                                + currency_unit
-                                                                + " from Seller "
-                                                                + str(seller.id_in_group),
-                                                        time=str(datetime.today().ctime())
-                                                       )
+                            message="You bought one unit at price "
+                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                    + " "
+                                    + currency_unit
+                                    + " from Seller "
+                                    + str(seller.id_in_group),
+                            time=str(datetime.today().ctime())
+                        )
                         seller.participant.news = dict(
-                                                        message="You sold one unit at price "
-                                                                + str('{:.2f}'.format((round(float(price), 2))))
-                                                                + " "
-                                                                + currency_unit
-                                                                + " to Buyer "
-                                                                + str(buyer.id_in_group),
-                                                        time=str(datetime.today().ctime())
-                                                       )
+                            message="You sold one unit at price "
+                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                    + " "
+                                    + currency_unit
+                                    + " to Buyer "
+                                    + str(buyer.id_in_group),
+                            time=str(datetime.today().ctime())
+                        )
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
@@ -406,21 +395,27 @@ def live_method(player: Player, data):
             player.participant.previous_timestamp = player.participant.current_timestamp
             # Update marginal utility/costs
             if player.is_buyer:
-                player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed)
+                player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed,
+                                                                                      player.max_mu,
+                                                                                      player.step_mu
+                                                                                      )
             elif player.is_buyer == 0 and player.is_admin != 1:
-                player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed)
+                player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed,
+                                                                                   player.min_mc,
+                                                                                   player.step_mc
+                                                                                   )
         # Admin update of market structure
         elif data['type'] == 'market_update':
             # Check which parameters are updated
             new_market_params = [
-                player.subsession.session.buyer_tax != float(data['buyer_tax_admin'])/100,
+                player.subsession.session.buyer_tax != float(data['buyer_tax_admin']) / 100,
                 player.subsession.session.seller_tax != float(data['seller_tax_admin']) / 100,
                 player.subsession.session.price_floor != float(data['price_floor_admin']),
                 player.subsession.session.price_ceiling != float(data['price_ceiling_admin'])
             ]
             # Write updated parameters into session variable
-            player.subsession.session.buyer_tax = float(data['buyer_tax_admin'])/100
-            player.subsession.session.seller_tax = float(data['seller_tax_admin'])/100
+            player.subsession.session.buyer_tax = float(data['buyer_tax_admin']) / 100
+            player.subsession.session.seller_tax = float(data['seller_tax_admin']) / 100
             player.subsession.session.price_floor = float(data['price_floor_admin'])
             player.subsession.session.price_ceiling = float(data['price_ceiling_admin'])
             # Create message about market update
@@ -495,7 +490,7 @@ def live_method(player: Player, data):
                             + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
                             + str(player.session.config['currency_unit']) + ".",
                     time=str(datetime.today().ctime())
-            )
+                )
             elif new_market_params == [False, False, True, True]:
                 market_news = dict(
                     message="A market intervention took place! The price floor has changed to "
@@ -505,7 +500,7 @@ def live_method(player: Player, data):
                             + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
                             + str(player.session.config['currency_unit']) + ".",
                     time=str(datetime.today().ctime())
-            )
+                )
             elif new_market_params == [True, True, True, False]:
                 market_news = dict(
                     message="A market intervention took place! The tax on buyers has changed to "
@@ -608,8 +603,21 @@ def live_method(player: Player, data):
     ]
     asks.sort(reverse=False)
 
+    # Create data for MC/MU graphs
+    cost_x = np.arange(0, 181, 1)
+    cost_y = np.empty(shape=len(cost_x))
+    for x in range(0, len(cost_x) - 1):
+        cost_y[x] = marginal_production_costs(cost_x[x], player.min_mc, player.step_mc)
+    cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
+
+    utility_x = np.arange(0, 181, 1)
+    utility_y = np.empty(shape=len(utility_x))
+    for x in range(0, len(utility_x) - 1):
+        utility_y[x] = marginal_consumption_utility(utility_x[x], player.max_mu, player.step_mu)
+    utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
+
     # Create charts
-    highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
+    # highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
             current_offer=str('{:.2f}'.format(round(p.current_offer, 2))) + " " + str(
@@ -618,10 +626,10 @@ def live_method(player: Player, data):
             balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
             bids=overall_bids,  # json.dumps(overall_bids_dict),
             asks=overall_asks,  # json.dumps(overall_asks_dict),
-            highcharts_series=highcharts_series,
-            cost_chart_series=cost_chart_series,
+            # highcharts_series=highcharts_series,
+            cost_chart_series=p.participant.cost_chart_series,
             chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
-            utility_chart_series=utility_chart_series,
+            utility_chart_series=p.participant.utility_chart_series,
             offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,  # json.dumps(dict(offers=p.participant.offer_history)),

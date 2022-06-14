@@ -27,10 +27,13 @@ SESSION_CONFIG_DEFAULTS = dict(
     seller_tax=0.0,
     buyer_tax=0.0,
     anonymity=True,
-    target_equilibrium_price=50,
-    minimum_mc=25,
-    maximum_mu=100,
-    evaluation_step_size=25,
+    target_equilibrium_price=60,
+    lower_bound_minimum_mc=20,
+    upper_bound_minimum_mc=59,
+    lower_bound_maximum_mu=61,
+    upper_bound_maximum_mu=100,
+    mc_step_size=25,
+    mu_step_size=25,
     doc="")
 
 # ISO-639 code
@@ -59,6 +62,8 @@ PARTICIPANT_FIELDS = [
     'offer_history',
     'time_needed',
     'marginal_evaluation',
+    'cost_chart_series',
+    'utility_chart_series',
     'trading_history',
     'previous_timestamp',
     'current_timestamp',
