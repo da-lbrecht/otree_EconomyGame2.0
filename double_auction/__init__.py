@@ -71,15 +71,15 @@ def creating_session(subsession: Subsession):
         p.is_admin = p.id_in_group == 1  # The first participant link is for admin use only!!!
         p.balance = 0
         # Randomize costs and utility functions
-        p.min_mc = np.random.randint(
+        p.min_mc = int(np.random.randint(
             low=p.session.config['lower_bound_minimum_mc'],
             high=p.session.config['upper_bound_minimum_mc'],
             size=1, dtype=int
-        )[0]
-        p.max_mu = np.random.randint(
+        )[0])
+        p.max_mu = int(np.random.randint(
             low=p.session.config['lower_bound_maximum_mu'],
             high=p.session.config['upper_bound_maximum_mu'],
-            size=1, dtype=int)[0]
+            size=1, dtype=int)[0])
         p.step_mu = p.session.config['mu_step_size']
         p.step_mc = p.session.config['mc_step_size']
         p.current_offer_time = C.MAX_TIMESTAMP
@@ -603,21 +603,6 @@ def live_method(player: Player, data):
     ]
     asks.sort(reverse=False)
 
-    # Create data for MC/MU graphs
-    cost_x = np.arange(0, 181, 1)
-    cost_y = np.empty(shape=len(cost_x))
-    for x in range(0, len(cost_x) - 1):
-        cost_y[x] = marginal_production_costs(cost_x[x], player.min_mc, player.step_mc)
-    cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
-
-    utility_x = np.arange(0, 181, 1)
-    utility_y = np.empty(shape=len(utility_x))
-    for x in range(0, len(utility_x) - 1):
-        utility_y[x] = marginal_consumption_utility(utility_x[x], player.max_mu, player.step_mu)
-    utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
-
-    # Create charts
-    # highcharts_series = [[tx.seconds, tx.price] for tx in Transaction.filter(group=group)]
     return {
         p.id_in_group: dict(
             current_offer=str('{:.2f}'.format(round(p.current_offer, 2))) + " " + str(
@@ -626,10 +611,9 @@ def live_method(player: Player, data):
             balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
             bids=overall_bids,  # json.dumps(overall_bids_dict),
             asks=overall_asks,  # json.dumps(overall_asks_dict),
-            # highcharts_series=highcharts_series,
             cost_chart_series=p.participant.cost_chart_series,
-            chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             utility_chart_series=p.participant.utility_chart_series,
+            chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
             offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,  # json.dumps(dict(offers=p.participant.offer_history)),
