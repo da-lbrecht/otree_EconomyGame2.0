@@ -710,10 +710,28 @@ def live_method(player: Player, data):
 
 
 # PAGES
-class WaitToStart(WaitPage):
+class WaitToStart(Page):
+
     @staticmethod
-    def after_all_players_arrive(group: Group):
-        group.start_timestamp = int(time.time())
+    def is_displayed(player: Player):
+        return time.time() < time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X"))
+
+    @staticmethod
+    def get_timeout_seconds(player):
+        return time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")) - time.time()
+
+    @staticmethod
+    def vars_for_template(player):
+        return dict(
+            title_text="The market is still closed until " + str(player.session.config['market_opening']),
+            body_text="The market opening time is " + str(player.session.config['market_opening']))
+
+    # @staticmethod
+    # def group_by_arrival_time_method(waiting_players):
+    #     for player in waiting_players:
+    #         if time.time() >= time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")):
+    #             # make a single-player group.
+    #             return [player]
 
 
 class Trading(Page):
@@ -757,7 +775,7 @@ class Results(Page):
 
 
 page_sequence = [
-    # WaitToStart,
+    WaitToStart,
     Trading,
     ResultsWaitPage,
     Results
