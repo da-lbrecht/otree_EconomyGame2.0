@@ -107,10 +107,10 @@ def creating_session(subsession: Subsession):
         participant.news = None
         participant.notifications = []
         # Initialize session variables
-        session.buyer_tax = p.session.config['buyer_tax']
-        session.seller_tax = p.session.config['seller_tax']
-        session.price_floor = p.session.config['price_floor']
-        session.price_ceiling = p.session.config['price_ceiling']
+        session.buyer_tax = round(float(p.session.config['buyer_tax']/100), 3)
+        session.seller_tax = round(float(p.session.config['seller_tax']/100), 3)
+        session.price_floor = round(p.session.config['price_floor'], 2)
+        session.price_ceiling = round(p.session.config['price_ceiling'], 2)
         # Create data for MC/MU graphs
         cost_x = np.arange(0, 181, 1)
         cost_y = np.empty(shape=len(cost_x))
@@ -196,7 +196,7 @@ def live_method(player: Player, data):
         if data['type'] == 'offer':
             # Check if offer violates price restrictions
             if player.is_buyer \
-                    and round(float(data['offer']), 2) < int(player.session.config['price_floor']):
+                    and round(float(data['offer']), 2) < float(player.session.config['price_floor']):
                 player.participant.error = dict(
                     message="You are not allowed to bid below the price floor.",
                     time=str(datetime.today().ctime())
@@ -205,7 +205,7 @@ def live_method(player: Player, data):
                                                          "time": str(datetime.today().ctime()),
                                                          "type": "error"})
             elif player.is_buyer == 0 \
-                    and round(float(data['offer']), 2) > int(player.session.config['price_ceiling']):
+                    and round(float(data['offer']), 2) > float(player.session.config['price_ceiling']):
                 player.participant.error = dict(
                     message="You are not allowed to ask above the price ceiling.",
                     time=str(datetime.today().ctime())
@@ -450,16 +450,16 @@ def live_method(player: Player, data):
         elif data['type'] == 'market_update':
             # Check which parameters are updated
             new_market_params = [
-                player.subsession.session.buyer_tax != float(data['buyer_tax_admin']) / 100,
-                player.subsession.session.seller_tax != float(data['seller_tax_admin']) / 100,
-                player.subsession.session.price_floor != float(data['price_floor_admin']),
-                player.subsession.session.price_ceiling != float(data['price_ceiling_admin'])
+                player.subsession.session.buyer_tax != round(float(data['buyer_tax_admin']) / 100, 3),
+                player.subsession.session.seller_tax != round(float(data['seller_tax_admin']) / 100, 3),
+                player.subsession.session.price_floor != round(float(data['price_floor_admin']), 2),
+                player.subsession.session.price_ceiling != round(float(data['price_ceiling_admin']), 2)
             ]
             # Write updated parameters into session variable
-            player.subsession.session.buyer_tax = float(data['buyer_tax_admin']) / 100
-            player.subsession.session.seller_tax = float(data['seller_tax_admin']) / 100
-            player.subsession.session.price_floor = float(data['price_floor_admin'])
-            player.subsession.session.price_ceiling = float(data['price_ceiling_admin'])
+            player.subsession.session.buyer_tax = round(float(data['buyer_tax_admin']) / 100, 3)
+            player.subsession.session.seller_tax = round(float(data['seller_tax_admin']) / 100, 3)
+            player.subsession.session.price_floor = round(float(data['price_floor_admin']), 2)
+            player.subsession.session.price_ceiling = round(float(data['price_ceiling_admin']), 2)
             # Create message about market update
             if new_market_params == [False, False, False, False]:
                 market_news = None
@@ -467,14 +467,14 @@ def live_method(player: Player, data):
                 if new_market_params == [True, False, False, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2)) + " %.",
+                                + str(round(float(data['buyer_tax_admin']), 1)) + " %.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
                     )
                 elif new_market_params == [False, True, False, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2)) + " %.",
+                                + str(round(float(data['seller_tax_admin']), 1)) + " %.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
                     )
@@ -497,16 +497,16 @@ def live_method(player: Player, data):
                 elif new_market_params == [True, True, False, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 1))
                                 + " % and the tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2)) + " %.",
+                                + str(round(float(data['seller_tax_admin']), 1)) + " %.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
                     )
                 elif new_market_params == [True, False, True, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 1))
                                 + " % and the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit']) + ".",
@@ -516,7 +516,7 @@ def live_method(player: Player, data):
                 elif new_market_params == [True, False, False, True]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 1))
                                 + " % and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit']) + ".",
@@ -526,7 +526,7 @@ def live_method(player: Player, data):
                 elif new_market_params == [False, True, True, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2))
+                                + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit']) + ".",
@@ -536,7 +536,7 @@ def live_method(player: Player, data):
                 elif new_market_params == [False, True, False, True]:
                     market_news = dict(
                         message="A market intervention took place! The tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2))
+                                + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit']) + ".",
@@ -557,9 +557,9 @@ def live_method(player: Player, data):
                 elif new_market_params == [True, True, True, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 1))
                                 + " %, the tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2))
+                                + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit']) + ".",
@@ -569,7 +569,7 @@ def live_method(player: Player, data):
                 elif new_market_params == [True, False, True, True]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 1))
                                 + " %, the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit'])
@@ -582,9 +582,9 @@ def live_method(player: Player, data):
                 elif new_market_params == [True, True, False, True]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 1))
                                 + " %, the tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2))
+                                + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit']) + ".",
@@ -594,7 +594,7 @@ def live_method(player: Player, data):
                 elif new_market_params == [False, True, True, True]:
                     market_news = dict(
                         message="A market intervention took place! The tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2))
+                                + str(round(float(data['seller_tax_admin']), 1))
                                 + " %, the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit'])
@@ -607,9 +607,9 @@ def live_method(player: Player, data):
                 elif new_market_params == [True, True, True, True]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + str(round(float(data['buyer_tax_admin']), 11))
                                 + " %, the tax on sellers has changed to "
-                                + str(round(float(data['seller_tax_admin']), 2))
+                                + str(round(float(data['seller_tax_admin']), 1))
                                 + " %, the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
                                 + str(player.session.config['currency_unit'])
@@ -688,14 +688,14 @@ def live_method(player: Player, data):
             marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
-            buyer_tax=str('{:.1f}'.format(round(buyer_tax * 100, 2))) + " " + str('%'),
-            seller_tax=str('{:.1f}'.format(round(seller_tax * 100, 2))) + " " + str('%'),
+            buyer_tax=str('{:.1f}'.format(buyer_tax * 100)) + " " + str('%'),
+            seller_tax=str('{:.1f}'.format(seller_tax * 100)) + " " + str('%'),
             price_floor=str('{:.2f}'.format(round(price_floor, 2))) + " " + str(
                 player.session.config['currency_unit']),
             price_ceiling=str('{:.2f}'.format(round(price_ceiling, 2))) + " " + str(
                 player.session.config['currency_unit']),
-            buyer_tax_admin=round(buyer_tax * 100, 2),
-            seller_tax_admin=round(seller_tax * 100, 2),
+            buyer_tax_admin=buyer_tax * 100,
+            seller_tax_admin=seller_tax * 100,
             price_floor_admin=round(price_floor, 2),
             price_ceiling_admin=round(price_ceiling, 2),
             currency_unit=currency_unit,
