@@ -726,16 +726,13 @@ class WaitToStart(Page):
             title_text="The market is still closed until " + str(player.session.config['market_opening']),
             body_text="The market opening time is " + str(player.session.config['market_opening']))
 
-    # @staticmethod
-    # def group_by_arrival_time_method(waiting_players):
-    #     for player in waiting_players:
-    #         if time.time() >= time.mktime(time.strptime(player.session.config['market_opening'], "%d %b %Y %X")):
-    #             # make a single-player group.
-    #             return [player]
-
 
 class Trading(Page):
     live_method = live_method
+
+    @staticmethod
+    def get_timeout_seconds(player):
+        return time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X")) - time.time()
 
     @staticmethod
     def js_vars(player: Player):
@@ -766,26 +763,27 @@ class Trading(Page):
         )
 
 
-class ResultsWaitPage(WaitPage):
-    pass
-
-
 class Results(Page):
-    pass
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return time.time() > time.mktime(time.strptime(player.session.config['market_closing'], "%d %b %Y %X"))
+
+    @staticmethod
+    def vars_for_template(player):
+        return dict(
+            title_text="The market has closed at " + str(player.session.config['market_closing']),
+            body_text="Your final profit is "
+                      + str('{:.2f}'.format(round(player.balance, 2)))
+                      + " " + str(player.session.config['currency_unit'])
+        )
 
 
 page_sequence = [
     WaitToStart,
     Trading,
-    ResultsWaitPage,
     Results
 ]
-
-
-# def custom_export(players):
-#     yield ['balance']
-#     for p in players:
-#         yield [p.balance]
 
 
 def custom_export(players):
