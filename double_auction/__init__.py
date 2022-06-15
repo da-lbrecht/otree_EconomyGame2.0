@@ -10,11 +10,11 @@ def marginal_production_costs(t, min_mc, step):
     if t == 0:
         c = min_mc
     elif t <= 60:
-        c = min_mc+1*step
+        c = min_mc + 1 * step
     elif t <= 120:
-        c = min_mc+2*step
+        c = min_mc + 2 * step
     else:
-        c = min_mc+3*step
+        c = min_mc + 3 * step
     return c
 
 
@@ -22,11 +22,11 @@ def marginal_consumption_utility(t, max_mu, step):
     if t == 0:
         u = max_mu
     elif t <= 60:
-        u = max_mu-1*step
+        u = max_mu - 1 * step
     elif t <= 120:
-        u = max_mu-2*step
+        u = max_mu - 2 * step
     else:
-        u = max_mu-3*step
+        u = max_mu - 3 * step
     return u
 
 
@@ -105,6 +105,7 @@ def creating_session(subsession: Subsession):
         participant.current_timestamp = time.time()
         participant.error = None
         participant.news = None
+        participant.notifications = []
         # Initialize session variables
         session.buyer_tax = p.session.config['buyer_tax']
         session.seller_tax = p.session.config['seller_tax']
@@ -200,12 +201,19 @@ def live_method(player: Player, data):
                     message="You are not allowed to bid below the price floor.",
                     time=str(datetime.today().ctime())
                 )
+                player.participant.notifications.append({"message": "You are not allowed to bid below the price floor.",
+                                                         "time": str(datetime.today().ctime()),
+                                                         "type": "error"})
             elif player.is_buyer == 0 \
                     and round(float(data['offer']), 2) > int(player.session.config['price_ceiling']):
                 player.participant.error = dict(
                     message="You are not allowed to ask above the price ceiling.",
                     time=str(datetime.today().ctime())
                 )
+                player.participant.notifications.append(
+                    {"message": "You are not allowed to ask above the price ceiling.",
+                     "time": str(datetime.today().ctime()),
+                     "type": "error"})
             # Process offer
             else:
                 offer_times.append((round(float(data['offer']), 2), datetime.today().timestamp()))
@@ -266,6 +274,13 @@ def live_method(player: Player, data):
                                     + currency_unit,
                             time=str(datetime.today().ctime())
                         )
+                        buyer.participant.notifications.append(
+                            {"message": "You bought one unit at price "
+                                        + str('{:.2f}'.format((round(float(price), 2))))
+                                        + " "
+                                        + currency_unit,
+                             "time": str(datetime.today().ctime()),
+                             "type": "news"})
 
                         seller.participant.news = dict(
                             message="You sold one unit at price "
@@ -274,6 +289,13 @@ def live_method(player: Player, data):
                                     + currency_unit,
                             time=str(datetime.today().ctime())
                         )
+                        seller.participant.notifications.append(
+                            {"message": "You sold one unit at price "
+                                        + str('{:.2f}'.format((round(float(price), 2))))
+                                        + " "
+                                        + currency_unit,
+                             "time": str(datetime.today().ctime()),
+                             "type": "news"})
                     else:
                         buyer.participant.news = dict(
                             message="You bought one unit at price "
@@ -284,6 +306,16 @@ def live_method(player: Player, data):
                                     + str(seller.id_in_group),
                             time=str(datetime.today().ctime())
                         )
+                        buyer.participant.notifications.append(
+                            {"message": "You bought one unit at price "
+                                        + str('{:.2f}'.format((round(float(price), 2))))
+                                        + " "
+                                        + currency_unit
+                                        + " from Seller "
+                                        + str(seller.id_in_group),
+                             "time": str(datetime.today().ctime()),
+                             "type": "news"})
+
                         seller.participant.news = dict(
                             message="You sold one unit at price "
                                     + str('{:.2f}'.format((round(float(price), 2))))
@@ -293,6 +325,16 @@ def live_method(player: Player, data):
                                     + str(buyer.id_in_group),
                             time=str(datetime.today().ctime())
                         )
+                        seller.participant.notifications.append(
+                            {"message": "You sold one unit at price "
+                                    + str('{:.2f}'.format((round(float(price), 2))))
+                                    + " "
+                                    + currency_unit
+                                    + " to Buyer "
+                                    + str(buyer.id_in_group),
+                             "time": str(datetime.today().ctime()),
+                             "type": "news"})
+
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
                     seller.participant.offer_times = seller.participant.offer_times[1:]
@@ -421,151 +463,176 @@ def live_method(player: Player, data):
             # Create message about market update
             if new_market_params == [False, False, False, False]:
                 market_news = None
-            elif new_market_params == [True, False, False, False]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2)) + " %.",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, True, False, False]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2)) + " %.",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, False, True, False]:
-                market_news = dict(
-                    message="A market intervention took place! The price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, False, False, True]:
-                market_news = dict(
-                    message="A market intervention took place! The price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, True, False, False]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " % and the tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2)) + " %.",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, False, True, False]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " % and the price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, False, False, True]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " % and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, True, True, False]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2))
-                            + " % and the price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, True, False, True]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2))
-                            + " % and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, False, True, True]:
-                market_news = dict(
-                    message="A market intervention took place! The price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit'])
-                            + " and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, True, True, False]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " %, the tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2))
-                            + " % and the price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, False, True, True]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " %, the price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit'])
-                            + " and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, True, False, True]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " %, the tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2))
-                            + " % and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [False, True, True, True]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2))
-                            + " %, the price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit'])
-                            + " and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
-            elif new_market_params == [True, True, True, True]:
-                market_news = dict(
-                    message="A market intervention took place! The tax on buyers has changed to "
-                            + str(round(float(data['buyer_tax_admin']), 2))
-                            + " %, the tax on sellers has changed to "
-                            + str(round(float(data['seller_tax_admin']), 2))
-                            + " %, the price floor has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit'])
-                            + " and the price ceiling has changed to "
-                            + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                            + str(player.session.config['currency_unit']) + ".",
-                    time=str(datetime.today().ctime())
-                )
             else:
-                market_news = dict(
-                    message="The market has been updated",
-                    time=str(datetime.today().ctime())
-                )
+                if new_market_params == [True, False, False, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2)) + " %.",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, True, False, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2)) + " %.",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, False, True, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, False, False, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, True, False, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " % and the tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2)) + " %.",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, False, True, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " % and the price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, False, False, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " % and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, True, True, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2))
+                                + " % and the price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, True, False, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2))
+                                + " % and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, False, True, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit'])
+                                + " and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, True, True, False]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " %, the tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2))
+                                + " % and the price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, False, True, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " %, the price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit'])
+                                + " and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, True, False, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " %, the tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2))
+                                + " % and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [False, True, True, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2))
+                                + " %, the price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit'])
+                                + " and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                elif new_market_params == [True, True, True, True]:
+                    market_news = dict(
+                        message="A market intervention took place! The tax on buyers has changed to "
+                                + str(round(float(data['buyer_tax_admin']), 2))
+                                + " %, the tax on sellers has changed to "
+                                + str(round(float(data['seller_tax_admin']), 2))
+                                + " %, the price floor has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit'])
+                                + " and the price ceiling has changed to "
+                                + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
+                                + str(player.session.config['currency_unit']) + ".",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                else:
+                    market_news = dict(
+                        message="The market has been updated",
+                        time=str(datetime.today().ctime()),
+                        type="market_news"
+                    )
+                for p in players:
+                    p.participant.notifications.append(market_news)
+        elif data['type'] == 'notification_deletion':
+            notifications = player.participant.notifications
+            deletion = data['deletion']
+            if deletion in [i for i in notifications]:
+                del notifications[([i for i in notifications]).index(deletion)]
+            player.participant.notifications = notifications
 
     # Create lists of all asks/bids by all sellers/buyers
     raw_bids = [[i[0] for i in p.participant.offer_times] for p in buyers]  # Collect bids from all buyers
@@ -636,6 +703,7 @@ def live_method(player: Player, data):
             error=p.participant.error,
             market_news=market_news,
             news=p.participant.news,
+            notifications=p.participant.notifications,
         )
         for p in players  # if p.is_admin is False
     }

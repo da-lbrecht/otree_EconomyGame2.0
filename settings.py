@@ -69,7 +69,8 @@ PARTICIPANT_FIELDS = [
     'current_timestamp',
     'refresh_counter',
     'error',
-    'news'
+    'news',
+    'notifications'
 ]
 
 SESSION_FIELDS = [

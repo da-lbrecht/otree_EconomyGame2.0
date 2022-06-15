@@ -437,7 +437,7 @@ Auction Market {{ endblock }} {{ block content }}
 
     async mounted() {
       liveSocket.onmessage = async function (e) {
-        // console.log(e.data);
+        console.log(e.data);
         this.data = JSON.parse(e.data);
         // console.log(this.data)
         if (!this.playerIsAdmin) this.drawMarginChart();
@@ -508,6 +508,9 @@ Auction Market {{ endblock }} {{ block content }}
       },
       withdrawOffer(offer) {
         liveSend({"type": "withdrawal", "withdrawal": offer})
+      },
+      deleteNotification(notification) {
+        liveSend({"type": "notification_deletion", "deletion": notification})
       },
       roundToDecimals(input, numberOfDecimals) {
         return new Intl.NumberFormat("en-US", { minimumFractionDigits: numberOfDecimals, maximumFractionDigits: numberOfDecimals }).format(input)
