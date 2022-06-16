@@ -8,14 +8,14 @@ Auction Market {{ endblock }} {{ block content }}
 >
 
   <div class="toast-container position-absolute top-0 start-50 translate-middle-x z-index-1 pt-2 overflow-hidden mh-100">
-    <div v-for="(message, index) in messages" :key="index" :class="toastColor(message.type)" class="toast d-flex flex-column text-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div v-for="(notification, index) in reversedNotifications" :key="index" :class="toastColor(notification.type)" class="toast d-flex flex-column text-white" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">
-          <span v-html="message.text"></span>
+          <span v-html="notification.message"></span>
         </div>
-        <button type="button" class="btn-close me-2 m-auto" @click="removeMessage(index)" aria-label="Close"></button>
+        <button type="button" class="btn-close me-2 m-auto" @click="deleteNotification(index)" aria-label="Close"></button>
       </div>
-      <small class="align-self-end m-2 mt-0">[[ message.time ]]</small>
+      <small class="align-self-end m-2 mt-0">[[ notification.time ]]</small>
     </div>
   </div>
 
@@ -482,6 +482,10 @@ Auction Market {{ endblock }} {{ block content }}
       },
       currencyUnit() {
         return js_vars.currency_unit
+      },
+      reversedNotifications() {
+        const notifications = this.data.notifications ?? []
+        return notifications.reverse()
       },
       playerHash() {
         const splitPathname = window.location.pathname.split('/')
