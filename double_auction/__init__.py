@@ -629,9 +629,10 @@ def live_method(player: Player, data):
                     p.participant.notifications.append(market_news)
         elif data['type'] == 'notification_deletion':
             notifications = player.participant.notifications
+            reversed_notifications = list(reversed(notifications))
             deletion = data['deletion']
-            if deletion in [i for i in notifications]:
-                del notifications[([i for i in notifications]).index(deletion)]
+            del reversed_notifications[deletion]
+            notifications = list(reversed(reversed_notifications))
             player.participant.notifications = notifications
 
     # Create lists of all asks/bids by all sellers/buyers

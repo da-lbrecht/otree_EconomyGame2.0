@@ -514,7 +514,9 @@ Auction Market {{ endblock }} {{ block content }}
         liveSend({"type": "withdrawal", "withdrawal": offer})
       },
       deleteNotification(notification) {
-        liveSend({"type": "notification_deletion", "deletion": notification})
+        liveSend({"type": "notification_deletion", "deletion": notification});
+        // console.log("Notification deleted!");
+        // console.log(notification);
       },
       roundToDecimals(input, numberOfDecimals) {
         return new Intl.NumberFormat("en-US", { minimumFractionDigits: numberOfDecimals, maximumFractionDigits: numberOfDecimals }).format(input)
@@ -528,7 +530,7 @@ Auction Market {{ endblock }} {{ block content }}
           "price_floor_admin": this.price_floor_admin?.toString() || this.data.price_floor_admin
         })
         this.buyer_tax_admin = this.seller_tax_admin = this.price_ceiling_admin = this.price_floor_admin = null
-        console.log("Market update sent!");
+        // console.log("Market update sent!");
       },
       drawMarginChart() {
         if (js_vars.is_buyer) {
