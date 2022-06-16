@@ -762,6 +762,10 @@ class Trading(Page):
             market_closing=player.session.config['market_closing'],
         )
 
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        player.payoff = player.balance
+
 
 class Results(Page):
 
