@@ -196,7 +196,7 @@ def live_method(player: Player, data):
         if data['type'] == 'offer':
             # Check if offer violates price restrictions
             if player.is_buyer \
-                    and round(float(data['offer']), 2) < float(player.session.config['price_floor']):
+                    and round(float(data['offer']), 2) < price_floor:
                 player.participant.error = dict(
                     message="You are not allowed to bid below the price floor.",
                     time=str(datetime.today().ctime())
@@ -205,7 +205,7 @@ def live_method(player: Player, data):
                                                          "time": str(datetime.today().ctime()),
                                                          "type": "error"})
             elif player.is_buyer == 0 \
-                    and round(float(data['offer']), 2) > float(player.session.config['price_ceiling']):
+                    and round(float(data['offer']), 2) > price_ceiling:
                 player.participant.error = dict(
                     message="You are not allowed to ask above the price ceiling.",
                     time=str(datetime.today().ctime())
