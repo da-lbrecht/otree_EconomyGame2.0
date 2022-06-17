@@ -427,7 +427,6 @@ Auction Market {{ endblock }} {{ block content }}
         data: {},
         offer: null,
         tab: 'open-orders',
-        messages: [],
         buyer_tax_admin: null,
         seller_tax_admin: null,
         price_ceiling_admin: null,
@@ -441,12 +440,12 @@ Auction Market {{ endblock }} {{ block content }}
         this.data = JSON.parse(e.data);
         // console.log(this.data)
         if (!this.playerIsAdmin) this.drawMarginChart();
-        await this.displayAllMessages()
-      }.bind(this);
 
-      this.messages = JSON.parse(sessionStorage.getItem(this.storageKey)) || []
-      await new Promise(res => setTimeout(res, 100))
-      this.showToastMessages()
+        if (this.data.notifications) {
+          await new Promise(res => setTimeout(res, 100))
+          this.showToastMessages()
+        }
+      }.bind(this);
     },
 
     computed: {
@@ -482,14 +481,6 @@ Auction Market {{ endblock }} {{ block content }}
       },
       currencyUnit() {
         return js_vars.currency_unit
-      },
-      playerHash() {
-        const splitPathname = window.location.pathname.split('/')
-        const pPosition = splitPathname.indexOf('p')
-        return splitPathname[pPosition + 1]
-      },
-      storageKey() {
-        return 'messages_' + this.playerHash
       }
     },
 
@@ -511,8 +502,6 @@ Auction Market {{ endblock }} {{ block content }}
       },
       deleteNotification(notification) {
         liveSend({"type": "notification_deletion", "deletion": notification});
-        // console.log("Notification deleted!");
-        // console.log(notification);
       },
       roundToDecimals(input, numberOfDecimals) {
         return new Intl.NumberFormat("en-US", { minimumFractionDigits: numberOfDecimals, maximumFractionDigits: numberOfDecimals }).format(input)
@@ -526,7 +515,6 @@ Auction Market {{ endblock }} {{ block content }}
           "price_floor_admin": this.price_floor_admin?.toString() || this.data.price_floor_admin
         })
         this.buyer_tax_admin = this.seller_tax_admin = this.price_ceiling_admin = this.price_floor_admin = null
-        // console.log("Market update sent!");
       },
       drawMarginChart() {
         if (js_vars.is_buyer) {
@@ -539,34 +527,6 @@ Auction Market {{ endblock }} {{ block content }}
         var textArea = document.createElement('textarea');
         textArea.innerHTML = str;
         return textArea.value;
-      },
-      async displayAllMessages() {
-        if (this.data.news && !this.messageIsAlreadyInCollection(this.data.news)) {
-          this.messages.push({ time: this.data.news.time, text: this.data.news.message, type: 'news' });
-        }
-        
-        if (this.data.error && !this.messageIsAlreadyInCollection(this.data.error)) {
-          this.messages.push({ time: this.data.error.time, text: this.data.error.message, type: 'error' });
-        }
-
-        if (this.data.market_news && !this.messageIsAlreadyInCollection(this.data.market_news)) {
-          this.messages.push({ time: this.data.market_news.time, text: this.data.market_news.message, type: 'market_news' });
-        }
-
-        if (this.messages) {
-          this.saveMessagesToStorage()
-          await new Promise(res => setTimeout(res, 100))
-          this.showToastMessages()
-        }
-      },
-      messageIsAlreadyInCollection(message) {
-        return this.messages.some(_message => {
-          return _message.time === message.time && 
-          _message.message === message.text
-        })
-      },
-      saveMessagesToStorage() {
-        sessionStorage.setItem(this.storageKey, JSON.stringify(this.messages))
       },
       showToastMessages() {
         [].slice.call(document.querySelectorAll('.toast'))
