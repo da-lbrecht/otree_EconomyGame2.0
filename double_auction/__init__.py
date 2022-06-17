@@ -11,7 +11,7 @@ def marginal_production_costs(t, min_mc, step, production_time):
         c = min_mc
     elif t <= production_time:
         c = min_mc + 1 * step
-    elif t <= 2*production_time:
+    elif t <= 2 * production_time:
         c = min_mc + 2 * step
     else:
         c = min_mc + 3 * step
@@ -23,7 +23,7 @@ def marginal_consumption_utility(t, max_mu, step, consumption_time):
         u = max_mu
     elif t <= consumption_time:
         u = max_mu - 1 * step
-    elif t <= 2*consumption_time:
+    elif t <= 2 * consumption_time:
         u = max_mu - 2 * step
     else:
         u = max_mu - 3 * step
@@ -109,18 +109,18 @@ def creating_session(subsession: Subsession):
         participant.news = None
         participant.notifications = []
         # Initialize session variables
-        session.buyer_tax = round(float(p.session.config['buyer_tax']/100), 3)
-        session.seller_tax = round(float(p.session.config['seller_tax']/100), 3)
+        session.buyer_tax = round(float(p.session.config['buyer_tax'] / 100), 3)
+        session.seller_tax = round(float(p.session.config['seller_tax'] / 100), 3)
         session.price_floor = round(p.session.config['price_floor'], 2)
         session.price_ceiling = round(p.session.config['price_ceiling'], 2)
         # Create data for MC/MU graphs
-        cost_x = np.arange(0, (3*p.production_time+1), 1)
+        cost_x = np.arange(0, (3 * p.production_time + 1), 1)
         cost_y = np.empty(shape=len(cost_x))
         for x in range(0, len(cost_x) - 1):
             cost_y[x] = marginal_production_costs(cost_x[x], p.min_mc, p.step_mc, p.production_time)
         participant.cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
 
-        utility_x = np.arange(0, (3*p.consumption_time+1), 1)
+        utility_x = np.arange(0, (3 * p.consumption_time + 1), 1)
         utility_y = np.empty(shape=len(utility_x))
         for x in range(0, len(utility_x) - 1):
             utility_y[x] = marginal_consumption_utility(utility_x[x], p.max_mu, p.step_mu, p.consumption_time)
@@ -205,7 +205,8 @@ def live_method(player: Player, data):
                     message="You are not allowed to bid below the price floor.",
                     time=str(datetime.today().ctime())
                 )
-                player.participant.notifications.append({"message": "You are not allowed to bid below the price floor.",
+                player.participant.notifications.insert(0,
+                                                        {"message": "You are not allowed to bid below the price floor.",
                                                          "time": str(datetime.today().ctime()),
                                                          "type": "error"})
             elif player.is_buyer == 0 \
@@ -214,10 +215,11 @@ def live_method(player: Player, data):
                     message="You are not allowed to ask above the price ceiling.",
                     time=str(datetime.today().ctime())
                 )
-                player.participant.notifications.append(
-                    {"message": "You are not allowed to ask above the price ceiling.",
-                     "time": str(datetime.today().ctime()),
-                     "type": "error"})
+                player.participant.notifications.insert(0,
+                                                        {
+                                                            "message": "You are not allowed to ask above the price ceiling.",
+                                                            "time": str(datetime.today().ctime()),
+                                                            "type": "error"})
             # Process offer
             else:
                 offer_times.append((round(float(data['offer']), 2), datetime.today().timestamp()))
@@ -278,13 +280,14 @@ def live_method(player: Player, data):
                                     + currency_unit,
                             time=str(datetime.today().ctime())
                         )
-                        buyer.participant.notifications.append(
-                            {"message": "You bought one unit at price "
-                                        + str('{:.2f}'.format((round(float(price), 2))))
-                                        + " "
-                                        + currency_unit,
-                             "time": str(datetime.today().ctime()),
-                             "type": "news"})
+                        buyer.participant.notifications.insert(0,
+                                                               {"message": "You bought one unit at price "
+                                                                           + str(
+                                                                   '{:.2f}'.format((round(float(price), 2))))
+                                                                           + " "
+                                                                           + currency_unit,
+                                                                "time": str(datetime.today().ctime()),
+                                                                "type": "news"})
 
                         seller.participant.news = dict(
                             message="You sold one unit at price "
@@ -293,13 +296,14 @@ def live_method(player: Player, data):
                                     + currency_unit,
                             time=str(datetime.today().ctime())
                         )
-                        seller.participant.notifications.append(
-                            {"message": "You sold one unit at price "
-                                        + str('{:.2f}'.format((round(float(price), 2))))
-                                        + " "
-                                        + currency_unit,
-                             "time": str(datetime.today().ctime()),
-                             "type": "news"})
+                        seller.participant.notifications.insert(0,
+                                                                {"message": "You sold one unit at price "
+                                                                            + str(
+                                                                    '{:.2f}'.format((round(float(price), 2))))
+                                                                            + " "
+                                                                            + currency_unit,
+                                                                 "time": str(datetime.today().ctime()),
+                                                                 "type": "news"})
                     else:
                         buyer.participant.news = dict(
                             message="You bought one unit at price "
@@ -310,15 +314,16 @@ def live_method(player: Player, data):
                                     + str(seller.id_in_group),
                             time=str(datetime.today().ctime())
                         )
-                        buyer.participant.notifications.append(
-                            {"message": "You bought one unit at price "
-                                        + str('{:.2f}'.format((round(float(price), 2))))
-                                        + " "
-                                        + currency_unit
-                                        + " from Seller "
-                                        + str(seller.id_in_group),
-                             "time": str(datetime.today().ctime()),
-                             "type": "news"})
+                        buyer.participant.notifications.insert(0,
+                                                               {"message": "You bought one unit at price "
+                                                                           + str(
+                                                                   '{:.2f}'.format((round(float(price), 2))))
+                                                                           + " "
+                                                                           + currency_unit
+                                                                           + " from Seller "
+                                                                           + str(seller.id_in_group),
+                                                                "time": str(datetime.today().ctime()),
+                                                                "type": "news"})
 
                         seller.participant.news = dict(
                             message="You sold one unit at price "
@@ -329,15 +334,16 @@ def live_method(player: Player, data):
                                     + str(buyer.id_in_group),
                             time=str(datetime.today().ctime())
                         )
-                        seller.participant.notifications.append(
-                            {"message": "You sold one unit at price "
-                                    + str('{:.2f}'.format((round(float(price), 2))))
-                                    + " "
-                                    + currency_unit
-                                    + " to Buyer "
-                                    + str(buyer.id_in_group),
-                             "time": str(datetime.today().ctime()),
-                             "type": "news"})
+                        seller.participant.notifications.insert(0,
+                                                                {"message": "You sold one unit at price "
+                                                                            + str(
+                                                                    '{:.2f}'.format((round(float(price), 2))))
+                                                                            + " "
+                                                                            + currency_unit
+                                                                            + " to Buyer "
+                                                                            + str(buyer.id_in_group),
+                                                                 "time": str(datetime.today().ctime()),
+                                                                 "type": "news"})
 
                     # Delete bids/asks of effected trade from bid/ask cue
                     buyer.participant.offer_times = buyer.participant.offer_times[1:]
@@ -389,8 +395,9 @@ def live_method(player: Player, data):
                     # Update current offer history, i.e. still standing offers after trade
                     buyer.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in buyer.participant.offer_times:
-                        buyer.participant.offer_history.append({"offer": str('{:.2f}'.format(round(x[0], 2))) + " " +
-                                                                         currency_unit,
+                        buyer.participant.offer_history.insert(0,
+                                                               {"offer": str('{:.2f}'.format(round(x[0], 2))) + " "
+                                                                + currency_unit,
                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
                     seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in seller.participant.offer_times:
@@ -632,13 +639,13 @@ def live_method(player: Player, data):
                         type="market_news"
                     )
                 for p in players:
-                    p.participant.notifications.append(market_news)
+                    p.participant.notifications.insert(0,market_news)
         elif data['type'] == 'notification_deletion':
             notifications = player.participant.notifications
-            reversed_notifications = list(reversed(notifications))
+            # reversed_notifications = list(reversed(notifications))
             deletion = data['deletion']
-            del reversed_notifications[deletion]
-            notifications = list(reversed(reversed_notifications))
+            del notifications[deletion]
+            # notifications = list(reversed(reversed_notifications))
             player.participant.notifications = notifications
 
     # Create lists of all asks/bids by all sellers/buyers
