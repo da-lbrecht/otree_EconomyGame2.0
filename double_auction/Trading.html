@@ -8,7 +8,7 @@ Auction Market {{ endblock }} {{ block content }}
 >
 
   <div class="toast-container position-absolute top-0 start-50 translate-middle-x z-index-1 pt-2 overflow-hidden mh-100">
-    <div v-for="(notification, index) in reversedNotifications" :key="index" :class="toastColor(notification.type)" class="toast d-flex flex-column text-white" role="alert" aria-live="assertive" aria-atomic="true">
+    <div v-for="(notification, index) in data.notifications" :key="index" :class="toastColor(notification.type)" class="toast d-flex flex-column text-white" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">
           <span v-html="notification.message"></span>
@@ -437,7 +437,7 @@ Auction Market {{ endblock }} {{ block content }}
 
     async mounted() {
       liveSocket.onmessage = async function (e) {
-        console.log(e.data);
+        // console.log(e.data);
         this.data = JSON.parse(e.data);
         // console.log(this.data)
         if (!this.playerIsAdmin) this.drawMarginChart();
@@ -482,10 +482,6 @@ Auction Market {{ endblock }} {{ block content }}
       },
       currencyUnit() {
         return js_vars.currency_unit
-      },
-      reversedNotifications() {
-        const notifications = this.data.notifications ?? []
-        return notifications.reverse()
       },
       playerHash() {
         const splitPathname = window.location.pathname.split('/')
