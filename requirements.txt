@@ -5,3 +5,5 @@ sentry-sdk>=0.7.9
 
 numpy~=1.22.2
 matplotlib~=3.5.1
+
+gunicorn

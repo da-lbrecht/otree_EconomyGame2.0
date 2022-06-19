@@ -1,2 +1,2 @@
-web: otree prodserver1of2
+web: gunicorn otree prodserver1of2
 worker: otree prodserver2of2
