@@ -34,8 +34,8 @@ SESSION_CONFIG_DEFAULTS = dict(
     upper_bound_maximum_mu=100,
     mc_step_size=25,
     mu_step_size=25,
-    production_time=3000,
-    consumption_time=3000,
+    production_time=60,
+    consumption_time=60,
     doc="")
 
 # ISO-639 code

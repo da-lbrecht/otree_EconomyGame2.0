@@ -397,7 +397,7 @@ def live_method(player: Player, data):
                     for x in buyer.participant.offer_times:
                         buyer.participant.offer_history.insert(0,
                                                                {"offer": str('{:.2f}'.format(round(x[0], 2))) + " "
-                                                                + currency_unit,
+                                                                         + currency_unit,
                                                                 "offer_time": datetime.fromtimestamp(x[1]).ctime()})
                     seller.participant.offer_history = []  # Empty offer history before recreating based on most recent info
                     for x in seller.participant.offer_times:
@@ -440,25 +440,27 @@ def live_method(player: Player, data):
                                                                   currency_unit,
                                                          "offer_time": datetime.fromtimestamp(x[1]).ctime()})
         elif data['type'] == 'time_update':
-            # Update remaining time needed for production/consumption
-            player.participant.current_timestamp = time.time()
-            player.participant.time_needed = round(max(0, player.participant.time_needed -
-                                                       (player.participant.current_timestamp -
-                                                        player.participant.previous_timestamp)), 0)
-            player.participant.previous_timestamp = player.participant.current_timestamp
-            # Update marginal utility/costs
-            if player.is_buyer:
-                player.participant.marginal_evaluation = marginal_consumption_utility(player.participant.time_needed,
-                                                                                      player.max_mu,
-                                                                                      player.step_mu,
-                                                                                      player.consumption_time
-                                                                                      )
-            elif player.is_buyer == 0 and player.is_admin != 1:
-                player.participant.marginal_evaluation = marginal_production_costs(player.participant.time_needed,
-                                                                                   player.min_mc,
-                                                                                   player.step_mc,
-                                                                                   player.production_time
-                                                                                   )
+            for p in players:
+                # Update remaining time needed for production/consumption
+                p.participant.current_timestamp = time.time()
+                p.participant.time_needed = round(max(0, p.participant.time_needed -
+                                                      (p.participant.current_timestamp -
+                                                       p.participant.previous_timestamp)), 0)
+                p.participant.previous_timestamp = p.participant.current_timestamp
+                # Update marginal utility/costs
+                if p.is_buyer:
+                    p.participant.marginal_evaluation = marginal_consumption_utility(
+                        p.participant.time_needed,
+                        p.max_mu,
+                        p.step_mu,
+                        p.consumption_time
+                    )
+                elif p.is_buyer == 0 and p.is_admin != 1:
+                    p.participant.marginal_evaluation = marginal_production_costs(p.participant.time_needed,
+                                                                                  p.min_mc,
+                                                                                  p.step_mc,
+                                                                                  p.production_time
+                                                                                  )
         # Admin update of market structure
         elif data['type'] == 'market_update':
             # Check which parameters are updated
@@ -639,7 +641,7 @@ def live_method(player: Player, data):
                         type="market_news"
                     )
                 for p in players:
-                    p.participant.notifications.insert(0,market_news)
+                    p.participant.notifications.insert(0, market_news)
         elif data['type'] == 'notification_deletion':
             notifications = player.participant.notifications
             # reversed_notifications = list(reversed(notifications))
@@ -684,8 +686,9 @@ def live_method(player: Player, data):
     ]
     asks.sort(reverse=False)
 
-    return {
-        p.id_in_group: dict(
+    live_data = {}
+    for p in players:
+        live_data[p.id_in_group] = dict(
             current_offer=str('{:.2f}'.format(round(p.current_offer, 2))) + " " + str(
                 player.session.config['currency_unit']),
             current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
@@ -719,8 +722,46 @@ def live_method(player: Player, data):
             news=p.participant.news,
             notifications=p.participant.notifications,
         )
-        for p in players  # if p.is_admin is False
-    }
+
+    # return {
+    #     p.id_in_group: dict(
+    #         current_offer=str('{:.2f}'.format(round(p.current_offer, 2))) + " " + str(
+    #             player.session.config['currency_unit']),
+    #         current_offer_time=datetime.fromtimestamp(p.current_offer_time).ctime(),
+    #         balance=str('{:.2f}'.format(round(p.balance, 2))) + " " + str(player.session.config['currency_unit']),
+    #         bids=overall_bids,  # json.dumps(overall_bids_dict),
+    #         asks=overall_asks,  # json.dumps(overall_asks_dict),
+    #         cost_chart_series=p.participant.cost_chart_series,
+    #         utility_chart_series=p.participant.utility_chart_series,
+    #         chart_point=[[p.participant.time_needed, p.participant.marginal_evaluation]],
+    #         offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
+    #         offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
+    #         offer_history=p.participant.offer_history,  # json.dumps(dict(offers=p.participant.offer_history)),
+    #         time_needed=p.participant.time_needed,
+    #         marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
+    #             player.session.config['currency_unit']),
+    #         trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
+    #         buyer_tax=str('{:.1f}'.format(buyer_tax * 100)) + " " + str('%'),
+    #         seller_tax=str('{:.1f}'.format(seller_tax * 100)) + " " + str('%'),
+    #         price_floor=str('{:.2f}'.format(round(price_floor, 2))) + " " + str(
+    #             player.session.config['currency_unit']),
+    #         price_ceiling=str('{:.2f}'.format(round(price_ceiling, 2))) + " " + str(
+    #             player.session.config['currency_unit']),
+    #         buyer_tax_admin=buyer_tax * 100,
+    #         seller_tax_admin=seller_tax * 100,
+    #         price_floor_admin=round(price_floor, 2),
+    #         price_ceiling_admin=round(price_ceiling, 2),
+    #         currency_unit=currency_unit,
+    #         time_unit=str(player.session.config['time_unit']),
+    #         error=p.participant.error,
+    #         market_news=market_news,
+    #         news=p.participant.news,
+    #         notifications=p.participant.notifications,
+    #     )
+    #     for p in players  # if p.is_admin is False
+    # }
+
+    return live_data
 
 
 # PAGES
