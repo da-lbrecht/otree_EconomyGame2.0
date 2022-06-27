@@ -546,12 +546,15 @@ Auction Market {{ endblock }} {{ block content }}
   app.config.compilerOptions.delimiters = ["[[", "]]"];
   app.mount("#app");
 
-  document.addEventListener("DOMContentLoaded", () => {
-    liveSend({});
-    $('.otree-timer__time-left').on('update.countdown', () => {
-      liveSend({"type": "time_update"})
+  if (js_vars.is_admin) {
+    document.addEventListener("DOMContentLoaded", () => {
+      liveSend({});
+      $('.otree-timer__time-left').on('update.countdown', () => {
+        console.log('Updating')
+        liveSend({"type": "time_update"})
+      });
     });
-  });
+  }
 
   // Initialize tooltips with javascript
   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
