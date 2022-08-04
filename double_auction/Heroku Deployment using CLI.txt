@@ -11,6 +11,7 @@ cd economy_game
 
 # Add git remote
 heroku git:remote -a economy-game
+# heroku git:remote -a econ-game-demo
 
 # List branches
 git branch -a
