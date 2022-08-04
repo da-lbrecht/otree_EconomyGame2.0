@@ -552,6 +552,8 @@ Auction Market {{ endblock }} {{ block content }}
       $('.otree-timer__time-left').on('update.countdown', () => {
         console.log('Updating')
         liveSend({"type": "time_update"})
+        let ms = Date.now();
+        console.log(ms);
       });
     });
   }
