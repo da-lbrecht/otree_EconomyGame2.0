@@ -1,17 +1,19 @@
+# Create a folder on your computer, to which you can clone the project from GitHub
+
 # Open terminal/power shell
 
 # Change directory to local directory containing the project (you need to adapt the path to your local machine)
-cd "/Users/Home-DAlbrecht/Desktop/PhD Maastricht/ECONOMY GAME 2.0/HEROKU"
+cd "/Users/Home-DAlbrecht/Desktop/ECONOMY GAME 2.0/HEROKU"
 
 # Clone project from github
-git clone https://github.com/dalbrechtNL/economy_game.git
+git clone https://github.com/da-lbrecht/otree_EconomyGame2.0
 
 # Move into app directory
-cd economy_game
+cd otree_EconomyGame2.0
 
 # Add git remote
 heroku git:remote -a economy-game
-# heroku git:remote -a econ-game-demo
+# Follow instructions in the CLI to login to Heroku
 
 # List branches
 git branch -a
@@ -21,10 +23,3 @@ git push heroku master
 
 ##### The app is deployed now, now we turn to starting the server
 
-# reset database
-heroku run otree resetdb
-
-# start production server
-heroku run otree prodserver
-# open app
-heroku open
