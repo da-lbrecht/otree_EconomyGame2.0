@@ -716,7 +716,7 @@ def live_method(player: Player, data):
             price_floor_admin=round(price_floor, 2),
             price_ceiling_admin=round(price_ceiling, 2),
             currency_unit=currency_unit,
-            time_unit= 'seconds'  # str(player.session.config['time_unit']),
+            time_unit= 'seconds',  # str(player.session.config['time_unit']),
             error=p.participant.error,
             market_news=market_news,
             news=p.participant.news,
