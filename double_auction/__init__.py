@@ -63,11 +63,11 @@ class Subsession(BaseSubsession):
 def creating_session(subsession: Subsession):
     players = subsession.get_players()
     for p in players:
-        # this means if the player's ID is not a multiple of 2, they are a buyer.
+        # this means if the player's ID is a multiple of 2, they are a buyer.
         # for more buyers, change the 2 to 3
         participant = p.participant
         session = subsession.session
-        p.is_buyer = p.id_in_group % 2 > 0
+        p.is_buyer = p.id_in_group % p.session.config['buyer_share'] == 0
         p.is_admin = p.id_in_group == 1  # The first participant link is for admin use only!!!
         p.balance = 0
         # Randomize costs and utility functions

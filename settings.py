@@ -21,6 +21,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     market_opening='01 Aug 2022 09:00:00',
     market_closing='30 Aug 2023 18:00:00',
     currency_unit='&euro;',
+    buyer_share=2,
     # time_unit='seconds',
     price_floor=0.00,
     price_ceiling=1000.00,
