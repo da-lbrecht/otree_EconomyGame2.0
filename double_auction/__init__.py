@@ -88,7 +88,7 @@ def creating_session(subsession: Subsession):
         # Inherit market parameters from session configs
         p.session_description = p.session.config['description']
         p.currency_unit = p.session.config['currency_unit']
-        p.time_unit = p.session.config['time_unit']
+        p.time_unit = 'seconds'  # p.session.config['time_unit']
         p.market_opening = p.session.config['market_opening']
         p.market_closing = p.session.config['market_closing']
         if p.is_buyer:
