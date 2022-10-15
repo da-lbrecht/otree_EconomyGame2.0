@@ -6,7 +6,7 @@
 </div>
 
 <script>
-    function redrawUtility(series_1, series_2) {
+    function redrawUtility(series_1, series_2, series_3, series_4) {
         Highcharts.chart('highchart', {
 
             chart: {
@@ -24,7 +24,7 @@
 
             xAxis: {
                 title: {
-                    text: 'Remaining consumption time (seconds)'
+                    text: 'Remaining total consumption time (seconds)'
                 },
                 min: 0
             },
@@ -41,15 +41,16 @@
             series: [{
                 data: series_1,
                 type: 'line',
-                name: 'Marginal utility schedule'
+                name: 'High marginal utility'
 
             },
             {
                 data: series_2,
                 type: 'scatter',
-                name: 'Your current marginal utility'
+                name: 'Remaining consumption time'
 
-            }],
+            }
+            ],
 
             credits: {
                 enabled: false
@@ -58,8 +59,9 @@
         });
     }
 
-    function updateUtility(series_1, series_2) {
+    function updateUtility(series_1, series_2, series_3, series_4) {
         Highcharts.chart.series[1].setData(series_2, true);
+        Highcharts.chart.series[1].setData(series_4, true);
         Highcharts.chart.update({});
     }
 </script>
