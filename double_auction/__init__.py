@@ -8,11 +8,11 @@ import sys
 
 def marginal_production_costs(t_1, t_2, min_mc, step, production_time):
     t = t_1 + t_2
-    if t <= production_time:
+    if t == 0:
         c = min_mc
-    elif t <= 2 * production_time:
-        c = ((t - production_time) / production_time) * (min_mc + step) + \
-            ((production_time - (t - production_time)) / production_time) * min_mc
+    elif t <= production_time:
+        c = (t / production_time) * (min_mc + step) + \
+            ((production_time - t) / production_time) * min_mc
     else:
         c = min_mc + step
     return c
@@ -20,11 +20,11 @@ def marginal_production_costs(t_1, t_2, min_mc, step, production_time):
 
 def marginal_consumption_utility(t_1, t_2, max_mu, step, consumption_time):
     t = t_1 + t_2
-    if t <= consumption_time:
+    if t == 0:
         u = max_mu
-    elif t <= 2 * consumption_time:
-        u = ((t - consumption_time) / consumption_time) * (max_mu - step) + \
-            ((consumption_time - (t - consumption_time)) / consumption_time) * max_mu
+    elif t <= consumption_time:
+        u = (t / consumption_time) * (max_mu - step) + \
+            ((consumption_time - t) / consumption_time) * max_mu
     else:
         u = max_mu - step
     return u
