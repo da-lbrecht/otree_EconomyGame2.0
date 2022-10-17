@@ -212,6 +212,18 @@ def live_method(player: Player, data):
                                                         {"message": "You are not allowed to bid below the price floor.",
                                                          "time": str(datetime.today().ctime()),
                                                          "type": "error"})
+            elif player.is_buyer \
+                    and round(float(data['offer']), 2) > price_ceiling:
+                player.participant.error = dict(
+                    message="You are not allowed to bid above the price ceiling.",
+                    time=str(datetime.today().ctime())
+                )
+                player.participant.notifications.insert(0,
+                                                        {
+                                                            "message": "You are not allowed to bid above the price "
+                                                                       "ceiling.",
+                                                            "time": str(datetime.today().ctime()),
+                                                            "type": "error"})
             elif player.is_buyer == 0 \
                     and round(float(data['offer']), 2) > price_ceiling:
                 player.participant.error = dict(
@@ -220,7 +232,20 @@ def live_method(player: Player, data):
                 )
                 player.participant.notifications.insert(0,
                                                         {
-                                                            "message": "You are not allowed to ask above the price ceiling.",
+                                                            "message": "You are not allowed to ask above the price "
+                                                                       "ceiling.",
+                                                            "time": str(datetime.today().ctime()),
+                                                            "type": "error"})
+            elif player.is_buyer == 0 \
+                     and round(float(data['offer']), 2) < price_floor:
+                player.participant.error = dict(
+                    message="You are not allowed to ask below the below price ceiling.",
+                    time=str(datetime.today().ctime())
+                )
+                player.participant.notifications.insert(0,
+                                                        {
+                                                            "message": "You are not allowed to ask below the below "
+                                                                       "price ceiling.",
                                                             "time": str(datetime.today().ctime()),
                                                             "type": "error"})
             # Process offer
@@ -546,7 +571,7 @@ def live_method(player: Player, data):
                 if new_market_params == [True, False, False, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
-                                + str(round(float(data['buyer_tax_admin']), 1)) + " %. All standing bids and asks have"
+                                + str(round(float(data['buyer_tax_admin']), 1)) + " %. All standing bids and asks have "
                                                                                   "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -555,7 +580,7 @@ def live_method(player: Player, data):
                     market_news = dict(
                         message="A market intervention took place! The tax on sellers has changed to "
                                 + str(round(float(data['seller_tax_admin']), 1)) + " %. All standing bids and asks have"
-                                                                                   "been deleted.",
+                                                                                   " been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
                     )
@@ -563,7 +588,7 @@ def live_method(player: Player, data):
                     market_news = dict(
                         message="A market intervention took place! The price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -572,7 +597,7 @@ def live_method(player: Player, data):
                     market_news = dict(
                         message="A market intervention took place! The price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -583,7 +608,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['buyer_tax_admin']), 1))
                                 + " % and the tax on sellers has changed to "
                                 + str(round(float(data['seller_tax_admin']), 1)) + " %. All standing bids and asks have"
-                                                                                   "been deleted.",
+                                                                                   " been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
                     )
@@ -593,7 +618,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['buyer_tax_admin']), 1))
                                 + " % and the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -604,7 +629,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['buyer_tax_admin']), 1))
                                 + " % and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -615,7 +640,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -626,7 +651,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -638,7 +663,7 @@ def live_method(player: Player, data):
                                 + str(player.session.config['currency_unit'])
                                 + " and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -651,7 +676,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price floor has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_floor_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -665,7 +690,7 @@ def live_method(player: Player, data):
                                 + str(player.session.config['currency_unit'])
                                 + " and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -678,7 +703,7 @@ def live_method(player: Player, data):
                                 + str(round(float(data['seller_tax_admin']), 1))
                                 + " % and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -692,7 +717,7 @@ def live_method(player: Player, data):
                                 + str(player.session.config['currency_unit'])
                                 + " and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
@@ -708,7 +733,7 @@ def live_method(player: Player, data):
                                 + str(player.session.config['currency_unit'])
                                 + " and the price ceiling has changed to "
                                 + str('{:.2f}'.format(round(float(data['price_ceiling_admin']), 2))) + " "
-                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have"
+                                + str(player.session.config['currency_unit']) + ". All standing bids and asks have "
                                                                                 "been deleted.",
                         time=str(datetime.today().ctime()),
                         type="market_news"
