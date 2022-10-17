@@ -514,7 +514,7 @@ def live_method(player: Player, data):
             player.subsession.session.seller_tax = round(float(data['seller_tax_admin']) / 100, 3)
             player.subsession.session.price_floor = round(float(data['price_floor_admin']), 2)
             player.subsession.session.price_ceiling = round(float(data['price_ceiling_admin']), 2)
-            # Create message about market update
+            # Check whether there really was a change
             if new_market_params == [False, False, False, False]:
                 market_news = None
             else:
@@ -523,6 +523,26 @@ def live_method(player: Player, data):
                     p.participant.offer_history = []
                     p.participant.offer_times = []
                     p.participant.offers = []
+                    if p.is_buyer:
+                        offer_times.sort(key=lambda x: x[0],
+                                         reverse=True)  # Sort such that highest bid is first list element
+                        if len(offer_times) >= 1:
+                            p.current_offer = offer_times[0][0]
+                            p.current_offer_time = offer_times[0][1]
+                        else:
+                            p.current_offer = C.BID_MIN
+                            p.current_offer_time = C.MAX_TIMESTAMP
+                    elif p.is_buyer == 0 and p.is_admin != 1:
+                        offer_times.sort(key=lambda x: x[0],
+                                         reverse=False)  # Sort such that lowest ask is first list element
+                        if len(offer_times) >= 1:
+                            p.current_offer = offer_times[0][0]
+                            p.current_offer_time = offer_times[0][1]
+                        else:
+                            p.current_offer = C.ASK_MAX
+                            p.current_offer_time = C.MAX_TIMESTAMP
+
+                # Create messages on market updates
                 if new_market_params == [True, False, False, False]:
                     market_news = dict(
                         message="A market intervention took place! The tax on buyers has changed to "
