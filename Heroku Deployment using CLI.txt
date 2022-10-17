@@ -3,7 +3,7 @@
 # Open terminal/power shell
 
 # Change directory to local directory containing the project (you need to adapt the path to your local machine)
-cd "/Users/Home-DAlbrecht/Desktop/ECONOMY GAME 2.0/HEROKU"
+cd "/Users/Home-DAlbrecht/Desktop/PhD Maastricht/ECONOMY GAME 2.0/HEROKU"
 
 # Clone project from github
 git clone https://github.com/da-lbrecht/otree_EconomyGame2.0
