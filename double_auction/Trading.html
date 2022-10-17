@@ -563,7 +563,8 @@ Auction Market {{ endblock }} {{ block content }}
         console.log('Updating')
         liveSend({"type": "time_update"})
         let ms = Date.now();
-        console.log(ms);
+        let upDate = new Date(ms)
+        console.log(upDate);
       });
     });
   }
