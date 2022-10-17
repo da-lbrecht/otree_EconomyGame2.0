@@ -359,8 +359,7 @@ Auction Market {{ endblock }} {{ block content }}
           class="d-flex"
           data-bs-toggle="tooltip"
           data-bs-placement="top"
-          title="You want to {{ if player.is_buyer }}buy lower{{ else }}sell higher{{ endif }} than
-          this number"
+          title="You want to {{ if player.is_buyer }}buy lower than your MU{{ else }}sell higher than your MC{{ endif }}"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
