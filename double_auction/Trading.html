@@ -380,9 +380,7 @@ Auction Market {{ endblock }} {{ block content }}
     <div class="row">
       <div class="col-auto">
         <p class="fw-bolder">
-<!--          {{ if player.is_buyer }}Consumption{{ else }}Production{{ endif }}
-          time-->
-          Time to idle 1
+          {{ if player.is_buyer }} Usage {{ else }} Technology {{ endif }} 1
         </p>
       </div>
       <div class="col text-end">
@@ -392,11 +390,21 @@ Auction Market {{ endblock }} {{ block content }}
     <div class="row">
       <div class="col-auto">
         <p class="fw-bolder">
-          Time to idle 2
+          {{ if player.is_buyer }} Usage {{ else }} Technology {{ endif }} 2
         </p>
       </div>
       <div class="col text-end">
         <p>[[ data.time_needed_2 ]] seconds</p>
+      </div>
+    </div>
+        <div class="row">
+      <div class="col-auto">
+        <p class="fw-bolder">
+          {{ if player.is_buyer }} Usage {{ else }} Technology {{ endif }} 3
+        </p>
+      </div>
+      <div class="col text-end">
+        <p>[[ data.time_needed_3 ]] seconds</p>
       </div>
     </div>
 

@@ -6,27 +6,33 @@ import json  # Module to convert python dictionaries into JSON objects
 import sys
 
 
-def marginal_production_costs(t_1, t_2, min_mc, step, production_time):
-    t = t_1 + t_2
+def marginal_production_costs(t_1, t_2, t_3, min_mc, step, production_time):
+    t = t_1 + t_2 + t_3
     if t == 0:
         c = min_mc
-    elif t <= production_time:
+    elif t <= 1 * production_time:
         c = (t / production_time) * (min_mc + step) + \
             ((production_time - t) / production_time) * min_mc
+    elif t <= 2 * production_time:
+        c = ((t - production_time) / production_time) * (min_mc + 2 * step) + \
+            ((production_time - (t - production_time) ) / production_time) * (min_mc + step)
     else:
-        c = min_mc + step
+        c = min_mc + 2 * step
     return c
 
 
-def marginal_consumption_utility(t_1, t_2, max_mu, step, consumption_time):
-    t = t_1 + t_2
+def marginal_consumption_utility(t_1, t_2, t_3, max_mu, step, consumption_time):
+    t = t_1 + t_2 + t_3
     if t == 0:
         u = max_mu
-    elif t <= consumption_time:
+    elif t <= 1 * consumption_time:
         u = (t / consumption_time) * (max_mu - step) + \
             ((consumption_time - t) / consumption_time) * max_mu
+    elif t <= 2 * consumption_time:
+        u = ((t - consumption_time) / consumption_time) * (max_mu - 2 * step) + \
+            ((consumption_time - (t - consumption_time)) / consumption_time) * (max_mu - step)
     else:
-        u = max_mu - step
+        u = max_mu - 2 * step
     return u
 
 
@@ -93,11 +99,11 @@ def creating_session(subsession: Subsession):
         p.market_closing = p.session.config['market_closing']
         if p.is_buyer:
             p.current_offer = C.BID_MIN
-            participant.marginal_evaluation = marginal_consumption_utility(0, 0, p.max_mu, p.step_mu,
+            participant.marginal_evaluation = marginal_consumption_utility(0, 0, 0, p.max_mu, p.step_mu,
                                                                            p.consumption_time)
         else:
             p.current_offer = C.ASK_MAX
-            participant.marginal_evaluation = marginal_production_costs(0, 0, p.min_mc, p.step_mc, p.production_time)
+            participant.marginal_evaluation = marginal_production_costs(0, 0, 0, p.min_mc, p.step_mc, p.production_time)
         # Initialize participant variables
         participant.offers = []
         participant.offer_times = []
@@ -105,7 +111,7 @@ def creating_session(subsession: Subsession):
         participant.trading_history = []
         participant.time_needed_1 = 0
         participant.time_needed_2 = 0
-        # participant.time_needed_3 = 0
+        participant.time_needed_3 = 0
         participant.previous_timestamp = time.time()
         participant.current_timestamp = time.time()
         participant.error = None
@@ -120,13 +126,13 @@ def creating_session(subsession: Subsession):
         cost_x = np.arange(0, (3 * p.production_time + 1), 1)
         cost_y = np.empty(shape=len(cost_x))
         for x in range(0, len(cost_x) - 1):
-            cost_y[x] = marginal_production_costs(cost_x[x], 0, p.min_mc, p.step_mc, p.production_time)
+            cost_y[x] = marginal_production_costs(cost_x[x], 0, 0, p.min_mc, p.step_mc, p.production_time)
         participant.cost_chart_series = np.array((cost_x, cost_y)).T[:-1].tolist()
 
         utility_x = np.arange(0, (3 * p.consumption_time + 1), 1)
         utility_y = np.empty(shape=len(utility_x))
         for x in range(0, len(utility_x) - 1):
-            utility_y[x] = marginal_consumption_utility(utility_x[x], 0, p.max_mu, p.step_mu, p.consumption_time)
+            utility_y[x] = marginal_consumption_utility(utility_x[x], 0, 0, p.max_mu, p.step_mu, p.consumption_time)
         participant.utility_chart_series = np.array((utility_x, utility_y)).T[:-1].tolist()
 
 
@@ -422,20 +428,17 @@ def live_method(player: Player, data):
                     # For buyers
                     if buyer.participant.time_needed_1 == 0:
                         buyer.participant.time_needed_1 += buyer.consumption_time
-                    # elif buyer.participant.time_needed_1 < buyer.consumption_time:
-                    #     buyer.participant.time_needed_2 += (buyer.consumption_time-(buyer.consumption_time-buyer.participant.time_needed_1))
-                    #     buyer.participant.time_needed_1 = buyer.consumption_time
-                    else:
+                    elif buyer.participant.time_needed_2 == 0:
                         buyer.participant.time_needed_2 += buyer.consumption_time
+                    else:
+                        buyer.participant.time_needed_3 += buyer.consumption_time
                     # For sellers
                     if seller.participant.time_needed_1 == 0:
                         seller.participant.time_needed_1 += seller.production_time
-                    # elif seller.participant.time_needed_1 < seller.production_time:
-                    #     seller.participant.time_needed_2 += (
-                    #                 seller.production_time - (seller.production_time - seller.participant.time_needed_1))
-                    #     seller.participant.time_needed_1 = seller.production_time
+                    elif seller.participant.time_needed_2 == 0:
+                        seller.participant.time_needed_2 += seller.consumption_time
                     else:
-                        seller.participant.time_needed_2 += seller.production_time
+                        seller.participant.time_needed_3 += seller.production_time
 
                     # Update current offer history, i.e. still standing offers after trade
                     buyer.participant.offer_history = []  # Empty offer history before recreating based on most recent info
@@ -495,6 +498,13 @@ def live_method(player: Player, data):
                     elif p.is_buyer == 0 and p.is_admin != 1:
                         p.participant.time_needed_1 += min(p.participant.time_needed_2, p.production_time)
                         p.participant.time_needed_2 -= p.participant.time_needed_1
+                if p.participant.time_needed_2 <= 1:
+                    if p.is_buyer:
+                        p.participant.time_needed_2 += min(p.participant.time_needed_3, p.consumption_time)
+                        p.participant.time_needed_3 -= p.participant.time_needed_2
+                    elif p.is_buyer == 0 and p.is_admin != 1:
+                        p.participant.time_needed_2 += min(p.participant.time_needed_3, p.production_time)
+                        p.participant.time_needed_3 -= p.participant.time_needed_2
 
                 p.participant.time_needed_1 = round(max(0, p.participant.time_needed_1 -
                                                         (p.participant.current_timestamp -
@@ -502,17 +512,16 @@ def live_method(player: Player, data):
                 p.participant.time_needed_2 = round(max(0, p.participant.time_needed_2 -
                                                         (p.participant.current_timestamp -
                                                          p.participant.previous_timestamp)), 0)
-
-                # p.participant.time_needed_3 = round(max(0, p.participant.time_needed_3 -
-                #                                         (p.participant.current_timestamp -
-                #                                          p.participant.previous_timestamp)), 0)
+                p.participant.time_needed_3 = round(max(0, p.participant.time_needed_3 -
+                                                        (p.participant.current_timestamp -
+                                                         p.participant.previous_timestamp)), 0)
                 p.participant.previous_timestamp = p.participant.current_timestamp
                 # Update marginal utility/costs
                 if p.is_buyer:
                     p.participant.marginal_evaluation = marginal_consumption_utility(
                         p.participant.time_needed_1,
                         p.participant.time_needed_2,
-                        # p.participant.time_needed_3,
+                        p.participant.time_needed_3,
                         p.max_mu,
                         p.step_mu,
                         p.consumption_time
@@ -520,7 +529,7 @@ def live_method(player: Player, data):
                 elif p.is_buyer == 0 and p.is_admin != 1:
                     p.participant.marginal_evaluation = marginal_production_costs(p.participant.time_needed_1,
                                                                                   p.participant.time_needed_2,
-                                                                                  # p.participant.time_needed_3,
+                                                                                  p.participant.time_needed_3,
                                                                                   p.min_mc,
                                                                                   p.step_mc,
                                                                                   p.production_time
@@ -802,12 +811,13 @@ def live_method(player: Player, data):
             cost_chart_series=p.participant.cost_chart_series,
             utility_chart_series=p.participant.utility_chart_series,
             chart_point=[
-                [(p.participant.time_needed_1 + p.participant.time_needed_2), p.participant.marginal_evaluation]],
+                [(p.participant.time_needed_1 + p.participant.time_needed_2 + p.participant.time_needed_3), p.participant.marginal_evaluation]],
             offers=[str('{:.2f}'.format(round(i[0], 2))) for i in p.participant.offer_times],
             offer_times=[datetime.fromtimestamp(tup[1]).ctime() for tup in p.participant.offer_times],
             offer_history=p.participant.offer_history,  # json.dumps(dict(offers=p.participant.offer_history)),
             time_needed_1=p.participant.time_needed_1,
             time_needed_2=p.participant.time_needed_2,
+            time_needed_3=p.participant.time_needed_3,
             marginal_evaluation=str('{:.2f}'.format(round(p.participant.marginal_evaluation, 2))) + " " + str(
                 player.session.config['currency_unit']),
             trading_history=p.participant.trading_history,  # json.dumps(dict(trades=p.participant.trading_history)),
