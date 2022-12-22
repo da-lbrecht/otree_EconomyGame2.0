@@ -564,6 +564,7 @@ Auction Market {{ endblock }} {{ block content }}
   app.config.compilerOptions.delimiters = ["[[", "]]"];
   app.mount("#app");
 
+/*  // Update every second
   if (js_vars.is_admin) {
     document.addEventListener("DOMContentLoaded", () => {
       liveSend({});
@@ -575,7 +576,24 @@ Auction Market {{ endblock }} {{ block content }}
         console.log(upDate);
       });
     });
+  }*/
+
+  // Update after a prespecified amount of time
+  function timeUpdate() {
+      liveSend({});
+        console.log('Updating')
+        liveSend({"type": "time_update"})
+        let ms = Date.now();
+        let upDate = new Date(ms)
+        console.log(upDate);
+    setTimeout(timeUpdate, 5000); // in milliseconds, i.e. 5000 = 5 seconds
   }
+
+  if (js_vars.is_admin) {
+    timeUpdate();
+  }
+
+
 
   // Initialize tooltips with javascript
   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
