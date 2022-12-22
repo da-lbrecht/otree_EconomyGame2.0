@@ -468,7 +468,8 @@ Auction Market {{ endblock }} {{ block content }}
 
     computed: {
       lowestAsks() {
-        return this.data.asks?.sort((a, b) => b.ask - a.ask).slice(-3);
+        return this.data.asks?.sort((a, b) => b.ask - a.ask).reverse().slice(0, 3);
+        //return this.data.asks?.sort((a, b) => b.ask - a.ask).slice(0, 3);
       },
       highestBids() {
         return this.data.bids?.sort((a, b) => b.bid - a.bid).slice(0, 3);
