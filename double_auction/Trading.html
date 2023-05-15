@@ -515,6 +515,13 @@ Auction Market {{ endblock }} {{ block content }}
         if (!this.offer) return
         liveSend({ type: "offer", offer: this.offer });
         this.offer = null;
+
+        //Disable and blur offer button for a few seconds after click
+        document.getElementById("button-offer").disabled = true;
+
+        setTimeout (function(){
+        document.getElementById("button-offer").disabled = false;
+        },5000);
       },
       withdrawOffer(offer) {
         liveSend({"type": "withdrawal", "withdrawal": offer})
