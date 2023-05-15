@@ -521,7 +521,7 @@ Auction Market {{ endblock }} {{ block content }}
 
         setTimeout (function(){
         document.getElementById("button-offer").disabled = false;
-        },5000);
+        },3000);
       },
       withdrawOffer(offer) {
         liveSend({"type": "withdrawal", "withdrawal": offer})
