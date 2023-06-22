@@ -419,7 +419,7 @@ Auction Market {{ endblock }} {{ block content }}
             :aria-label="`Your offer in ${decodeHTML(currencyUnit)}`"
             aria-describedby="button-offer"
             v-model="offer"
-            @keydown.enter.prevent="sendOffer"
+            @keydown.enter.preventDefault();
           />
           <button
             class="btn btn-um-orange fw-bold"
