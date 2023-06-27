@@ -245,13 +245,13 @@ def live_method(player: Player, data):
             elif player.is_buyer == 0 \
                      and round(float(data['offer']), 2) < price_floor:
                 player.participant.error = dict(
-                    message="You are not allowed to ask below the below price ceiling.",
+                    message="You are not allowed to ask below the price floor.",
                     time=str(datetime.today().ctime())
                 )
                 player.participant.notifications.insert(0,
                                                         {
-                                                            "message": "You are not allowed to ask below the below "
-                                                                       "price ceiling.",
+                                                            "message": "You are not allowed to ask below the price "
+                                                                       "floor.",
                                                             "time": str(datetime.today().ctime()),
                                                             "type": "error"})
             # Process offer
